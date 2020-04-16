@@ -1,0 +1,7 @@
+\beamer@endinputifotherversion {3.36pt}
+\beamer@sectionintoc {1}{Process and Thread}{2}{0}{1}
+\beamer@sectionintoc {2}{Pthread}{13}{0}{2}
+\beamer@subsectionintoc {2}{1}{\tt pthread\_create}{24}{0}{2}
+\beamer@subsectionintoc {2}{2}{\tt pthread\_exit}{27}{0}{2}
+\beamer@subsectionintoc {2}{3}{\tt pthread\_join}{74}{0}{2}
+\beamer@subsectionintoc {2}{4}{\tt pthread\_mutex\_lock}{104}{0}{2}

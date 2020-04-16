@@ -1,0 +1,42 @@
+% to specify the size of fonts in lst environment
+
+\lstset{showstringspaces=false}
+\lstset{language=C}
+\lstset{basicstyle=\tt}
+\lstset{keywordstyle=\color{blue}}
+\lstset{emphstyle=\color{red}}
+\lstset{numbers=left}
+\lstset{frame=single}
+\lstset{rangeprefix=\/*\ }
+\lstset{rangesuffix=\ *\/}
+\lstset{includerangemarker=false}
+
+%% Program listing macro for the first page with default setting.  
+
+\newcommand{\programlisting}[2]
+{\renewcommand{\lstlistingname}{Example}
+\lstinputlisting[caption={#2}]{#1.c}}
+
+\newcommand{\programlistingoption}[3]
+{\renewcommand{\lstlistingname}{Example}
+\lstinputlisting[caption={(#1.c) #2},#3]{#1.c}}
+
+\newcommand{\executionlisting}[2]
+{{\renewcommand{\lstlistingname}{Execution}
+\lstinputlisting[caption={}]{#1.out}}}
+
+\newcommand{\executionlistingoption}[3]
+{{\renewcommand{\lstlistingname}{Execution}
+\lstinputlisting[caption={},#3]{#1.out}}}
+
+\newcommand{\filelisting}[2]
+{\renewcommand{\lstlistingname}{Example}
+\lstinputlisting[caption={#2}]{#1}}
+
+\newcommand{\prototype}[2]
+{{\renewcommand{\lstlistingname}{Prototype}
+\lstinputlisting[caption={#2}]{#1.h}}}
+
+\newcommand{\pragma}[2]
+{{\renewcommand{\lstlistingname}{Pragma}
+\lstinputlisting[caption={#2}]{#1.h}}}

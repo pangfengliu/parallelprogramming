@@ -1,0 +1,1084 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{pgf}
+\usepackage{multicol}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\input{../slide-macro}
+
+\begin{document}
+
+\title{Thread}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\section{Process and Thread} 
+
+\begin{frame}
+\frametitle{Process and Threads}
+\begin{itemize}
+\item A process is a program in execution.
+\item A computer may have multiple processes running simultaneously.
+\item A thread is an execution instance of a process.
+\item A process may have multiple threads running simultaneously.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{UNIX Process}
+A UNIX process has the following
+information~\footnote{\url{https://computing.llnl.gov/tutorials/pthreads}}.
+\begin{itemize}
+\item Process ID, process group ID, user ID, and group ID
+\item Environment variables
+\item Working directory
+\item Program instructions
+\item Registers
+\item File descriptors
+\item Signal actions
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{UNIX Process}
+A UNIX process may place the data in the following sections.
+\begin{itemize}
+\item Stack
+\begin{itemize}
+\item Variables declared within functions.
+\end{itemize}
+\item Heap
+\begin{itemize}
+\item Storage allocated dynamically (e.g., malloc).
+\end{itemize}
+\item Data 
+\begin{itemize}
+\item Variables declared globally.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{UNIX Process}
+\centerline{\pgfimage[height=0.7\textheight]{process}}
+\footnote{\url{https://computing.llnl.gov/tutorials/pthreads/images/process.gif}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item How to create a process in a UNIX environment?
+\item How to kill a process in a UNIX environment?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Thread}
+\begin{itemize}
+\item A thread executes within a process, and has its own resources --
+  program text, program counter, stack, private variables, etc.
+\item A thread runs on a core, and multiple threads can run on
+  multiple cores simultaneously.
+\item We use threads to explore parallelism.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Parallelism}
+\begin{itemize}
+\item We want to express parallelism with multi-threading on a
+  multiprocessor because multiple threads can run on multiple cores
+  simultaneously.
+\item We do {\em not} use processes since the communication among them
+  require expensive inter-process-communication (IPC).
+\begin{itemize}
+\item Threads within a process can easily share variables in a shared
+  memory multiprocessor.
+\end{itemize}
+\item We do {\em not} use processes since the process creation is expensive.
+\begin{itemize}
+\item Thread creation is much cheaper.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Thread}
+\begin{itemize}
+\item Threads exist within a process and share some of the process
+  resources.
+\item Threads have their own independent flows of control.
+\item Threads die if the process dies.
+\item Threads are "lightweight" because most of the overhead has
+  already been accomplished through the creation of its process.
+\end{itemize}\footnote{\url{https://computing.llnl.gov/tutorials/pthreads}}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Threads within a Process}
+\centerline{\pgfimage[height=0.7\textheight]{thread.png}}
+\footnote{\url{https://computing.llnl.gov/tutorials/pthreads/images/thread.gif}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Memory Model} 
+\begin{itemize}
+\item All threads have access to the same global shared memory and
+  programmers are responsible for synchronizing access (protecting)
+  them.
+\item Threads also have their own private data for their own private
+  usage.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Shared Memory}
+\centerline{\pgfimage[height=0.7\textheight]{sharedMemoryModel.png}}
+\footnote{\url{https://computing.llnl.gov/tutorials/pthreads/images/sharedmemoryModel.gif}}
+\end{frame}
+
+
+\section{Pthread}
+
+\begin{frame}
+\frametitle{Pthread}
+\begin{itemize}
+\item Historically, hardware vendors have implemented their own
+  proprietary versions of threads. 
+\item These implementations differed substantially from each other
+  making it difficult for programmers to develop portable threaded
+  applications.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Pthread}
+\begin{itemize}
+\item In order to take full advantage of the capabilities provided by
+  threads, a standardized programming interface was
+  required\footnote{\url{https://computing.llnl.gov/tutorials/pthreads}}.
+\item For UNIX systems, this interface has been specified by the IEEE
+  POSIX 1003.1c standard (1995).
+\item Implementations adhering to this standard are referred to as
+  POSIX threads, or Pthreads.
+\item Most hardware vendors now offer Pthreads in addition to their
+  proprietary API's.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe a ``standard'' in computer science, and why is it
+  important.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hello}
+\programlistingoption{hello}{Main program}{linerange=main-end}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hello}
+\programlistingoption{hello}{Print}{linerange=print-main}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the hello.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+\item Implement a program that prints 10 lines of ``hello''.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe the compiling environment you used.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Pthread Concepts}
+\begin{itemize}
+\item Initially there is only one {\em main thread}.
+\item The main thread can spawn other threads.  For ease of
+  explanation we will refer to them as the {\em spawned} threads of
+  the main thread.
+\item For ease of explanation we will also use {\em child} threads to
+  refer to those threads spawned by the main thread.
+\item You have been programming the main thread {\em only}.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Pthread Steps}
+\begin{itemize}
+\item Include the necessary header file {\tt pthread.h}.
+\item Declare a variable of type {\tt pthread\_t} to store the
+  identifier for the thread you will create.
+\item Call {\tt pthread\_create} creates a thread with the type
+  {\tt pthread\_t} variable declared previously.
+\item Call {\tt pthread\_exit} when the main thread or the spawn
+  thread wants to exit.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Hello}
+\programlistingoption{hello-pthread}{Declaration}{linerange=declaration-print,emph={pthread}}
+\begin{itemize}
+\item Must include {\tt pthread.h}.
+\end{itemize}
+\end{frame}
+
+\subsection{\tt pthread\_create}
+
+\begin{frame}
+\frametitle{\tt pthread\_create}
+\programlisting{pthread_create}{\tt pthread\_create}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_create Parameters}
+\begin{description}[l]
+\item[\tt thread] A {\tt pthread\_t} pointer to the created thread.
+\item[\tt attr] A {\tt pthread\_type\_t} pointer to the attribute of the
+  thread.  We can set it to NULL for now.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_create Parameters}
+\begin{description}[l]
+\item[\tt start\_routinue] Thread starting routine.  The routine must
+  have {\tt void *routine(void *)} prototype. i.e., it expects a
+  pointer to {\tt void} as the only parameter, and returns a pointer
+  to {\tt void}.
+\item[\tt arg] A pointer to an optional parameter to the spawned
+  thread.  We set it to the thread index {\tt t} in our example.
+\item[\tt return value] Return 0 if success, and a non-zero error code
+  on error.
+\end{description}
+\end{frame}
+
+\subsection{\tt pthread\_exit}
+
+\begin{frame}
+\frametitle{\tt pthread\_exit}
+\programlisting{pthread_exit}{\tt pthread\_exit}
+\begin{description}[l]
+\item[\tt value] A thread can use this pointer to sent information
+  back to its parent thread.  We can set it to {\tt NULL} for now
+  because the threads will not send anything back to the main thread.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Name the functions that create and destroy pthreads respectively.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hello with Pthread}
+\programlistingoption{hello-pthread}{Main program}{linerange=main-end,basicstyle={\scriptsize \tt},emph={threads,pthread_t,pthread_create,pthread_exit}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Main Program}
+\begin{itemize}
+\item We can use the argument {\tt arg} to pass information to the
+  spawned threads.
+\item In our example we pass the index {\tt t} to the spawned thread
+  as thread index.
+\item Note that the type of {\tt arg} is {\tt void *} since we do not
+  know what kind of parameter will be passed into a thread.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hello with Pthread}
+\programlistingoption{hello-pthread}{Print}{linerange=print-main,emph={pthread_exit,threadid}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt printHello}
+\begin{itemize}
+\item This is the routine each spawned thread will run.
+\item Each thread receives a pointer to the thread index ({\tt
+  thread\_id}) from the main thread, and prints it.
+\item We need to cast the type of the parameter back to {\tt (int *)},
+  very much like the case of qsort.
+\item We do not have anything to send back to the main thread, so we
+  use {\tt NULL} in {\tt pthread\_exit(NULL)}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+\frametitle{Compile and Link}
+\item You need to link your program with the pthread library.
+\item You can use gcc to compile and link you program with pthread
+  library.  Note that the library must be at the end of the gcc
+  command.
+\begin{itemize}
+\item {\tt gcc program.c -o program -lpthread}
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the hello-pthread.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Is the answer correct? If not what is the reason?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hello with Pthread}
+\programlistingoption{hello-pthread-correct}{main}{linerange=main-end,emph={pthread_exit,threadid,threadIndex},basicstyle={\tt \scriptsize}}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+\frametitle{Main Thread Variables}
+\item We use an array {\tt threadIndex} to keep the thread index for
+  all threads.
+\item We then pass the address of the index to the spawned threads.
+  This prevents the threads from accessing the same memory address in
+  the previous example.
+\item From this example we know that the spawned threads can access
+  the memory of the main thread.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the hello-pthread-correct.c program.
+\item Is the answer correct?
+\item Is there timing constraints between these threads?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+\item Implement a pthread program that prints 10 lines of ``hello''.
+  You should use {\tt pthread\_create} to create 10 threads to do
+  this, where each thread prints an index from 0 to 9.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does your program function properly if you remove the {\tt
+  pthread\_exit} from the main program?  Explain the reason if it does
+  not.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Eight Queen} 
+\begin{itemize}
+\item Place eight queen on a chessboard so that no queen can attack
+  any other
+  queen.\footnote{\url{http://support.sas.com/documentation/cdl/en/orcpug/59630/HTML/default/images/queens.png}}
+\item We would like to know the number of such solutions.
+\end{itemize}
+\centerline{\pgfimage[height=0.55\textheight]{queens}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Solution}
+\begin{itemize}
+\item Use an array {\tt position} to store the positions of $n$
+  queens.
+\item The $i$-th element of the array stores the row index of the
+  queen at the $i$-column.
+\item Receive the size of the board $n$ as the second command line
+  argument.
+\item Use a recursive function {\tt queen} to compute the number of
+  solutions.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Headers}
+\programlistingoption{queen}{Headers}{linerange=begin-ok}
+\end{frame}
+
+\begin{frame}
+\frametitle{Headers} 
+\begin{itemize}
+\item {\tt stdlib.h} for {\tt atoi}.
+\item {\tt MAXN} is the maximum size of the board.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Eight Queen}
+\programlistingoption{queen}{Main program}{linerange=main-end}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main} 
+\begin{itemize}
+\item {\tt position} for queen positions.
+\item {\tt n} is the size of the board.
+\item {\tt queen} will return the number of solutions.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Eight Queen}
+\programlistingoption{queen}{queen}{linerange=queen-main}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt queen}
+\begin{itemize}
+\item The {\tt queen} function computes the number of solutions.
+\item The {\tt queen} uses a parameter {\tt next} to keep track of the
+  column number it wishes to place a queen next.
+\item If {\tt next} is already $n$ then we have placed all $n$ queens.
+\item Otherwise we try all rows and sum up the number of solutions
+  from all possible row placements.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Eight Queen}
+\programlistingoption{queen}{ok}{linerange=ok-queen}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt ok}
+\begin{itemize}
+\item The {\tt queen} function determines if we could place a queen
+ at the end of {\tt position}.
+\item The newly added queen is at row {\tt position[next]}, column
+  {\tt next}.
+\item if any previously placed queen is at the same row or at the
+  diagonal of the newly placed queen, the function returns 0.
+  Otherwise it return 1.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the queen.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+\item Implement a sequential program that solves the eight queen
+  problem.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Can you think of any simple optimization that will speed up your
+  program?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{$n$ Queen with pthread} Now we want to parallelize the
+previous program with pthread.
+\begin{itemize}
+\item We create $n$ threads, and use one thread to search each of the
+  $n$ subtrees when we place the first queen at all $n$ possible cells
+  in the first column.
+\item All threads can run in parallel.  
+\item Right now we just let each thread report the number of answers
+  it finds, and do not sum them.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Issues}
+\begin{itemize}
+\item How do all thread know the size of the board?
+  \begin{itemize}
+  \item We declare a global {\tt n}.
+  \end{itemize}
+\item How does a thread know which subtree it should solve?
+  \begin{itemize}
+  \item We pass this information to the spawned threads by the {\tt arg}
+    parameter in {\tt pthread\_create}.
+  \end{itemize}
+\item Can these threads share a board?
+  \begin{itemize}
+  \item No, they need their own {\tt position}.
+  \end{itemize}
+\item Do these threads need to communicate with each other?
+  \begin{itemize}
+  \item No, because right now we do not sum the numbers of solutions.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Headers}
+\programlistingoption{queen-pthread}{Headers}{linerange=begin-ok}
+\end{frame}
+
+\begin{frame}
+\frametitle{Headers} 
+\begin{itemize}
+\item {\tt pthread.h} for pthread functions.
+\item {\tt stdlib.h} for {\tt atoi}.
+\item {\tt MAXN} is the maximum size of the board.
+\item A global {\tt n} for all threads.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Eight Queen with Pthread}
+\programlistingoption{queen-pthread}{Main program}{linerange=main-end,basicstyle={\scriptsize \tt},emph={pthread_create,position,calloc}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\begin{itemize}
+\item We call {\tt calloc} to allocate an array and keep the starting
+  address in {\tt position}.
+\item We set the first element of {\tt position} according to the
+  thread index, so that each thread searches its own subtree.
+\item We pass the {\tt position} to {\tt pthread\_create} so that the
+  threads can access their own arrays.
+\item From this example we know that all threads share the global
+  variables and heap space.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt goQueen}
+\programlistingoption{queen-pthread}{\tt goqueen}{linerange=go-main,basicstyle={\footnotesize \tt},emph={position}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt goQueen}
+\begin{itemize}
+\item {\tt goQueen} is the starting function of spawned threads.
+\item {\tt goQueen} uses its own pointer {\tt petition} to point to
+  the array in the heap.  Some casting is required.
+\item {\tt goQueen} calls {\tt queen} with {\tt next} set to 1.
+\item All threads can get the board size from the global variable {\tt
+  n}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the queen-pthread.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+\item Implement a parallel program that solves the $n$ queen problem
+  with pthread.  Each thread only reports the number of solutions it
+  finds and no summation is required.
+\item Measure the speedup and efficiency.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Why do we call queen with 1?
+\item What are the speedup and efficiency you are getting?
+\item Is the workload evenly distributed?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Total Number}
+\begin{itemize}
+\item Now we want to compute the total number of solutions, instead of
+  individual number of solution from each thread.
+\item We use a global variable {\tt numSolution} to store the sum of
+  the numbers of solutions from all threads.  This variable is
+  initialized to 0 automatically.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Headers}
+\programlistingoption{queen-pthread-sum}{Headers}{linerange=begin-ok,emph={numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Headers} 
+\begin{itemize}
+\item {\tt pthread.h} for pthread functions.
+\item {\tt stdlib.h} for {\tt atoi}.
+\item {\tt MAXN} is the maximum size of the board.
+\item A global {\tt n} for all threads.
+\item A global {\tt numSolution} for the total number of solutions.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Eight Queen with Pthread}
+\programlistingoption{queen-pthread-sum}{Main program}{linerange=main-end,basicstyle={\scriptsize \tt},emph={pthread_create,numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\begin{itemize}
+\item We print the number of solutions {\tt numSolution} before we
+  call {\tt pthread\_exit}.
+\item If we place the {\tt printf} after {\tt pthread\_exit}, it will
+  not be executed.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt goQueen}
+\programlistingoption{queen-pthread-sum}{\tt goqueen}{linerange=go-main,basicstyle={\footnotesize \tt},emph={numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt goQueen}
+\begin{itemize}
+\item {\tt goQueen} reports the number of solution {\tt queen} finds.
+\item {\tt goQueen} also adds the number of solutions computed by {\tt
+  queen} to the global variable {\tt numSolution}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the queen-pthread-sum.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the program produce correct output?
+\end{itemize}
+\end{frame}
+
+\subsection{\tt pthread\_join}
+
+\begin{frame}
+\frametitle{Synchronization}
+\begin{itemize}
+\item The problem of the previous program is that the main thread did
+  {\em not} wait for all spawned threads to complete.
+\item We need a {\em barrier synchronization}, and after that the main
+  thread can get the correct total number of solutions in {\tt
+    numSolution}.
+\item The main thread can wait for its spawned threads by calling {\tt
+  pthread\_join}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Join a Pthread}
+\centerline{\pgfimage[height=0.5\textheight]{joining}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Pthread Attribute} Steps to set threads as
+joinable.\footnote{\url{https://computing.llnl.gov/tutorials/pthreads/}}.
+\begin{itemize}
+\item Declare a pthread attribute variable of type {\tt
+  pthread\_attr\_t}.
+\item Initialize the attribute variable with {\tt
+  pthread\_attr\_init()}.
+\item Set the attribute detached status with {\tt
+  pthread\_attr\_setdetachstate()}.
+\item When done, free library resources used by the attribute with
+  {\tt pthread\_attr\_destroy()}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_attr\_init}
+\programlistingoption{pthread-attr-init}{Initialize/destroy attributes}{basicstyle={\small \tt}}
+\begin{itemize}
+\item Initialize and destroy the attribute of a thread.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_attr\_setdetachstate}
+\programlistingoption{pthread-attr-setdetachstate}{Set the attribute}{basicstyle={\footnotesize \tt}}
+\begin{itemize}
+\item Set the attribute of a thread.
+\item In our example we want to set the threads so that they can join
+  with the main thread, so we will set {\tt PTHREAD\_CREATE\_JOINABLE}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{$n$ Queen with Pthread}
+\programlistingoption{queen-pthread-sum-join}{Main program}{linerange=main-declaration_end,basicstyle={\small \tt},emph={attr,pthread_attr_t,pthread_attr_init,pthread_attr_setdetachstate,PTHREAD_CREATE_JOINABLE}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Steps}
+\begin{itemize}
+\item Declare a variable {\tt attr} of type {\tt pthread\_attr\_t}
+  and initialize it with {\tt pthread\_attr\_init()}.
+\item Set the attribute to {\tt PTHREAD\_CREATE\_JOINABLE} with {\tt
+  pthread\_attr\_setdetachstate()}.
+\item Use the address of {\tt attr} as the second argument in {\tt
+  pthread\_create} while creating threads.
+\item Destroy {\tt attr}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{$n$ Queen with Pthread}
+\programlistingoption{queen-pthread-sum-join}{Main program}{linerange=declaration_end-join,basicstyle={\scriptsize \tt},emph={attr,pthread_attr_t,pthread_create,pthread_attr_destroy}}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{$n$ Queen with Pthread}
+\programlistingoption{queen-pthread-sum-join}{Main program}{linerange=join-end,basicstyle={\scriptsize \tt},emph={threads,pthread_join,numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Join a Pthread}
+\programlisting{pthread_join}{\tt pthread\_join}
+\begin{description}[l]
+\item[\tt thread] The thread you want to wait for.  This is the
+  variable you used to call {\tt pthread\_create}.
+\item[\tt value\_ptr] A pointer to a pointer to the return value from
+  the spawned thread.  We do not return anything from the spawned
+  thread so we set it to {\tt NULL}.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the queen-pthread-sum-join.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does this program produce correct results?
+\item Does this program {\em always} produce correct results?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{A Global Counter}
+\begin{itemize}
+\item The previous program uses a recursive function {\tt queen} to
+  compute the number of solutions.
+\item We will change the program so that {\tt queen} does not return
+  the number of solutions it finds -- instead whenever it finds a
+  solution it adds 1 to the global counter {\tt numSolution}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{}
+\programlistingoption{queen-pthread-sum-join-race}{\tt queen}{linerange=queen-go,emph={void,numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Changes}
+\begin{itemize}
+\item The return type of {\tt queen} is changed to {\tt void} since it
+  does not return the number of solutions anymore.
+\item The program structure is simplified since we do not keep track
+  of the number of solutions found.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{}
+\programlistingoption{queen-pthread-sum-join-race}{\tt goQueen}{linerange=go-main}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the queen-pthread-sum-join-race.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Is the answer correct? If not what is the reason?
+\item Does the previous program queen-pthread-sum-join.c have the same
+  problem?  If yes why it did not show up?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Race}
+\begin{itemize}
+\item In fact the race condition exists in queen-pthread-sum-join.c.
+  It doe not show up because there are only a few additions to {\tt
+    numSolution}.
+\item When we increase the number of additions to {\tt numSolution},
+  it becomes much easier for the race condition to occur.
+\item The solution is to use the return value of {\tt pthread\_exit} to
+  return the number of solutions found in a thread.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_exit}
+\programlisting{pthread_exit}{\tt pthread\_exit}
+\programlisting{pthread_join}{\tt pthread\_join}
+\end{frame}
+
+\begin{frame}
+\frametitle{Return value}
+\begin{itemize}
+\item We will find a place for the spawned thread to store the number
+  of solutions it finds, and return the address by {\tt pthread\_exit}
+  to the main thread.
+\item The main thread will use the second parameter of {\tt
+  pthread\_join} to retrieve the number of solutions a thread found.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{No Global}
+\programlistingoption{queen-pthread-sum-join-correct}{Headers}{linerange=begin-ok,basicstyle={\tt},emph={num,pthread_exit}}
+\end{frame}
+
+\begin{frame}
+\frametitle{No Global}
+\begin{itemize}
+\item We remove the global variable {\tt numSolution}, which causes
+  the race condition.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{\tt goQueen}
+\programlistingoption{queen-pthread-sum-join-correct}{\tt goQueen}{linerange=go-main,basicstyle={\footnotesize \tt},emph={num,pthread_exit}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Heap}
+\begin{itemize}
+\item We decide to put the number of solutions a spawned thread found
+  in the heap, with the address stored in {\tt num}.
+\item Recall that all threads share the heap.
+\item This address, i.e., the value of num, is passed back with {\tt
+  pthread\_exit}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\programlistingoption{queen-pthread-sum-join-correct}{\tt main}{linerange=join-end,basicstyle={\footnotesize \tt},emph={numSolution,num,pthread_join}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Return Value}
+\begin{itemize}
+\item Note that the API requires that we pass the address of a pointer
+  into {\tt pthread\_join}.
+\item The value returned by {\tt pthread\_join} is then added into
+  {\tt numSolution}, which is now a local variable.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the queen-pthread-sum-join-correct.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+\item Implement a parallel program that solves the $n$ queen problem
+  with pthread.  You need to sum up the number of solutions from all
+  threads correctly.
+\item Measure the speedup and efficiency.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does this program produce correct results?
+\item Compare the timing from queen-pthread-sum-join-correct.c and
+  queen-pthread-sum-join-race.c
+\end{itemize}
+\end{frame}
+
+\subsection{\tt pthread\_mutex\_lock}
+
+\begin{frame}
+\frametitle{Mutex}
+\begin{itemize}
+\item We can prevent the race condition by allowing only thread to
+  access the shared variable {\tt numSolution}.
+\item Pthread library provide a {\em mutex} (mutual exclusion)
+  mechanism that allows only one thread to proceed in execution.  This
+  effectively provide a way to implement a critical section.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Steps}
+\begin{itemize}
+\item Declare a mutex variable of type {\tt pthread\_mutex\_t}.  This
+  variable must be global because every thread will use it.
+\item Initialize the mutex with {\tt pthread\_mutex\_init}.
+\item Lock the mutex with {\tt pthread\_mutex\_lock}.
+\item Unlock the mutex with {\tt pthread\_mutex\_unlock}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Declaration}
+\programlistingoption{queen-pthread-sum-join-race-mutex}{Declaration}{linerange=declaration-ok,basicstyle={\small \tt},emph={pthread_mutex_t}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Mutex Variable}
+\begin{itemize}
+\item Declare a global mutex variable {\tt numSolutionLock}.
+\item We will use this mutex variable to synchronize the access to the
+  global counter {\tt numSolution}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\programlistingoption{queen-pthread-sum-join-race-mutex}{\tt queen}{linerange=main-create,basicstyle={\small \tt},emph={pthread_mutex_init,pthread_mutex_t,numSolutionLock}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_mutex\_init}
+\programlistingoption{pthread-mutex-init}{Initialize a mutex}{basicstyle={\scriptsize \tt}}
+\begin{description}[l]
+\item[\tt mutex] The mutex to initialize.
+\item[\tt attr] The attribute of the mutex to set.  Set to {\tt NULL}
+  for the default.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\begin{itemize}
+\item Initialize {\tt numSolutionLock} with {\tt pthread\_mutex\_init}.
+\item Use {\tt NULL} for the default mutex attribute value.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_mutex\_lock}
+\programlistingoption{pthread-mutex-lock}{Lock/Unlock a mutex}{basicstyle={\small \tt}}
+\begin{description}[l]
+\item[\tt mutex] The mutex to lock/unlock.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt queen}
+\programlistingoption{queen-pthread-sum-join-race-mutex}{\tt queen}{linerange=queen-go,basicstyle={\small \tt},emph={pthread_mutex_lock,pthread_mutex_unlock,numSolutionLock,numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt queen}
+\begin{itemize}
+\item Whenever the function {\tt queen} finds a solution, it needs to
+  lock {\tt numSolution} with mutex {\tt numSolutionLock} by calling
+  {\tt pthread\_mutex\_lock}.
+\item If it cannot acquire the lock it will have to wait.
+\item After adding 1 to {\tt numSolution}, {\tt queen} releases the
+  lock by calling {\tt pthread\_mutex\_unlock}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\programlistingoption{queen-pthread-sum-join-race-mutex}{\tt queen}{linerange=join-end,basicstyle={\small \tt},emph={pthread_mutex_destroy,numSolutionLock}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt pthread\_mutex\_destroy}
+\programlistingoption{pthread-mutex-destroy}{\tt pthread\_destroy}{basicstyle={\footnotesize \tt}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\begin{itemize}
+\item After all spawned threads finish, we release the mutex by calling
+{\tt pthread\_mutex\_destroy}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the queen-pthread-sum-join-race-mutex.c program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does this program produce correct results?
+\item Compare the timing from queen-pthread-sum-join-race-mutex.c with
+  that from queen-pthread-sum-join-correct.c.  
+\end{itemize}
+\end{frame}
+
+\end{document}
+
