@@ -1,0 +1,813 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{pgf}
+\usepackage{multicol}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\input{slide-macro}
+
+\begin{document}
+
+\title{Advanced OpenMP Programming}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Performance}
+
+\subsection{Private Variables}
+
+\begin{frame}
+  \begin{itemize}
+  \item We will observe the timing when threads access variables at
+    different locations.
+  \item The intuition is that local variables are much easier to
+    access than the global ones, and we need to confirm that.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compute Square Roots}
+  \begin{itemize}
+    \item Write a program that computes the square root from 0 to
+      999999999 and assign the value to a variable {\tt v}.
+    \item We first observe the timing when we place the variable {\tt
+      v} at global area.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlisting{assign.c}{}{}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt assign-uni} program.
+  \item Run the {\tt assign-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compare the execution time of {\tt assign-uni} and {\tt assign-omp}.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Private Variable}
+  \begin{itemize}
+  \item We now declare {\tt v} as private and observe the timing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlisting{assign-private.c}{}{}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt assign-private-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compare the execution time of {\tt assign-private-omp} with
+    previous {\tt assign-uni} and {\tt assign-omp}.
+    \item What is the reason for this performance difference?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Heap Variable}
+  \begin{itemize}
+  \item We now put {\tt v} into the heap and observe the timing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlisting{assign-heap.c}{}{}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt assign-heap-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compare the execution time of {\tt assign-heap-omp} with
+    previous programs.
+  \item What is the reason for this performance difference?
+  \end{itemize}
+\end{frame}
+
+
+
+%% \begin{frame}
+%%   \frametitle{Timing Comparison}
+%%   Now write two parallel versions of the previous program.  Both
+%%   programs use {\tt parallel for} pragma.  Compare the timing of these
+%%   two programs.
+%%   \begin{itemize}
+%%   \item Declare {\tt v} as private.
+%%   \item Declare {\tt v} as shared.
+%%   \end{itemize}
+%% \end{frame}
+
+
+
+
+\subsection{Thread Creation/Destroying}
+
+\begin{frame}
+  \frametitle{Prime Number Counting}
+  \begin{itemize}
+  \item We want to count the number of prime numbers.
+  \item We start with an array of numbers, and assuming that every
+    number is a prime number.
+  \item We start with the smallest prime number in the array, and mark
+    {\em every} multiple of it as {\em composite} (non-prime number).
+  \item We repeat this process until no new prime numbers are found.
+  \end{itemize}
+\end{frame}
+
+\programlistingthreeslides{prime.c}{}{\small}{header}{main}{count}{end}
+
+\begin{frame}
+\frametitle{Variables}
+\begin{itemize}
+\item Array {\tt notPrime} keeps track of the status of a number.  If
+  we know a number {\tt i} is {\em not} prime, we set {\tt
+    notPrime[i]} to 1.
+\item The prime numbers will be kept in another array {\tt primes}.
+\item The range to be tested ({\tt n}) is given as a command line argument.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Try All Possibilities}
+\begin{itemize}
+\item Try all numbers from 2 to $\sqrt{n}$.
+\item If i is a prime number, mark the all multiple of {\tt i} as {\em
+  not} prime.
+\item It is obvious that the first for loop {\em cannot} be
+  parallelized because of dependency, so we parallelize the second for
+  loop.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Reduction}
+\begin{itemize}
+\item The number of prime number can be obtained by counting the
+  number of zeros in array {\tt notPrime}.
+\item We use a reduction on the variable {\tt nPrime} to simplify the
+  process.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt prime-uni} program.
+  \item Run the {\tt prime-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compute the speedup of the previous prime counting program.
+  \item Is there any optimization that can improve the performance?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Efficiency}
+\begin{itemize}
+\item The previous program parallelized the inner for loop only.
+\item The previous program will go through multi-threading every time a
+  prime number is found.
+\item This incurs overheads of creating and destroying the threads.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Spawn and Join}
+\centerline{\pgfimage[width=1.0\textwidth]{threads-many-spawn-join.pdf}}
+\begin{itemize}
+\item Single thread for the outer loop.
+\item Multi-thread for the inner loop.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{{\tt parallel} Once}
+\begin{itemize}
+\item We would like to avoid the overheads in creating and destroying
+  threads, so we put a {\tt parallel} in front of the first for loop.
+\item The {\em entire} two level loop is run by all threads.
+\item Then we share the workload of the second for loop to improve
+  performance,  since  most work is done in the second loop.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingfirst{prime-inner.c}{}{\small}{main}{count}
+\end{frame}
+
+\begin{frame}
+\frametitle{Efficient}
+\begin{itemize}
+\item All threads run the first loop, and share the second loop.
+\item It is OK for all threads to run the first for loop
+  simultaneously, since they will synchronize at every second loop.
+\item Index variables {\tt i} and {\tt j} are private.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Spawn and Join}
+\centerline{\pgfimage[width=1.0\textwidth]{threads-one-spawn-join.pdf}}
+\begin{itemize}
+\item Multi-thread for both outer and inner loops.
+\item The work in the outer loop is duplicated, but it is more
+  efficient than creating and joining threads.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt prime-uni} program.
+  \item Run the {\tt prime-omp} program.
+  \item Run the {\tt prime-inner-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compare the execution time of all three prime counting
+    programs.
+  \item Is there any further optimization that can improve the
+    performance?
+  \end{itemize}
+\end{frame}
+
+\subsection{\tt nowait}
+
+\begin{frame}
+\frametitle{Synchronization}
+\begin{itemize}
+\item A for pragma will synchronize all threads before leaving the
+  for statement.
+\item If the for statement is still within the same {\tt parallel}
+  directive, then a barrier synchronization will do.
+\item If the for statement is at the end of the {\tt parallel}
+  directive, threads will be joined by the master thread and
+  destroyed.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt nowait}
+\begin{itemize}
+\item Sometimes we do not wish the the threads to wait for each other.
+\item Those finish earlier can go on to the next statement to improve
+  performance.
+\item We can only do this if the following statement does {\em not}
+  depend on the previous statement.
+\item In this case we can use {\tt nowait} clause.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt nowait}
+\prototype{nowait.h}
+\end{frame}
+
+\begin{frame}
+\frametitle{Two loops}
+\begin{itemize}
+\item We place two for directives with a parallel directive.
+\item The first for has an ascending workload, and the second loop has
+a descending workload. 
+\end{itemize}
+\end{frame}
+
+\programlistingtwoslides{2for.c}{}{\footnotesize}{main}{twoloop}{end}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt 2for-omp} program with 4 threads and 8
+    iterations, and observe the timing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the the execution time of {\tt 2for-omp} and make
+    sure that it is reasonable.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Wait}
+\begin{itemize}
+\item In the previous program If the work of the second loop does not
+  depend on the first loop, then we can let the threads go to the
+  second directly.
+\item Since the first for has an {\em ascending} workload, and the
+  second loop has a {\em descending} workload, if we let the threads
+  to go to the second loop then the workload imbalance will be
+  reduced.
+\item We only need to add a {\tt nowait clause} at the first {\tt for}
+  directive.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingfirst{2for-nowait.c}{}{\footnotesize}{twoloop}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt 2for-nowait-omp} program with 4 threads and 8
+    iterations, and observe the timing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the the execution time of {\tt 2for-omp} and make
+    sure that it is reasonable.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt nowait}
+\begin{itemize}
+\item We consider our previous prime number counting program.
+\item Previously the second marking {\tt for} will synchronize before
+  going back to the outside {\tt for}.
+\item We would like to remove this synchronization, and let each
+  threads to start the ``prime'' finding as soon as possible.
+\item This will not cause a race condition since the threads will
+  still synchronize at the beginning of the next inner loop.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingfirst{prime-inner-nowait.c}{nowait}{\small}{count}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run {\tt prime-inner-omp} and {\tt prime-inner-nowait-omp} and
+    compare their execution time.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Why can the {\tt nowait} clause improve performance?
+  \end{itemize}
+\end{frame}
+
+
+\subsection{Critical Region}
+
+\begin{frame}
+  \frametitle{Compute $\pi$} 
+  \begin{itemize}
+  \item We calculate $\pi$ by integrating $f(x) = {4 \over {1 +
+      x^2}}$, where $x$ is from 0 to 1.
+  \item Divide the interval into $N$ pieces, and assume the area in each
+    interval is a trapezoid, then sum the area of these $N$ trapezoids
+    into a variable {\tt area}.  
+  \item Note that in each interval you only need to compute $4 \over {1
+    + x^2}$ once.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallel Version} 
+  \begin{itemize}
+    \item We use {\tt x} to denote the x coordinate, and {\tt area}
+      for the area in the integral.
+    \item We parallelize the program by adding {\tt parallel for} pragma
+      and declare {\tt x} as private.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlisting{pi.c}{Compute $\pi$}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run {\tt pi-omp}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Is the answer from the parallel version correct? 
+  \item Find out why the sequential version will not compile and fix
+    it.  Then compare the the execution time of these two programs.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Atomic} 
+  \begin{itemize}
+  \item We did not declare {\tt area} private because it has the final
+    global answer.
+  \item As a result the operation on {\tt area} must be {\em atomic}
+    to avoid race condition.
+  \item We simply use {\tt critical} directive on the loop body to
+    ensure atomic condition.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{pi-critical.c}{Compute $\pi$}{\footnotesize}{loop}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt pi-critical-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Is the answer from the parallel version correct? 
+  \item Compare the the execution time of with the two previous
+    programs.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Atomic} 
+  \begin{itemize}
+  \item It appears that we do not need to make the entire loop body
+    critical because {\tt x} is already private.
+  \item We now only use critical directive on the area summation.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Critical Section}
+  \begin{itemize}
+  \item It is essential to reduce the size of the critical section,
+  \item We want a thread to get through a critical section as soon as
+    possible, so that other threads can get into the critical section
+    as well.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{pi-critical-small.c}{Compute $\pi$}{\footnotesize}{loop}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt pi-critical-small-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Is the answer from the parallel version correct? 
+  \item Compare the the execution time of with the three previous
+    programs.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Private Variables} 
+  \begin{itemize}
+  \item The performance improvement is very limited by a smaller
+    critical section because it is not very different from the
+    previous implementation.
+    \begin{itemize}
+      \item Two statements v.s. one statement.
+    \end{itemize}
+    \item If there are many statements in the loop body the benefit
+      will more obvious.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Critical Section}
+  \begin{itemize}
+  \item The number of critical sections is enormous.
+  \item We would like to remove these time consuming critical sections
+    by letting all threads to work on its integrals by summing into
+    its own {\tt area}.
+  \item The idea is to use a global array to store the individual {\tt
+    area}, then the master threads can add sum them up.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Array Implementation}
+\begin{itemize}
+\item We need an array for threads to store its area.
+\item During each iteration a thread needs to call {\tt
+  omp\_get\_thread\_num()} to know where to store its area, which is a
+  significant overheads.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingfirst{pi-array.c}{}{\small}{main}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt pi-array-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Is the answer from the parallel version correct? 
+  \item Compare the the execution time of with the previous programs.
+  \item Is there any way to reduce the overheads in calling {\tt
+    omp\_get\_thread\_num()}?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduction}
+  \begin{itemize}
+  \item We now use a reduction to compute the integral.
+  \item The implementation is much cleaner and (hopefully) with better
+    performance because it has been optimized by the OpenMP library.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{pi-reduction.c}{Compute $\pi$}{\footnotesize}{loop}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt pi-reduction-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Is the answer from the parallel version correct? 
+  \item Compare the the execution time of with the previous
+    programs.
+  \end{itemize}
+\end{frame}
+
+\subsection{Double Buffer}
+
+\begin{frame}
+  \frametitle{Game of Life}
+  \begin{itemize}
+  \item A two-dimensional board with cells.  A cell could either {\em
+    live} or {\em dead}.
+  \item The status of a cell evolves according to its status and the
+      status of  its eight neighbors.
+  \item A dead cell with exactly {\em three} live neighbors becomes
+    a live cell. 
+  \item A live cell with two or three live neighbors stays live,
+    otherwise it becomes dead.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Double Buffer}
+  \begin{itemize}
+    \item It is intuitive that we keep the status of cells in a two
+      dimensional array.
+    \item Since the status of cell depends on the status of others, if
+      we modify a cell directly it will affect the computation on
+      other cells.  This causes ``race'' condition during the update.
+    \item Instead we use {\em two} arrays $A$ and $B$ to store the
+      status of cells.  In initially the status is in $A$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Iterations}
+  \begin{itemize}
+    \item We repeat the following steps.
+      \begin{itemize}
+      \item We set the cell status of $B$ according to $A$ in the
+        first, third, etc. iterations.
+      \item We set the cell status of $A$ according to $B$ in the
+        second, fourth, etc. iterations.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Double Buffers}
+\begin{itemize}
+\item We use two buffers {\tt A} and {\tt B} to avoid data
+  inconsistency in updating the status of cells.
+\item We use a macro to compute the number of live neighboring cells
+  -- a live cell has 1 and a dead cell has 0.
+\item We pad the broad boundary so that we can use a single macro to
+  compute the number of live neighboring cells
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingfirst{life.c}{}{\footnotesize}{header}{print}
+\end{frame}
+
+\begin{frame}
+\frametitle{Print}
+\begin{itemize}
+\item We use a simple printing routine to print the status of cells.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingrest{life.c}{}{\footnotesize}{print}{main}
+\end{frame}
+
+\begin{frame}
+\frametitle{Input}
+\begin{itemize}
+\item if the flag {\tt READINPUT} is set the main program will read the
+  size of the board, the number of generations,and the cell status
+  from stdin.  
+\item Otherwise it will generate a random input of size 4096 by 4096,
+  and repeat for ten generations.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingrest{life.c}{}{\footnotesize}{main}{generation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Dead or Alive}
+\begin{itemize}
+\item Depending on the generation the program will set the cell status
+  of {\tt B} with {\tt A}, or in the other direction.
+\item A cell will be alive only if it is dead now and has three live
+  neighbors, or it is live and it has two or three live neighbors now.
+\item We simply use a {\tt parallel for} directive to distribute the
+  workload.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingrest{life.c}{}{\footnotesize}{generation}{printcell}
+\end{frame}
+
+\begin{frame}
+\frametitle{Final Status}
+\begin{itemize}
+\item if the flag {\tt PRINT} is set the main program will output the
+  final cell status.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\programlistingrest{life.c}{}{\footnotesize}{printcell}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt life-uni} program.
+  \item Run the {\tt life-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compute the speedup of the parallel program.
+  \item What kind of scheduling policy was used?
+  \item Is there any optimization that can improve the performance?
+  \end{itemize}
+\end{frame}
+
+
+%% \begin{frame}
+%%   \frametitle{Traveling Salesman} Modify your $N$-queen program into
+%%   a sequential traveling salesman program and submit it.
+%%   \begin{itemize}
+%%   \item The distance between two points are ${dx}^2 + {dy}^2$ (no
+%%     sqrt!).
+%%   \item The traveling salesman does not need to go back to the city
+%%     where he started, so the solution is a {\em permutation} of all
+%%     cities.
+%%   \item Read the input form stdin.  The first line is the number of
+%%     points and each line after has the $x$ and $y$ coordinates of a
+%%     city.
+%%   \item The output is the minimum total distance.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Cuts} 
+%%   \begin{itemize}
+%%   \item Add cuts into your traveling salesman program and submit it.
+%%   \item What concept do you need in order to maintain the minimum
+%%     solution so far?
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Parallel Traveling Salesman} Now parallelize your
+%%   traveling salesman program.
+%%   \begin{itemize}
+%%   \item What concept do you need in order to maintain the minimum
+%%     solution so far? 
+%%   \item Do you need to protect this variable since now we may have
+%%     multiple thread accessing it? 
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Parallel Version} 
+%%   \begin{itemize}
+%%   \item Now write a parallel version by only adding {\tt parallel for}
+%%     pragma.
+%%   \item Make sure that the answer is {\em incorrect}.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} 
+%%   \prototype{critical}{Critical pragma}
+%%   \begin{itemize}
+%%   \item When a thread enters the critical section, the others could
+%%     not.
+%%   \item The {\tt area} is {\em protected} by a critical section.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} Now write two parallel versions using
+%%   critical section 
+%%   \begin{itemize}
+%%   \item The critical section covers the entire loop body to avoid
+%%     race condition.
+%%   \item The critical section covers the addition to the area to
+%%     avoid race condition.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} 
+%%   \begin{itemize}
+%%   \item Compare the timing between the two parallel versions you
+%%     just wrote.  Which one is more efficient?  Why?
+%%   \item Submit the one that is more efficient?
+%%   \end{itemize}
+%% \end{frame}
+
+%\end{CJK}
+\end{document}

@@ -1,0 +1,1165 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{pgf}
+\usepackage{multicol}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\input{slide-macro}
+
+\begin{document}
+
+\title{Intermediate OpenMP}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Schedule Clause}
+
+\begin{frame}
+  \frametitle{Schedule Clause} 
+  \begin{itemize}
+    \item A schedule clause specifies a scheduling policy for
+      distributing loop iterations to threads for a {\tt parallel for}
+      pragma.
+  \end{itemize}
+  \prototype{schedule.h}{}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Schedule Clause} 
+  \begin{description} 
+  \item [policy] The scheduling policy for distributing iterations to
+    threads.
+  \item [chunk] The basic unit number of iterations for scheduling.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Scheduling Policy} OpenMP has the following scheduling
+  policies for a {\tt parallel for} pragma.
+  \begin{description}
+  \item [static] A static round-robin policy.
+  \item [dynamic] When a thread finishes it asks for more, and the
+    chunk size is fixed.
+  \item [guided] When a thread finishes it asks for more, and the
+    chunk size decreases exponentially, and will not be smaller than
+    the chunk size.
+  \item [runtime] The policy is determined by an environment variable
+    {\tt OMP\_SCHEDULE} or calling a function {\tt omp\_set\_policy}.
+  \item [auto] This policy selects a scheduling automatically.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Chunk Size}
+  \begin{itemize}
+  \item The chunk corresponds to the {\em granularity} in the
+    introductory part of this course.
+  \item If the granularity is large, the scheduling overhead becomes
+    smaller, but it is more likely to have uneven workload distribution.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Dicsussion}
+\begin{itemize}
+\item Find out the default policy and chunk size based on the
+  observation fromt the previous ``Basic OpenMP Programming'' lecture.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Static Policy}
+
+\begin{frame}
+  \frametitle{Static Policy}
+  \begin{itemize}
+  \item The static policy distributes the iterations in a round-robin
+    fashion.
+  \item This is the default policy.
+  \item A thread is given a chunk size of iterations, then the next
+    threads is given the same amount of iterations.
+  \item Repeat this process until all iterations are distributed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Static Policy Example}
+  \begin{itemize}
+  \item In the following example we distribute $n$ iterations among $t$
+    threads under {\tt schedule(static, 4)} policy.
+  \item The $n$ and $t$ are given as command line arguments.
+  \item We put a {\tt sleep(i)} to simulate the amount of work, where
+    {\tt i} is the loop index.
+  \item We use a variable {\tt elapsedTime} to keep track (roughly)
+    the amount of time each thread runs.
+  \end{itemize}
+\end{frame}
+
+\programlistingtwoslides{for-static-chunk-4.c}{Set chunk size to 4}{\footnotesize}{header}{main}{end}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt for-static-chunk-4-omp} program with 16 iterations
+    on 4 threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe how the iterations are distributed among the threads.
+  \item Is the work evenly distributed? Observe the elapsedTime and give
+    your conclusion.
+  \item How to improve the workload distribution?
+  \end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}
+  \frametitle{Static Policy Example}
+  \begin{itemize}
+  \item In the previous example the threads with higher indices do
+    more work, and the workload is not balanced among threads.
+  \item One simple way to reduce work imbalance is to reduce the chunk
+    size, so that the heavy iterations are more evenly distributed.
+  \item We try chunk size 1 and observe the results.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{for-static-chunk-1.c}{Set chunk size to 1}{\footnotesize}{loop}{loopend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt for-static-chunk-1-omp} program with 16 iterations
+    on 4 threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe how the iterations are distributed among the threads.
+  \item Is the work more evenly distributed than the previous example?
+    Observe the elapsedTime and give your conclusion.
+  \item How to further improve the workload distribution?
+  \end{itemize}
+\end{frame}
+
+\subsection{Dynamic Policy}
+
+\begin{frame}
+  \frametitle{Workload Imbalance}
+  \begin{itemize}
+  \item In the previous example the threads with higher indices do
+    more work, and the workload is not balanced among threads.
+  \item Even though we reduce the chunk size to 1, the last thread still
+    has a much heavier workload than the first one.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dynamic Policy}
+  \begin{itemize}
+  \item The dynamic policy dictates that when a thread finishes its
+    work it asks for more, and the chunk size is fixed.
+  \item The work is in a {\em work pool} -- the work is put into a
+    pool and any idle worker can take work from it.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{for-dynamic-chunk-1.c}{Set scheduling to dynamic}{\footnotesize}{loop}{loopend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt for-dynamic-chunk-1-omp} program with 16 iterations
+    on 4 threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe how the iterations are distributed among the threads.
+  \item Is the work more evenly distributed than the previous example?
+    Observe the elapsedTime and give your conclusion.
+  \item How to further improve the workload distribution?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Workload Imbalance}
+  \begin{itemize}
+  \item In the previous example we run the iterations in ascending
+    workload order, that is, we run the heaviest workload {\em last}.
+  \item That means even if the workload is very balanced all the way to
+    the end, the last work may cause all threads to wait for the last
+    thread to finish.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Descending Workload Order}
+  \begin{itemize}
+  \item In order to avoid this problem we will run the iterations in
+    {\em descending} workload order, so that the dynamic policy might
+    have a better change to balance the workload.
+  \item We can do this because this is a {\em parallel for} -- the
+    semantic explicitly demands that all iterations are independent.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{for-dynamic-chunk-1-reverse.c}{Descending workload order}{\footnotesize}{loop}{loopend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt for-dynamic-chunk-1-reverse-omp} program with 16
+    iterations on 4 threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe how the iterations are distributed among the threads.
+  \item Is the work more evenly distributed than the previous example?
+    Observe the elapsedTime and give your conclusion.
+  \end{itemize}
+\end{frame}
+
+\subsection{Guided Policy}
+
+
+\begin{frame}
+  \frametitle{Guided Policy}
+  \begin{itemize}
+  \item The {\em guided policy} dictates that when a thread finishes
+    its work it asks for more, and the chunk size {\em decreases}
+    exponentially, and will not be smaller than the chunk size.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rationals}
+  \begin{itemize}
+  \item Initial large chunk size can reduce the overheads in scheduling.
+  \item Later smaller chunk size can reduce the workload imbalance.
+  \item In a sense this is similar to the descending workload order --
+    the larger work is given out first because of large chunk size, and
+    smaller work is given out later.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Comparison}
+  \begin{itemize}
+  \item We compare two policies -- (dynamic, 1) and (guided, 1) on
+    ascending workload order.
+  \item The idea is that by combining the small workload at the
+    beginning, we will have a better distribution.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{for-dynamic-chunk-1.c}{Dynamic policy for ascending workload order}{\footnotesize}{loop}{loopend}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{for-guided-chunk-1.c}{Guided policy for ascending workload order}{\footnotesize}{loop}{loopend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt for-dynamic-chunk-1-omp} program with 32
+    iterations on 4 threads.
+  \item Run the {\tt for-guided-chunk-1-omp} program with 32
+    iterations on 4 threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe how the iterations are distributed among the threads.
+  \item Is the work more evenly distributed than the previous example?
+    Observe the elapsedTime and give your conclusion.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Worsen the Case}
+  \begin{itemize}
+  \item To make the matter worse, we decide to run the guided policy on
+    a descending workload with chunk size 1.
+  \item We compare two policies -- (dynamic, 1) and (guided, 1) on
+    ascending workload order.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{for-dynamic-chunk-1-reverse.c}{Dynamic policy for descending workload order}{\footnotesize}{loop}{loopend}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{for-guided-chunk-1-reverse.c}{Guided policy for descending workload order}{\footnotesize}{loop}{loopend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt for-dynamic-chunk-1-reverse-omp} program with 32
+    iterations on 4 threads.
+  \item Run the {\tt for-guided-chunk-1-reverse-omp} program with 32
+    iterations on 4 threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe how the iterations are distributed among the threads.
+  \item Is the work more evenly distributed than the previous example?
+    Observe the elapsedTime and give your conclusion.
+  \end{itemize}
+\end{frame}
+
+\subsection{Runtime Policy}
+
+\begin{frame}
+  \frametitle{Runtime Policy}
+  \begin{itemize}
+  \item Call the function {\tt omp\_set\_schedule} to determine scheduling
+    policy.
+  \item We try static, dynamic, guided and auto. 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Flexibility}
+  \begin{itemize}
+  \item We will read the policy as an integer as the fourth command line
+    argument.
+  \item We will read the chunk size as an integer as the fifth command
+    line argument.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{omp_set_schedule.h}{\footnotesize}
+  \begin{description}
+  \item [kind] for the scheduling policy.
+  \item [modifier] for the chunk size.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{}
+  \begin{itemize}
+  \item omp\_sched\_static (integer 1) for static
+  \item omp\_sched\_dynamic (integer 2) for dynamic
+  \item omp\_sched\_guided (integer 3) for guided
+  \item omp\_sched\_auto (integer 4) for auto
+  \end{itemize}
+\end{frame}
+
+\programlistingtwoslides{for-runtime.c}{Runtime policy for ascending workload order}{\footnotesize}{main}{loop}{end}
+
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt for-runtime-omp} program with 16 iterations on 4
+    threads, under various combinations of policy and chunk sizes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe how the iterations are distributed among the threads
+    when the policy is auto.
+  \item Which policy distributes workload more evenly than others?
+    Observe the elapsedTime and give your conclusion.
+  \end{itemize}
+\end{frame}
+
+\section{Measure Time}
+
+\begin{frame}
+  \prototype{omp_get_wtime.h}
+  \begin{itemize}
+  \item Return the current time.
+  \item Can measure the length of a window by two consecutive calls.
+  \end{itemize}
+\end{frame}
+
+\section{Parallel Sections}
+
+\begin{frame}
+  \frametitle{Parallel Sections}
+  \begin{itemize}
+  \item Want to run a set of computations in parallel, e.g.,
+    initializing two matrices {\tt a} and {\tt b}.
+  \item Can have a thread to initialize {\tt a} and another thread for
+    {\tt b}.
+  \item Use parallel sections pragma.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallel Sections}
+  \prototype{omp_parallel_section.h}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Naive Parallelization}
+  \begin{itemize}
+  \item A parallel program initializes two matrices {\tt a} and {\tt
+    b} using {\tt \#pragma omp parallel} sections.
+  \item The sizes of both matrices are 8192 by 8192.
+  \item We use {\tt omp\_get\_wtime} to measure time.
+  \item Finally we check for correctness of the program by
+    assertions.
+  \end{itemize}
+\end{frame}
+
+\programlistingthreeslides{2loops.c}{}{\footnotesize}{header}{sections}{sectionsend}{end}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt 2loops-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Does this parallel program correctly initialize the matrices?
+    What could be the reason if it does not?
+  \item Can you conclude which thread will run which section?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Index Variables}
+  \begin{itemize}
+  \item The problem with the previous program is that two threads
+    running two sections share the index variables {\tt i} and {\tt
+      j}.
+  \item There are various ways to fix the problem, and we will use
+    the most intuitive one -- by declaring the index variables
+    within the initialization part of for loop, as c99-style syntax.
+  \end{itemize}
+\end{frame}
+
+\programlistingthreeslides{2loops-stdc99.c}{}{\footnotesize}{header}{sections}{sectionsend}{end}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt 2loops-stdc99-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Does this parallel program correctly initialize the matrices?
+    How do you know?
+  \item Can you conclude which thread will run which section?
+  \end{itemize}
+\end{frame}
+
+\section{Parallel Directive}
+
+\begin{frame}
+  \frametitle{{\tt parallel} Revisited}
+  \begin{itemize}
+  \item We have discussed {\tt parallel sections} and {\tt parallel for}
+    directives, but in two separate contexts.
+  \item Now we want to combine the idea and describe the true meaning of
+    {\tt parallel}, which is to ``run the following statement with
+    multiple threads''.
+  \item If then we encounter a {\tt sections}, then we have a {\tt
+    parallel sections}.
+  \item If then we encounter a {\tt for}, then we have a {\tt parallel
+    for}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt parallel}
+  \prototype{omp_parallel.h}
+  \begin{itemize}
+  \item Run the following statement with multiple threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{{\tt parallel} Examples}
+  \programlisting{parallel-sections.c}{An Example}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{{\tt parallel} Examples}
+  \programlisting{parallel-sections-wrong.c}{A Wrong Example}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compile Error}
+  \begin{itemize}
+  \item The previous code will not compile because a {\tt section} must
+    be within a {\tt sections}.
+  \item Unfortunately the effect of an {\tt sections} is only for the
+    following statement, so we need to use compound statement to include
+    {\em all} {\em section} statements.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{{\tt parallel} Examples}
+  \programlisting{parallel-1for.c}{An Examples}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multiply and Divide}
+  \begin{itemize}
+  \item These two are equivalent.
+  \item One can think of the {\tt parallel} is to spawn multiple threads, and the {\tt for} is to divide work.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{{\tt parallel} Examples}
+  \programlisting{parallel-2for.c}{An Examples}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multiply and Divide}
+  \begin{itemize}
+  \item These two are also equivalent.
+  \item One can think of the {\tt parallel} is to spawn multiple
+    threads, and the first {\tt for} is to divide the work, and the
+    second {\tt for} is to divide the work {\em again}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{{\tt parallel} Examples}
+  \programlisting{parallel-2for-wrong.c}{An Wrong Examples}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multiply and Divide}
+  \begin{itemize}
+  \item These two are {\em not} equivalent.
+  \item One can think of the {\tt parallel} is to spawn multiple
+    threads, and the first {\tt for} is to divide the work.
+  \item Since the {\tt parallel} covers only one statement, now we
+    switch back to single thread.
+  \item The second {\tt for} has no multiple threads to divide the work!
+  \item Unlike the previous {\tt sections} problem, this will {\em not}
+    cause compile error and will simply degrade performance.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Both Section and For}
+  \begin{itemize}
+  \item Want to use both sections and for in {\tt 2loops-std99.c}
+  \item We already have a thread initializing {\tt a} and another
+    thread initializing {\tt b}.
+  \item Now we use {\tt parallel for} to parallel the asserts at the
+    end.
+  \end{itemize}
+\end{frame}
+
+\programlistingtwoslides{2loops-stdc99-both.c}{}{\scriptsize}{parallel sections}{parallelfor}{end}
+
+\begin{frame}
+\frametitle{Structure}
+\begin{itemize}
+\item {\tt parallel}
+\begin{itemize}
+\item {\tt sections}
+\begin{itemize}
+\item {\tt section}
+\item {\tt section}
+\end{itemize}
+\end{itemize}
+\item {\tt parallel}
+\begin{itemize}
+\item {\tt for}
+\item {\tt for}
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Meaning}
+\begin{itemize}
+\item {\tt parallel} Go multithreading
+\begin{itemize} 
+\item {\tt sections} Divide the work
+\begin{itemize}
+\item {\tt section} 
+\item {\tt section}
+\end{itemize}
+\end{itemize}
+\item {\tt parallel} Go multithreading
+\begin{itemize}
+\item {\tt for}  Divide the work
+\item {\tt for}  Divide the work
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt 2loops-stdc99-both-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Observe the thread indices reported by {\tt
+    2loops-stdc99-both-omp} and confirm that multi-threading is
+    active.
+  \item Can you conclude which thread will run which section?
+  \item Can you conclude which thread will run which loop?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{One Statement after {\tt parallel}}
+  \begin{itemize}
+  \item What will happen if we do {\em not} place everything as a
+    compound statement after {\tt parallel}?
+  \end{itemize}
+\end{frame}
+
+\programlistingtwoslides{2loops-stdc99-both-wrong.c}{}{\scriptsize}{parallelsections}{parallelfor}{end}
+
+
+\begin{frame}
+\frametitle{Meaning}
+\begin{itemize}
+\item {\tt parallel} Go multithreading
+\begin{itemize} 
+\item {\tt sections} Divide the work
+\begin{itemize}
+\item {\tt section} 
+\item {\tt section}
+\end{itemize}
+\end{itemize}
+\item {\tt parallel} Go multithreading
+\begin{itemize}
+\item {\tt for}  Divide the work
+\end{itemize}
+\item {\tt for}  Divide the work???
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Problem}
+\begin{itemize}
+\item Removing the compound statement of the first {\tt parallel} will
+  not cause any problem because the {\tt sections} must use a compound
+  statement to include two {\tt section}.  Otherwise it will not
+  compile.
+\item Removing the compound statement of the first {\tt parallel}
+  cause performance problem because the second {\tt parallel} does not
+  cover the second {\tt for}, so it will {\em not} go multithreading.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt 2loops-stdc99-both-wrong-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Observe the thread indices reported by {\tt
+    2loops-stdc99-both-wrong-omp} and confirm that multi-threading is
+    {\em not active} in the last loop.
+  \item Can you conclude which thread will run which section?
+  \item Can you conclude which thread will run which loop?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{One {\tt parallel}}
+  \begin{itemize}
+  \item Now we put everything into a single {\tt parallel}.
+  \end{itemize}
+\end{frame}
+
+\programlistingtwoslides{2loops-stdc99-combined.c}{}{\scriptsize}{parallelsections}{parallelfor}{end}
+
+
+\begin{frame}
+\frametitle{Structure}
+\begin{itemize}
+\item {\tt parallel} Go multithreading
+  \begin{itemize}
+  \item {\tt sections} Divide the work
+    \begin{itemize}
+    \item {\tt section}
+    \item {\tt section}
+    \end{itemize}
+  \item {\tt for} Divide the work
+  \item {\tt for} Divide the work
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Efficiency}
+\begin{itemize}
+\item The program will go multi-threading only {\em once}.
+\item This removes the overheads in creating and destroying the
+  threads.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt 2loops-stdc99-combine-omp} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Observe the thread indices reported by {\tt
+    2loops-stdc99-combined-omp} and confirm that multi-threading is
+    active everywhere.
+  \item Can you conclude which thread will run which section?
+  \item Can you conclude which thread will run which loop?
+  \end{itemize}
+\end{frame}
+
+
+%% \begin{frame}
+%%   \frametitle{Prime Number Counting}
+%%   \begin{itemize}
+%%   \item We want to count the number of prime numbers.
+%%   \item We start with an array of numbers, and assuming that every
+%%     number is a prime number.
+%%   \item We start with the smallest prime number in the array, and mark
+%%     {\em every} multiple of it as {\em composite} (non-prime number).
+%%   \item We repeat this process until no new prime numbers are found.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \programlistingthreeslides{prime.c}{}{\small}{header}{main}{count}{end}
+
+%% \begin{frame}
+%% \frametitle{Variables}
+%% \begin{itemize}
+%% \item Array {\tt notPrime} keeps track of the status of a number.  If
+%%   we know a number {\tt i} is {\em not} prime, we set {\tt
+%%     notPrime[i]} to 1.
+%% \item The prime numbers will be kept in another array {\tt primes}.
+%% \item The range to be tested ({\tt n}) is given as a command line argument.
+%% \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%% \frametitle{Try All Possibilities}
+%% \begin{itemize}
+%% \item Try all numbers from 2 to $\sqrt{n}$.
+%% \item If i is a prime number, mark the all multiple of {\tt i} as {\em
+%%   not} prime.
+%% \item It is obvious that the first for loop {\em cannot} be
+%%   parallelized because of dependency, so we parallelize the second for
+%%   loop.
+%% \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%% \frametitle{Reduction}
+%% \begin{itemize}
+%% \item The number of prime number can be obtained by counting the
+%%   number of zeros in array {\tt notPrime}.
+%% \item We use a reduction on the variable {\tt nPrime} to simplify the
+%%   process.
+%% \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Demonstration}
+%%   \begin{itemize}
+%%   \item Run the {\tt prime-uni} program.
+%%   \item Run the {\tt prime-omp} program.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Discussion}
+%%   \begin{itemize}
+%%   \item Compute the speedup of the previous prime counting program.
+%%   \item Is there any optimization that can improve the performance?
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%% \frametitle{Efficiency}
+%% \begin{itemize}
+%% \item The previous program parallelized the inner for loop only.
+%% \item The previous program will go through multi-threading every time a
+%%   prime number is found.
+%% \item This incurs overheads of creating and destroying the threads.
+%% \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%% \frametitle{Spawn and Join}
+%% \centerline{\pgfimage[width=1.0\textwidth]{threads-many-spawn-join.pdf}}
+%% \begin{itemize}
+%% \item Single thread for the outer loop.
+%% \item Multi-thread for the inner loop.
+%% \end{itemize}
+%% \end{frame}
+
+
+%% \begin{frame}
+%% \frametitle{{\tt parallel} Once}
+%% \begin{itemize}
+%% \item We would like to avoid the overheads in creating and destroying
+%%   threads, so we put a {\tt parallel} in front of the first for loop.
+%% \item The {\em entire} two level loop is run by all threads.
+%% \item Then we share the workload of the second for loop to improve
+%%   performance,  since  most work is done in the second loop.
+%% \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%% \programlistingfirst{prime-inner.c}{}{\small}{main}{count}
+%% \end{frame}
+
+%% \begin{frame}
+%% \frametitle{Efficient}
+%% \begin{itemize}
+%% \item All threads run the first loop, and share the second loop.
+%% \item It is OK for all threads to run the first for loop
+%%   simultaneously, since they will synchronize at every second loop.
+%% \item Index variables {\tt i} and {\tt j} are private.
+%% \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%% \frametitle{Spawn and Join}
+%% \centerline{\pgfimage[width=1.0\textwidth]{threads-one-spawn-join.pdf}}
+%% \begin{itemize}
+%% \item Multi-thread for both outer and inner loops.
+%% \item The work in the outer loop is duplicated, but it is more
+%%   efficient than creating and joining threads.
+%% \end{itemize}
+%% \end{frame}
+
+
+
+%% \begin{frame}
+%%   \frametitle{Demonstration}
+%%   \begin{itemize}
+%%   \item Run the {\tt prime-uni} program.
+%%   \item Run the {\tt prime-omp} program.
+%%   \item Run the {\tt prime-inner-omp} program.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Discussion}
+%%   \begin{itemize}
+%%   \item Compare the execution time of all three prime counting
+%%     programs.
+%%   \item Is there any further optimization that can improve the
+%%     performance?
+%%   \end{itemize}
+%% \end{frame}
+
+
+
+
+%% \begin{frame}
+%%   \frametitle{Traveling Salesman} Modify your $N$-queen program into
+%%   a sequential traveling salesman program and submit it.
+%%   \begin{itemize}
+%%   \item The distance between two points are ${dx}^2 + {dy}^2$ (no
+%%     sqrt!).
+%%   \item The traveling salesman does not need to go back to the city
+%%     where he started, so the solution is a {\em permutation} of all
+%%     cities.
+%%   \item Read the input form stdin.  The first line is the number of
+%%     points and each line after has the $x$ and $y$ coordinates of a
+%%     city.
+%%   \item The output is the minimum total distance.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Cuts} 
+%%   \begin{itemize}
+%%   \item Add cuts into your traveling salesman program and submit it.
+%%   \item What concept do you need in order to maintain the minimum
+%%     solution so far?
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Parallel Traveling Salesman} Now parallelize your
+%%   traveling salesman program.
+%%   \begin{itemize}
+%%   \item What concept do you need in order to maintain the minimum
+%%     solution so far? 
+%%   \item Do you need to protect this variable since now we may have
+%%     multiple thread accessing it? 
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Timing} 
+%%   \begin{itemize}
+%%   \item Use {\tt omp\_get\_wtime()} to measure the time for each thread. 
+%%   \item Do you think it is necessary to load balance your code for
+%%     different threads in this case?
+%%   \item Time the parallel program with {\tt guided} and {\tt
+%%     dynamic} policies.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Game of Life} Submit a game of life program.
+%%   \begin{itemize}
+%%   \item A dead cell with exactly {\em three} live neighbors becomes
+%%     a live cell. 
+%%   \item A live cell with two or three live neighbors stays
+%%     live, otherwise it become dead. 
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Input and Output}
+%%   \begin{itemize}
+%%   \item The first line of the input is the size of the board
+%%     $N$. 
+%%   \item The next $N$ lines has $N$ integers each.  A $0$ is a dead
+%%     cell and and a $1$ is a live cell.  $N \leq 3000$.
+%%   \item Output the result after each iteration.
+%%   \item Print the answer just like in the input.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Parallel Game of Life} Submit a parallel version of
+%%   life. 
+%%   \begin{itemize}
+%%   \item Compare the performance with the sequential version. 
+%%   \item You may need to make the array {\em very} big in order to
+%%     see the performance improvement.
+%%   \item Do you think the dynamic or guided scheduling will help
+%%     performance?  Justify your answer by both reasoning and
+%%     experiments.
+%%   \end{itemize}
+%% \end{frame}
+
+
+%% \begin{frame}
+%%   \frametitle{Timing} 
+%%   \prototype{omp_get_wtime}{Measure the elapsed time in second}
+%%   \begin{itemize}
+%%   \item You need to make two calls and calculate the difference between
+%%     the return values.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Compute Square Roots}
+%%   Now write a program that computes the square root from 0 to
+%%   999999999 and assign the value to a variable v, and observe its
+%%   timing with {\tt omp\_get\_wtime}.
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Timing Comparison}
+%%   Now write two parallel versions of the previous program.  Both
+%%   programs use {\tt parallel for} pragma.  Compare the timing of these
+%%   two programs.
+%%   \begin{itemize}
+%%   \item Declare {\tt v} as private.
+%%   \item Declare {\tt v} as shared.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{firstprivate and lastprivate}
+%%   \prototype{firstlastprivate}{{\tt firstprivate} and {\tt lastprivate}}
+%%   \begin{itemize}
+%%   \item A {\tt firstprivate} clause causes the private variables of all
+%%     threads to inherit an initial value from the master thread.
+%%   \item A {\tt lastprivate} clause causes the master thread to receive
+%%     the value of a variable from the last thread.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{An Example}
+%%   \programlistingoption{firstlast}{{\tt firstprivate} and {\tt lastprivate} example}{basicstyle={\tt \small}}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Last Thread}
+%%   \begin{itemize}
+%%   \item Submit the private {\tt v} version you wrote previously. 
+%%   \item For ease of grading we only print the sum of square roots from
+%%     the last thread.  The output format is {\tt \%lf}.
+%%   \item We can initialize the global {\tt v} to 0.0, and ``carry'' the
+%%     initialization to every thread by {\tt firstprivate}
+%%   \item The master thread can receive the final result of the last
+%%     thread by {\tt lastprivate}.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Compute $\pi$} 
+%%   \begin{itemize}
+%%   \item Write a sequential program to calculate $\pi$ by integrating
+%%     $f(x) = {4 \over {1 + x^2}}$, where $x$ is from 0 to 1.  
+%%   \item Divide the interval into $N$ pieces, and assume the area in each
+%%     interval is a trapezoid, then sum the area of these $N$ trapezoids
+%%     into a variable {\tt area}.  Note that in each interval you only
+%%     need to compute $4 \over {1 + x^2}$ once (where is it?).
+%%   \item We assume $N$ to be 1000000. The output format is {\tt \%.10lf}.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \programlisting{pi-loop}{Compute $\pi$}
+%% \end{frame}
+%% \begin{frame}
+%%   \frametitle{Parallel Version} 
+%%   \begin{itemize}
+%%   \item Now write a parallel version by only adding {\tt parallel for}
+%%     pragma.  Remember to declare {\tt x} as private.
+%%   \item Make sure that the answer is {\em incorrect}.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Parallel Version} 
+%%   \begin{itemize}
+%%   \item Now write a parallel version by only adding {\tt parallel for}
+%%     pragma.
+%%   \item Make sure that the answer is {\em incorrect}.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} 
+%%   \prototype{critical}{Critical pragma}
+%%   \begin{itemize}
+%%   \item When a thread enters the critical section, the others could
+%%     not.
+%%   \item The {\tt area} is {\em protected} by a critical section.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} Now write two parallel versions using
+%%   critical section 
+%%   \begin{itemize}
+%%   \item The critical section covers the entire loop body to avoid
+%%     race condition.
+%%   \item The critical section covers the addition to the area to
+%%     avoid race condition.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} 
+%%   \begin{itemize}
+%%   \item Compare the timing between the two parallel versions you
+%%     just wrote.  Which one is more efficient?  Why?
+%%   \item Submit the one that is more efficient?
+%%   \end{itemize}
+%% \end{frame}
+
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} Now submit a parallel $\pi$ program
+%%   using reduction and compare the timing among the three parallel
+%%   versions.
+%%   \begin{itemize} 
+%%   \item The big critical section
+%%   \item The small critical section
+%%   \item The reduction
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} 
+%%   \begin{itemize} 
+%%   \item Time the implementation using reduction with different
+%%     number of threads.
+%%   \item Report the speedup you observe.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} 
+%%   \begin{itemize} 
+%%   \item Time the implementation using reduction with different
+%%     number of threads.
+%%   \item Report the speedup you observe.
+%%   \end{itemize}
+%% \end{frame}
+
+%% \begin{frame}
+%%   \frametitle{Critical pragma} 
+%%   \begin{itemize} 
+%%   \item Time the implementation using reduction with different
+%%     number of threads.
+%%   \item Report the speedup you observe.
+%%   \end{itemize}
+%% \end{frame}
+
+%\end{CJK}
+\end{document}
