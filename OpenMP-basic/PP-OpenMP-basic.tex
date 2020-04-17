@@ -1,0 +1,1224 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{pgf}
+
+\input{../slide-macro}
+
+\begin{document}
+
+\title{Basic OpenMP}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\section{Introduction} 
+
+\begin{frame}
+\frametitle{OpenMP}
+\begin{itemize}
+\item OpenMP~\footnote{\url{http://openmp.org/}} (Open
+  Multiprocessing) is an API that supports multi-platform shared
+  memory multiprocessing programming in C, C++, and Fortran, on most
+  processor architectures and operating systems, including Solaris,
+  AIX, HP-UX, GNU/Linux, Mac OS X, and Windows platforms.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{OpenMP} 
+\begin{itemize}
+\item Implemented as compiler preprocessor directive.
+\begin{itemize}
+\item All OpenMP constructs can be safely ignored without affecting
+  the semantic of the original program.
+\end{itemize}
+\item Easy to understand and easy to use.
+\begin{itemize}
+\item OpenMP is at a much high level than Pthread and handles all
+  parallelization details.
+\end{itemize}
+\item Promote ``incremental'' parallelism.
+\begin{itemize}
+\item One can start with a working sequential program and ``upgrade''
+  it to a parallel program with minimum efforts.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hello, world}
+\begin{itemize}
+\item Just like the case in Pthread, we start with a sequential
+  program that prints hello world.
+\item Unlike the case in Pthread, we will only print it once.
+\end{itemize}
+\end{frame}
+
+% hello
+
+\begin{frame}
+\frametitle{Hello World} 
+\programlisting{hello}{Hello, world!}
+\end{frame}
+
+\section{OpenMP Threads}
+
+\subsection{\tt \#pragma omp parallel}
+
+\begin{frame}
+\frametitle{\tt \#pragma omp} 
+\begin{itemize}
+\item {\tt \#pragma omp} is a preprocessor directive.
+\item All OpenMP directives start with {\tt \#pragma omp}.
+\item The effect of a OpenMP directive only applies to the {\em next}
+  statement.
+\item This directive instructs the compiler to generate OpenMP
+  parallel code if it supports OpenMP.
+\item This directive will be ignored by the compiler if OpenMP is not
+  supported.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt \#pragma omp parallel} 
+\begin{itemize}
+\item When we use gcc compilation option {\tt -fopenmp} to compile the
+  program, {\tt \#pragma omp parallel} will instructs the compiler to
+  generate code to run the statement on {\em every} core.
+\begin{itemize}
+\item For example, if the CPU has 4 cores, then {\tt \#pragma omp
+  parallel} will spawn 4 threads, and each of them runs {\tt printf}
+  on a core.
+\end{itemize}
+\item If we do not use {\tt -fopenmp} then gcc will just generate a
+  sequential code.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hello World} 
+\filelisting{compile.sh}{compilation}
+\end{frame}
+
+\begin{frame}
+\frametitle{OpenMP} 
+\begin{itemize}
+\item The compiler can generate both the sequential and parallel
+  code depending on the compilation flag.
+\item Incremental parallelism by having a working sequential code
+  first, then try to parallelize it.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the sequential hello-uni program.
+\item Run the parallel hello-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+\item Implement a program that prints 10 lines of ``hello'' with
+  OpenMP directive.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Can you tell how many cores are there in your computer by running
+  a OpenMP program?
+\end{itemize}
+\end{frame}
+
+\subsection{\tt omp\_get\_num\_procs}
+
+\begin{frame}
+\frametitle{\tt omp\_get\_num\_procs}
+\begin{itemize}
+\item Sometimes it is very informative to know the number of cores
+  (processing units) in the system.
+\item We can call {\tt omp\_get\_num\_procs} to know this information.
+\item Note that this is a function, not a compiler directive,
+  therefore you need to include {\tt <omp.h>} header file so that the
+  compiler can check the prototype.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Number of Processors} 
+\prototype{omp_get_num_procs}{Get the number of processors}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt omp\_get\_num\_threads}
+\begin{itemize}
+\item It is very informative to know the number of threads in the
+  system.
+\item We can call {\tt omp\_get\_num\_threads} to know this
+  information.
+\item Note that this is a function, not a compiler directive.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Number of Threads}
+\prototype{omp_get_num_threads}{Get the number of threads}
+\begin{itemize}
+\item Add this function to the hello world to know the number of
+  threads running in the system.
+\item Compare the number with the number of processors.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Get the Number}
+\begin{itemize}
+\item Now we would like to get the number of threads and cores of our
+  system.
+\item We simply add the function calls to {\tt hello.c}.
+\item Note that we need to include {\tt <omp.h>} header so that the
+  compiler can check the function prototype.
+\end{itemize}
+\end{frame}
+
+% hello-get-num
+
+\begin{frame}
+\frametitle{Hello World} \programlistingoption{hello-get-num}{Hello,
+  world!}{basicstyle={\tt
+    \footnotesize},emph={omp_get_num_threads,omp_get_num_procs,omp}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the parallel hello-get-num-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item How many threads are reported?
+\item How many cores are reported?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Problem}
+\begin{itemize}
+\item Now we would like to get the correct number of threads.
+\item The problem with the previous program is that the effect of the
+  directive applies only to the next statement, i.e., the printf for
+  ``hello, world''.
+\item As a result when we call {\tt omp\_get\_num\_threads}, there is
+  only one thread left.
+\item To solve this problem we use a {\em compound} statement to
+  enclose {\em everything} that we would like to run in parallel.
+\end{itemize}
+\end{frame}
+
+% hello-get-num-all
+
+\begin{frame}
+\frametitle{Hello World}
+\programlistingoption{hello-get-num-all}{Hello,
+  world!}{basicstyle={\tt
+    \scriptsize},emph={omp_get_num_threads,omp_get_num_procs}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Compound Statement}
+\begin{itemize}
+\item The compound statement has three {\tt printf}.
+\item Each of the threads created by the {\tt parallel} directive will
+  run all these three statements.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the parallel hello-get-num-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item How many threads are reported?
+\item How many cores are reported?
+\end{itemize}
+\end{frame}
+
+\subsection{\tt omp\_set\_num\_thread}
+
+\begin{frame}
+\frametitle{In Control}
+\begin{itemize}
+\item Sometimes it is quite useful to set the number of threads,
+  especially after we know the number of cores.
+\item The default number of threads is the number of cores, which is
+  not necessarily suitable.
+\item We can call {\tt omp\_set\_thread\_num} to set the number of
+  threads we want to create.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Number of Threads}
+\prototype{omp_set_num_threads}{Set the number of threads}
+\begin{itemize}
+\item Set the number of threads.
+\end{itemize}
+\end{frame}
+
+% hello-get-num-all-set
+
+\begin{frame}
+\frametitle{Hello World}
+\programlistingoption{hello-get-num-all-set}{Hello,
+  world!}{basicstyle={\tt
+    \scriptsize},emph={omp_set_num_threads}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Set the Number}
+\begin{itemize}
+\item The number of threads is given as the second argument from the
+  command line.
+\item Then the number of threads is used to call the {\tt
+  omp\_set\_num\_threads} function.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the parallel hello-get-num-set-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does these output follow any time constrain order?
+\end{itemize}
+\end{frame}
+
+\subsection{\tt omp\_get\_thread\_num}
+
+\begin{frame}
+\frametitle{Problem}
+\begin{itemize}
+\item We cannot identify the threads because their outputs are all the
+  same.
+\item It will be very useful that each thread can know its identity so
+  that they can work accordingly.
+\item A thread can call {\tt omp\_get\_thread\_num} to know its index.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Thread Number}
+\prototype{omp_get_thread_num}{Get thread number}
+\end{frame}
+
+% hello-get-num-all-set-show-id
+
+\begin{frame}
+\frametitle{Hello World}
+\programlistingoption{hello-get-num-all-set-show-id}{Hello,
+  world!}{basicstyle={\tt
+    \scriptsize},emph={omp_get_thread_num}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Get the Index}
+\begin{itemize}
+\item We print the index of a thread by calling {\tt
+  omp\_get\_thread\_num}
+\item After knowing the index a thread can do things accordingly.
+\item The thread number starts with 0.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the parallel hello-get-num-set-show-id-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does these output follow any time constrain order?
+\end{itemize}
+\end{frame}
+
+\section{Loop Partition}
+
+\subsection{\tt parallel for}
+
+\begin{frame}
+\frametitle{Loop}
+\begin{itemize}
+\item Now we are ready to partition a loop.
+\item Previously we used {\tt parallel} directive to instruct all
+  threads to do the {\em same} thing.
+\item Now er use {\tt parallel for} directive to ask all threads to
+  {\em share} the workload of a for loop.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{A Parallel For Loop}
+\pragma{parallel_for}{Parallel for pragma}
+\end{frame}
+
+\begin{frame}
+\frametitle{A Parallel For Loop}
+\frametitle{Semantics}
+\begin{itemize}
+\item {\tt parallel for} means that the loop will be distributed among
+  all threads for execution.
+\item The OpenMP library takes care of all the threading details so
+  you do not have to.
+\item There are restrictions on the condition of the loop.  
+\begin{itemize}
+\item The loop iteration can be determined at the compile time.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Requirement}
+\begin{itemize}
+\item The initialization must be {\tt var = exp1}.
+\item The condition must be {\tt var cond exp2}.
+\item The increment must be:
+  \begin{itemize}
+  \item {\tt var++}, {\tt ++var}.
+  \item {\tt var--}, {\tt --var}.
+  \item {\tt var = var + exp3}, {\tt var = var - exp3}.
+  \item {\tt var += exp3}, {\tt var -= exp3}.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Steps}
+\begin{itemize}
+\item Get the number of threads from the second command line argument.
+\item Get the number of for loop iterations from the third command
+  line argument.
+\item Add the {\tt parallel for} pragma to the loop.
+\item That is it!
+\end{itemize}
+\end{frame}
+
+% for 
+
+\begin{frame}
+\frametitle{Loop} 
+\programlistingoption{for}{A for loop}{basicstyle={\tt
+    \scriptsize},emph={parallel,for}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Synchronization}
+\begin{itemize}
+\item Note that all threads, except the main thread, will only be
+  active during the loop.  
+\item All threads partitioning the loop will synchronize with each
+  other, i.e., do a barrier synchronization, before leaving the loop.
+\item This {\em join} is automatic and we do not need to program
+  anything.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the parallel for-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Observe the output of for-omp and describe the rule about which
+  thread executes which loop iteration.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{$n$ Queen with OpenMP}
+\begin{itemize}
+\item Now we want to parallelize the $n$-queen program previously
+  written for Pthread.
+\item We only need to parallel the loop in {\tt main}, in which each
+  iteration calls the {\tt queen} we wrote previously.
+\item We can write the sequential version first, then parallelize it
+  with OpenMP directives.
+\end{itemize}
+\end{frame}
+
+% queen
+
+\begin{frame}
+\frametitle{\tt Declaration} \programlistingoption{queen}{Declaration}{linerange={begin-ok},emph={n}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt ok} \programlistingoption{queen}{\tt
+  main}{linerange={ok-queen},emph={position},basicstyle={\tt \small}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt queen} \programlistingoption{queen}{\tt
+  main}{linerange={queen-main},emph={position,next}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main} \programlistingoption{queen}{\tt
+  main}{linerange={main-end},emph={parallel,for,position},basicstyle={\tt \footnotesize}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\begin{itemize}
+\item We only need to parallel the loop in {\tt main} by adding
+ {\tt parallel for} directive.
+\item Each thread will call {\tt queen} with {\tt position[0]} set to
+  different {\tt i}, as we observed in the previous loop partition
+  example.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the sequential queen-uni program.
+\item Run and time the parallel queen-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\end{itemize}
+\end{frame}
+
+% queen-private
+
+\subsection{\tt private}
+
+\begin{frame}
+\frametitle{$n$ Queen with OpenMP}
+\begin{itemize}
+\item The problem with the previous program is that all threads share
+  the {\tt position} array.
+\item We now want to ask OpenMP to create a {\em private} variable of
+  {\tt position} in each thread, so they can produce the correct
+  answer.
+\item We simply add a {\tt private} clause to do this.  
+\item Note that the private variable has nothing to do with the global
+  variable -- they are completely independent.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Private Clause}
+\prototype{private}{Private clause}
+\begin{itemize}
+\item A private clause is an optional component of a pragma.
+\item We can add this clause to a {\tt parallel for} pragma.
+\item Note that the initial value of the private variable position
+ has nothing to do with the global variable position.
+\end{itemize}
+\end{frame}
+
+% queen-private 
+
+\begin{frame}
+\frametitle{\tt main} \programlistingoption{queen-private}{\tt
+  main}{linerange={main-end},emph={private,position},basicstyle={\footnotesize \tt}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the sequential queen-private-uni program.
+\item Run and time the parallel queen-private-omp program.
+\item Calculate the speedup.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implementation}
+\begin{itemize}
+\item Implement a program that solves the $n$ queen problem with
+  OpenMP directive.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\end{itemize}
+\end{frame}
+
+% for-private
+
+\begin{frame}
+\frametitle{Private Variable}
+\begin{itemize}
+\item We use the following example to emphasize that a private
+  variable has nothing to do with the global variable.
+\item One can think of the private variable as a new variable declared
+  with the thread with the same name.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt parallel for} \programlistingoption{for-private}{\tt
+  main}{linerange={main-end},basicstyle={\tt \scriptsize},emph={private,v,101}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run for-private-omp and observe the output.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Independent variables}
+\begin{itemize}
+\item We can clearly see that the values of the private {\tt v} have
+  nothing to do with the value of the global {\tt v}.
+\item The value of the global {\tt v} is not affected by any
+  operations within the loop.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Private Variables}
+\centerline{\pgfimage[width=0.9\textwidth]{private.pdf}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Check queen-private.c and make sure that you understand that
+  even though the global position and private position are
+  independent, the code still works.
+\item What will happen if we declare {\tt position} {\em within} the
+  loop?
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Sum}
+\begin{itemize}
+\item We now want to compute the total number of solutions.
+\item We use a variable {\tt num} to store the number of solutions
+  from one iteration, and a variable {\tt numSolution} to store the
+  total number of solutions.
+\item The parallel for directive applies only to the for loop, so the
+  printf after the loop will only be run by the main thread.
+\end{itemize}
+\end{frame}
+
+% queen-private-sum
+
+\begin{frame}
+\frametitle{\tt main} \programlistingoption{queen-private-sum}{\tt
+  main}{linerange={loop-end},emph={num,numSolution},basicstyle={\scriptsize \tt}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the sequential queen-private-sum-uni program.
+\item Run the parallel queen-private-sum-omp program.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Problem}
+\begin{itemize}
+\item The problem with the previous program is that we forgot to
+  declare {\tt num} as private, so all threads use the same copy.
+\item We simply add {\tt num} to the private clause and fix the
+  problem.
+\item Note that the {\tt numSolution} needs to remain global since it
+  is the total number.
+\end{itemize}
+\end{frame}
+
+% queen-private-sum-num
+
+\begin{frame}
+\frametitle{\tt main} \programlistingoption{queen-private-sum-num}{\tt
+  main}{linerange={loop-end},emph={private,num},basicstyle={\footnotesize \tt}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the sequential queen-private-sum-uni program.
+\item Run and time the parallel queen-private-sum-omp program.
+\item Calculate the speedup.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\item Does the parallel program {\em always} produce correct answer?
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Problem}
+\begin{itemize}
+\item To illustrate that there is also a race condition in the
+  previous program we ``amplify'' it by adding to a global variable
+  {\tt numSolution}.
+\item Every time {\tt queen} finds a solution, it adds 1 to {\tt
+  numSolution}.
+\item Finally the main program prints {\tt numSolution}
+\end{itemize}
+\end{frame}
+
+% queen-private-sum-race
+
+\begin{frame}
+\frametitle{\tt Declaration} \programlistingoption{queen-private-sum-race}{\tt
+  main}{linerange={begin-ok},emph={numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt queen} \programlistingoption{queen-private-sum-race}{\tt
+  main}{linerange={queen-main},emph={numSolution}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main} \programlistingoption{queen-private-sum-race}{\tt
+  main}{linerange={loop-end},emph={numSolution},basicstyle={\tt \small}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the sequential queen-private-sum-uni program.
+\item Run the parallel queen-private-sum-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Problem}
+\begin{itemize}
+\item To avoid the extremely rare race condition in {\tt
+  queen-private-sum} we use an array {\tt num} to store the number of
+  solutions from each subtree.
+\item Later we sequentially sum the numbers in {\tt num} to get the
+  correct total number of solutions.
+\end{itemize}
+\end{frame}
+
+% queen-private-sum-array
+
+\begin{frame}
+\frametitle{\tt main} \programlistingoption{queen-private-sum-array}{\tt
+  main}{linerange={loop-end},emph={num,numSolution},basicstyle={\tt \footnotesize}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the sequential queen-private-sum-array-uni program.
+\item Run and time the parallel queen-private-sum-array-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\end{itemize}
+\end{frame}
+
+\subsection{\tt reduction}
+
+\begin{frame}
+\frametitle{Reduction}
+\begin{itemize}
+\item It is very common that we need to collect answers from all
+  threads and combine them.
+\item OpenMP provides a {\em simple} mechanism called reduction to
+  derive the final answer by combining many values into one.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Reduction Clause} \prototype{reduction}{Reduction
+    clause of a {\tt parallel for} pragma}
+  \begin{description}
+  \item[operation] Operation to be performed on the partial answers.
+  \item[variable] The partial answer the operation to be perform
+    on.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduction Operation} 
+  The reduction supports the following operations.
+  \begin{description}
+  \item [+] Sum
+  \item [*] Product
+  \item [\&] Bitwise and
+  \item [$|$] Bitwise or
+   % \item \verb+^+ Bitwise exclusive or
+  \item [\&\&] Logical and
+  \item [$||$] Logical or
+  \end{description}
+\end{frame}
+
+% queen-private-sum-reduction
+
+\begin{frame}
+\frametitle{\tt main}
+\programlistingoption{queen-private-sum-reduction}{\tt
+  main}{linerange={loop-end},emph={num,reduction,numSolution},basicstyle={\tt
+    \footnotesize}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Notes}
+\begin{itemize}
+\item The variable for reduction {\tt numSolution} is {\em private}.
+\item We want to compute the total number of solutions so we use {\tt
+  +} operator.
+\item The variable {\tt num} is declared within the loop so it is
+  private to its thread.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the sequential queen-private-sum-reduction-uni program.
+\item Run the parallel queen-private-sum-reduction-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\item Can you derive the characteristic of the operations supported by
+  reduction?  What do they have in common?
+\end{itemize}
+\end{frame}
+
+% firstprivate
+
+\subsection{\tt firstprivate}
+
+\begin{frame}
+\frametitle{Communication}
+\begin{itemize}
+\item Remember that the global variable and the private variables are
+  different things.
+\item In the previous program we initialize the global variable {\tt
+  numSolution} to 0, but how do all private variables {\tt
+  numSolution} knows this initial value???
+\item We need to concept of {\tt firstprivate}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt firstprivate}
+\begin{itemize}
+\item Usually the private and global variables are different things.
+\item Sometimes we want to ``pass'' the value of the global variable
+  to threads as the {\em initial} values of their private variables.
+\item We can use a {\tt firstprivate} clause to do this.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt firstprivate} \programlistingoption{for-private-first}{\tt
+  main}{linerange={main-end},basicstyle={\tt \scriptsize},emph={firstprivate}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt firstprivate}
+\begin{itemize}
+\item The first command line argument specifies the number of iterations.
+\item The second command line argument specifies the number of threads.
+\item The value of global {\tt v} is used to initialize the private
+  {\tt v} when the threads starts.
+\item Note that the initialization only happens when a thread starts,
+  not every loop iteration.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the loop-private-first-omp program with four threads and
+  eight iterations, and observe the output.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{First Private Variables}
+\centerline{\pgfimage[width=0.9\textwidth]{first-private.pdf}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Communication}
+\begin{itemize}
+\item {\tt firstprivate} provides a mechanism to pass information
+  into threads.
+\item We can also do this by placing the information into a global
+  variable.  
+\item However, if the information will be manipulated and modified by
+  each thread individually, then we can use {\tt firstprivate} to make
+  a private copy within each thread.  This is very convenient.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe when and the number of times the private variables are
+  initialized.
+\item Describe how to implement the part of a reduction that we need
+  to pass the initial values of {\tt numSolution} in {\tt queen-private-sum-redction.c}.
+\end{itemize}
+\end{frame}
+
+% sudoku.c
+
+\begin{frame}
+\frametitle{Sudoku}
+\centerline{\pgfimage[height=0.8\textheight]{sudoku}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Sudoku}
+\begin{itemize}
+\item There is a 9 by 9 board with some numbers from 1 to 9 already in
+  it (in black).
+\item Place numbers from 1 to 9 (in red) into empty squares, so that
+  the every row, every column, and all nine 3 by 3 squares will have
+  numbers 1 to 9.
+\item We would like to compute the total number of solutions.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{main} \programlistingoption{sudoku}{\tt
+  main}{linerange={main-omp},basicstyle={\tt \small},emph={firstprivate,sudoku,firstZero}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Solution}
+\begin{itemize}
+\item We represent the board by a 9 by 9 array of integers {\tt
+  sudoku}.
+\item The input has all the initial numbers in the board, where an 0
+  is an empty cell.
+\item We need to remember the index of the first zero (\tt firstZero)
+  so that we can start the recursion from there.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{main} \programlistingoption{sudoku}{\tt
+  main}{linerange={omp-end},basicstyle={\tt \footnotesize},emph={firstprivate,sudoku,firstZero,_OPENMP,omp_set_num_threads}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Compile}
+\begin{itemize}
+\item We explicitly set the number of threads to 9 for the OpenMP
+  version.  
+\item However, we also want to use to same code to compiler a
+  sequential version. 
+\item The solution is test if {\tt \_OPENMP} is defined, which means
+  the {\tt -fopenmp} flag is used, then we will compiler the {\tt
+    omp\_set\_num\_threads} call.
+\item You may use {\tt -E} to verify that the correct code is
+  compiled.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Solution}
+\begin{itemize}
+\item After we read the inputs into {\tt sudoku}, we then use {\tt
+  firstprivate} to send the input to all threads.
+\item We use nine iterations to compute the total number of solutions,
+  where the $i$-th iteration computes the number of solutions if we
+  place he first empty cell with $i$.
+\item An iteration first tries to place a number into the first empty
+  cell if there is no conflict, then call {\tt placeNumber} to compute
+  the number of solutions.
+\item We use a reduction on the variable {\tt numSolution}, which is
+  the number of solutions found by a recursive function {\tt
+    placeNumber}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt conflict} \programlistingoption{sudoku}{\tt
+  conflict}{linerange={conflict-placeNumber},basicstyle={\tt
+    \scriptsize},emph={rowColConflict,blockConflict}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt rowColConflict} \programlistingoption{sudoku}{\tt
+  rowColConflict}{linerange={rowColConflict-blockConflict},basicstyle={\tt
+    \scriptsize},emph={rowColConflict,blockConflict}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt blockConflict} \programlistingoption{sudoku}{\tt
+  blockConflict}{linerange={blockConflict-conflict},basicstyle={\tt
+    \scriptsize},emph={rowColConflict,blockConflict}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt placeNumber}
+\begin{itemize}
+\item The function {\tt placeNumber} tries placing a number at the
+  $n$-th position on the board {\tt sudoku}, where {\tt n} goes from 0
+  to 80.
+\item If {\tt n} is 81 then we have placed all numbers and a solution
+  is found.
+\item Otherwise we determine the row and column of this cell.  If this
+  cell has a number, then we skip it since it is a part of the input.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{\tt placeNumber} \programlistingoption{sudoku}{\tt
+  placeNumber}{linerange={placeNumber-numSolution},basicstyle={\tt \small},emph={sudoku,placeNumber}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt placeNumber}
+\begin{itemize}
+\item If there is no number in the cell, then we check if we can place
+  a number {\tt try} into this cell by calling {\tt conflict}.  If we
+  can then we go to the next level of recursion.
+\item Since no conflict was found we place the number into the cell
+  and call {\tt placeNumber} to go for the next cell.
+\item After we tried all numbers from 1 to 9, we report the number of
+  solutions we found.
+\item Note that we need to reset the cell back to 0 so later recursion
+  will not mistake it for being an input.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{\tt placeNumber} \programlistingoption{sudoku}{\tt
+  placeNumber}{linerange={numSolution-main},basicstyle={\tt
+    \footnotesize},emph={numSolution,placeNumber}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run and time the sudoku-uni program.
+\item Run and time the sudoku-omp program.
+\item Compute the speedup.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Do you think the sudoku program balance the workload evenly?
+  Explain your answer.
+\item Is there any way to balance the workload better?
+\end{itemize}
+\end{frame}
+
+\subsection{\tt lastprivate}
+
+% loop-private-first-last
+
+\begin{frame}
+\frametitle{Communication}
+\begin{itemize}
+\item Sometimes we do need to pass the value of one private variable
+  back to its global counterpart.
+\item The {\tt lastprivate} clause will pass the value of private
+  variable of the thread which runs the {\em last} iteration.
+\item Note that this is not the thread that runs last -- it is the
+  thread that runs the {\em last} iteration.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Both {\tt firstprivate} and {\tt lastprivate}}
+\centerline{\pgfimage[width=0.9\textwidth]{first-private-last.pdf}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt lastprivate} \programlistingoption{for-private-first-last}{\tt
+  main}{linerange={v-end},basicstyle={\tt \footnotesize},emph={firstprivate,lastprivate}}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the loop-private-first-last-omp program with four threads
+  and eight iterations, and observe the output.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe a scenario that {\tt lastprivate} will be useful.
+\end{itemize}
+\end{frame}
+
+\section{Critical Section}
+
+\begin{frame}
+  \frametitle{Critical Section}
+  \begin{itemize}
+  \item It is very common that we need to implement a critical section
+    that only one thread can access at a time.
+  \item OpenMP provides a {\em critical} pragma to implement a critical
+    section.  
+  \item A {\tt critical} directive will make the following statement a
+    critical section.
+  \end{itemize}
+\end{frame}
+
+\subsection{\tt critical}
+
+\begin{frame}
+  \frametitle{Critical Pragma} 
+  \prototype{critical}{Critical pragma}
+\end{frame}
+
+% queen-private-sum-race-critical
+
+\begin{frame}
+\frametitle{\tt queen}
+\programlistingoption{queen-private-sum-race-critical}{\tt
+  main}{linerange={queen-main},emph={numSolution,omp,critical},basicstyle={\tt
+    \footnotesize}}
+\end{frame}
+
+\begin{frame}
+\frametitle{\tt main}
+\programlistingoption{queen-private-sum-race-critical}{\tt
+  main}{linerange={loop-end},emph={numSolution},basicstyle={\tt
+    \footnotesize}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Notes}
+\begin{itemize}
+\item Whenever {\tt queen} finds a solution, it adds 1 to {\tt
+  numSolution}.
+\item This addition is a critical section because we put a {\tt
+  \#pragma omp critical} in front of it.
+\item If you want to place multiple statements into a critical
+  section, then you need to put them into a compound statement.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+\begin{itemize}
+\item Run the sequential queen-private-sum-critical-uni program.
+\item Run the parallel queen-private-sum-critical-omp program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Does the sequential program produce correct answer?
+\item Does the parallel program produce correct answer?
+\item Time and compare the correct solutions you know so far.
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{The Big Question} {\huge Do you think it is easier to
+  write OpenMP program than Pthread program?}
+\end{frame}
+
+
+\end{document}
+
