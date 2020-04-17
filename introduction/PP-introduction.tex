@@ -1,0 +1,1021 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{CJK}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{pgf}
+\usepackage{multicol}
+
+\input{../slide-macro}
+
+\begin{document}
+\begin{CJK}{UTF8}{bsmi}
+
+\title{Introduction to Parallel Computing}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\section{Motivation} 
+\begin{frame}
+\frametitle{Why Parallel Computing?}
+\begin{itemize}
+\item Solve a problem faster.
+\item Solve a problem better.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Olympic Games} The modern Olympic Games are the leading
+international sporting event featuring summer and winter sports
+competitions in which thousands of athletes from around the world
+participate in a variety of
+competitions.\footnote{\url{http://en.wikipedia.org/wiki/Olympic_Games}}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Olympic Motto}
+The Olympic motto, Citius, Altius, Fortius, a Latin expression meaning
+``Faster, Higher, Stronger'' was proposed by Pierre de Coubertin in
+1894 and has been official since 1924.
+\end{frame}
+
+\begin{frame}
+\frametitle{Faster}
+\begin{itemize}
+\item The reigning 100 m Olympic champion is often named ``the fastest
+man/woman in the world''.
+\item The world record is 9.58 seconds.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Higher}
+\begin{itemize}
+\item The high jump is a track and field event in which competitors
+must jump over a horizontal bar placed at measured heights without the
+aid of certain devices.
+\item The world record is 2.45m.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Stronger}
+\begin{itemize}
+\item Olympic weightlifting, also called Olympic-style weightlifting,
+  or weightlifting, is an athletic discipline in the modern Olympic
+  programme in which the athlete attempts a maximum-weight single lift
+  of a barbell loaded with weight plates.
+\item The world record is 305 kg, the sum of snatch and clean \& jerk. 
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\Large 
+\begin{itemize}
+\item Why faster, higher, and stronger?
+\end{itemize}
+\end{frame}
+
+%% \begin{frame}
+%% \frametitle{Question}
+%% What are the purposes of parallel computing?
+%% \begin{itemize}
+%% \item Solve a problem faster.
+%% \item Solve a problem better.
+%% \item Solve a problem cheaper.
+%% \item Solve a problem greener.
+%% \end{itemize}
+%% \end{frame}
+
+\subsection{Faster}
+
+\begin{frame}
+\frametitle{Why Faster?}
+\begin{itemize}
+\item Many computations are {\em slow}.
+\item Many computations are {\em time critical}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Slow Computation}
+\begin{itemize}
+\item Brute force search
+\item Computer simulation
+\item Exponential time complexity
+\item Grand Challenge problems
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Traveling Salesman} Given a set of cities and the distance
+between two cities, find the shortest route that goes through all
+cities without visiting any city twice.
+\begin{itemize}
+\item A famous NP-complete problem, i.e., a proven hard-as-hell
+  problem in computer science.
+\item Easy, you just permute all cities and find the shortest route.
+\item However, the number of permutations is $(n-1)!$ where $n$ is the
+  number of cities.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Factorial}
+\begin{itemize}
+\item Consider a traveling salesman problem with 101 cities.
+\item $100!$ is roughly $9.332621544 \times 10^{157}$.
+\item Assume that the computation of the length of a path can be done
+  in 100 cycles.
+\item Assume that a computer runs at 10 GHz.
+\item It takes $9.332621544 \times 10^{146}$ seconds to enumerate all
+  paths.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Computation Time}
+\begin{itemize}
+\item A year has 31,556,926 seconds, so the computation takes $2.9574
+  \times 10^{130}$ billion years.
+\item The age of earth is 4.54 billion
+  years\footnote{\url{http://en.wikipedia.org/wiki/Age_of_the_Earth}}.
+\item The age of the universe is 13.798 billion
+  years\footnote{\url{http://en.wikipedia.org/wiki/Age_of_the_universe}}.
+\item Do you honestly think anyone can live to see the results?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithm Optimization} Despite techniques like
+branch-and-bound and $A^*$ search can reduce the number of cases one
+needs to examine, the sheer number of permutations is enormous.
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} \Large 
+\begin{itemize}
+\item Give an example of computation that will take a lot of time.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Time Critical Computation}
+\begin{itemize}
+\item Weather forecast
+\item Stock market
+\item Radar signal processing
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Worried? Me?}
+\begin{itemize}
+\item We do not need to do anything because computers become faster
+  {\em automatically}!
+\item ``Moore's law'' is the observation that, over the history of
+  computing hardware, the number of transistors in a dense integrated
+  circuit doubles approximately every two years\footnote{\url{http://en.wikipedia.org/wiki/Moore\%27s_law}}.
+\item If the speed of a CPU is proportional to the number of
+  transistors, we expect an eight times speed improvement in six
+  years.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Worried? Yes.}
+\begin{itemize}
+\item We assume we have an $O(n^3)$ ``efficient'' algorithm to solve a
+  problem, e.g., matrix multiplication.
+\item You can solve problem size twice as large as the original one if
+  you wait six years.
+\item By the time you wait for the hardware to catch up, your career
+  (e.g., as a Ph.D. student) is over.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{How to be Faster?}  \Huge Hardware improvement cannot help
+you, OK!!  You need better solutions than waiting.
+\end{frame}
+
+\begin{frame}
+\frametitle{Late Information}
+\begin{itemize}
+\item Late is {\em not} better than nothing.
+\item Justice delayed is justice denied.
+\item A weather forecast for tomorrow takes three days.
+\item A stock recommendation for next week takes three weeks.
+\item The computation of an early warning radar system takes three
+  times of the time for an enemy missile to destroy the radar.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{How to be Faster?}
+\Huge Having more than one CPU to work on the problem seems to be a
+  reasonable choice.
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} \Large 
+\begin{itemize}
+\item Give an example of time-critical computation.
+\item Describe Moore's Law.
+\end{itemize}
+\end{frame}
+
+
+%% \begin{frame}
+%% \frametitle{Question}
+%% For a traveling salesman problem of 5 cities, how many paths a brute
+%% force search needs to examine in order to determine the shortest path?
+%% \begin{itemize}
+%% \item 5
+%% \item 20
+%% \item 24
+%% \item 120
+%% \end{itemize}
+%% \end{frame}
+
+\subsection{Better}
+
+\begin{frame}
+\frametitle{Why Better?}
+\begin{itemize}
+\item People are {\em greedy}.
+\item Video quality is an increasing function of time.
+\begin{itemize}
+\item VCD (NTSC) $352 \times 240$.
+\item DVD (25 frame rate) $720 \times 576$.
+\item Blueray (HD) $1920 \times 1080$.
+\end{itemize}
+\item The number of pixels increases $24.5$ times.
+\item An $O(n^2)$ algorithm will have to run $600$ times faster.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Why Better?}
+\begin{itemize}
+\item Again, remember that people are {\em greedy}.
+\item Remember faster, higher, stronger.
+\item We always seek possibility just beyond our capability.
+\item We want to live long and prosper (show a Vulcan gesture).
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Live Long and Prosper}
+\centerline{\pgfimage[width=0.6\textwidth]{Spock_performing_Vulcan_salute.jpg}}
+\footnote{\url{http://vignette4.wikia.nocookie.net/memoryalpha/images/5/52/Spock_performing_Vulcan_salute.jpg/revision/latest?cb=20090320072701&path-prefix=en}}
+\end{frame}
+
+\begin{frame}
+\frametitle{The Weather}
+\begin{itemize}
+\item The weather forecast resolution is proportional to the number of
+  cells in the simulation.
+\item Taiwan has a length of 394 km and a width of 144 km.
+\item The area to simulate is 56736 square km. 
+\item Assume that the simulation model is 10 km in height.
+\item If the resolution is 1 cubic km, we need 567360 cells.
+\item If we refine the resolution to 100 m, the number of cells will be
+  567360000.
+\item An $O(n^2)$ algorithms will have to run $1000000$ times faster.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item A naive matrix multiplication algorithm multiply two matrices of
+  size $n$ by $n$ in $O(n^3)$ time.  If we increase the size of the
+  matrix $n$ by a factor of 10, the execution time of this naive
+  algorithm will roughly be?
+\end{itemize}
+\end{frame}
+
+\section{Scientific Computation}
+
+\begin{frame}
+\frametitle{Scientific Process} 
+\begin{enumerate}
+\item Observation
+  \begin{itemize}
+    \item Why does the apple fall on my head?
+  \end{itemize}
+\item Theory
+  \begin{itemize}
+  \item Every matter attracts every matter.
+  \end{itemize}
+\item Experiment
+  \begin{itemize}
+  \item Cavendish's experiment to verify the theory.
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}
+\frametitle{Newton and Apple}
+\centerline{\pgfimage[width=0.7\textwidth]{newton-apple.png}}\footnote{\url{http://www.yalcafruittrees.com.au/wp-content/uploads/Isaac-Newton.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Newton's Law of Universal Gravitation} Newton's law of
+universal gravitation states that any two bodies in the universe
+attract each other with a force that is directly proportional to the
+product of their masses and inversely proportional to the square of
+the distance between them.\footnote{\url{http://en.wikipedia.org/wiki/Newton\%27s_law_of_universal_gravitation}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Formulation}
+\centerline{\pgfimage[width=0.6\textwidth]{universal-gravatation.pdf}}\footnote{NewtonsLawOfUniversalGravitation by I, Dennis Nilsson. Licensed under CC BY 3.0 via Wikimedia Commons \url{http://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/NewtonsLawOfUniversalGravitation.svg/200px-NewtonsLawOfUniversalGravitation.svg.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Cavendish's Experiment}
+\centerline{\pgfimage[width=0.6\textheight]{Cavendish_Torsion_Balance_Diagram.pdf}}\footnote{Cavendish Torsion Balance Diagram by Chris Burks (Chetvorno). Licensed under Public Domain via Wikimedia Commons \url{http://commons.wikimedia.org/wiki/File:Cavendish_Torsion_Balance_Diagram.svg\#mediaviewer/File:Cavendish_Torsion_Balance_Diagram.svg}}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Scientific Process} 
+\begin{enumerate}
+\item Observation
+  \begin{itemize}
+  \item Why does the galaxy have spirals?
+  \end{itemize}
+\item Theory
+ \begin{itemize}
+ \item Every matter attracts every matter.
+ \end{itemize}
+\item Experiment
+  \begin{itemize}
+  \item What are you talking about?
+  \end{itemize}
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Spiral Galaxy}
+\centerline{\pgfimage[width=0.6\textwidth]{spiral-galaxy.jpg}}\footnote{\url{http://i.space.com/images/i/000/022/667/wS4/spiral-galaxy-ngc1232-1600.jpg}}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Formulation}
+\centerline{\pgfimage[width=0.6\textwidth]{universal-gravatation.pdf}}\footnote{NewtonsLawOfUniversalGravitation by I, Dennis Nilsson. Licensed under CC BY 3.0 via Wikimedia Commons \url{http://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/NewtonsLawOfUniversalGravitation.svg/200px-NewtonsLawOfUniversalGravitation.svg.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Experiment} \Huge There are no ways we can put stars in a
+laboratory and observe the effects of gravity to incur spirals.
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Give an example of scientific process, including observation,
+  theory, and experiment.
+\item Give an example of experiment that cannot be conducted in a
+  laboratory.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Difficulties} 
+\begin{itemize}
+\item Experiments are {\em expensive} -- the stars may be expensive to
+  buy.
+\item Experiments are {\em dangerous} -- you do not want to have a
+  black-hole in your laboratory.
+\item Experiments are {\em unfeasible} -- my lab is not large enough.
+\item Experiments are {\em time consuming} -- I do not have billions
+  of years for observation.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Computer Simulation} 
+\begin{itemize}
+\item Simulation is cheap.
+\item Simulation is safe.
+\item Simulation is feasible.
+\item However, simulation is {\em slow}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{How to be Better?}
+\Huge Having more than one CPU to work on the problem seems to be a
+  reasonable choice.
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Give an example of scientific simulation.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Grand Challenge} A grand challenge is a fundamental
+problem in science or engineering, with broad applications, whose
+solution would be enabled by the application of high performance
+computing resources that could become available in the near
+future.\footnote{\url{http://en.wikipedia.org/wiki/Grand_Challenge}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Grand Challenge Examples} 
+\begin{itemize}
+\item Computational fluid dynamics
+\item Electronic structure calculations
+\item Plasma dynamics for fusion energy technology and for safe and
+  efficient military technology
+\item Calculations to understand the fundamental nature of matter,
+  including quantum chromodynamics and condensed matter theory
+\item Symbolic computations
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{How to be Better?}
+\Huge Having more than one CPU to work on the problem seems to be a
+  reasonable choice.
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Give an example of grand challenge problem.
+\end{itemize}
+\end{frame}
+
+
+\section{Definitions}
+
+\begin{frame}
+\frametitle{Parallel Computing}  \Huge Use multiple CPU's to solve a
+problem faster and/or better.
+\end{frame}
+
+\begin{frame}
+\frametitle{Why Parallel Computing?}
+\begin{itemize}
+\item We want computation to be faster and better.
+\item The performance of a single computer is limited, so the only way
+  is to have {\em more} computers.
+\item We cannot find single core CPU
+  anymore\footnote{\url{http://www.intel.com/pressroom/kits/quickreffam.htm}},
+  so it is essential to know how to get performance from a parallel
+  computer.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Limits}
+\begin{quote}There are technological and physical limits to uni-processor
+  performance that cannot be overcome.  For example, clock times cannot
+  be smaller than the response time of electronic circuits, which in
+  turn are limited by physical laws.\footnote{Pangfeng Liu, The Parallel
+    Implementation of N-body Algorithm, Ph.D. dissertation, 1994.}
+\end{quote}
+\end{frame}
+
+\begin{frame}
+\frametitle{Moore's Law}
+``Moore's law'' is the observation that, over the history of computing
+hardware, the number of transistors in a dense integrated circuit
+doubles approximately every two
+years.\footnote{\url{http://en.wikipedia.org/wiki/Moore\%27s_law}}
+\end{frame}
+
+\begin{frame}
+\frametitle{An Illustration}
+\centerline{\pgfimage[width=0.6\textwidth]{Transistor_Count_and_Moore_Law_2011.png}}\footnote{Transistor
+  Count and Moore's Law - 2011 by Wgsimon - Own work. Licensed under
+  CC BY-SA 3.0 via Wikimedia Commons}
+  %% \url{http://commons.wikimedia.org/wiki/File:Transistor_Count_and_Moore\%27s_Law_-_2011.svg#mediaviewer/File:Transistor_Count_and_Moore\%27s_Law_-_2011.svg}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Fifty Years of Moore's Law}
+\begin{itemize}
+\item Moore's Law is a direct consequence of the incredible and unique
+  scaling heuristics of semiconductor manufacturing: by holding the
+  cost per unit area of manufacturing constant\footnote{Chris
+    A. Mack, IEEE Transactions on Semiconductor Manufacturing,
+    Vol. 24, NO. 2, MAY
+    2011. \url{http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=5696765}}
+\item The economic benefits of Moore's Law come from the shrinking of
+  the transistor.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{itemize}
+\item Moore's Law can be formulated as a learning curve by plotting
+  minimum feature size as a function of cumulative revenue or area of
+  silicon produced by the industry on a log-log scale.
+\item Moore's Law has kept on a relatively constant learning curve
+  until about 1998–2000. The acceleration of this Moore's learning
+  curve over the last decade is likely an unsustainable,
+  momentum-driven attempt to recapture past revenue growth rates.
+\item The industry, and the world, has enjoyed 50 remarkable years of
+  Moore's Law. {\em There are unlikely to be many more years left}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Give at least three data points to support the Moore's Law.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Parallel Computer} 
+\begin{itemize}
+\item A parallel computer is a system that has multiple processing
+  units and supports parallel computing by {\em parallel programming}.
+\begin{itemize}
+\item Multicore
+\item Multiprocessor
+\item Multicomputer
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+% multicore
+
+\subsection{Multicore CPU}
+
+\begin{frame}
+\frametitle{Multicore CPU}
+\begin{itemize}
+\item A CPU that has multiple cores as processing units.
+\item The cores share the memory, and have usually have their own
+  cache.
+\item A memory arbitrator guarantees the consistency of shared memory
+  and cache.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Intel Ivy Bridge Xeon Processors}
+\begin{itemize}
+\item Ivy Bridge is the codename for a line of processors based on the
+  22 nm manufacturing process developed by Intel.%\footnote{\url{http://en.wikipedia.org/wiki/Ivy_Bridge_\%28microarchitecture\%29#Desktop_processors}}
+\item Ivy Bridge Xeon has up to 15 cores and 37.5 MB L3 cache,
+  released on February 2014.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Intel Xeon Phi}
+\begin{itemize}
+\item Intel Many Integrated Core Architecture (MIC) is a coprocessor
+  computer architecture developed by Intel incorporating the Larrabee
+  many core architecture, the Teraflops Research Chip multicore chip
+  research project, and the Intel Single-chip Cloud Computer multicore
+  microprocessor\footnote{\url{http://en.wikipedia.org/wiki/Xeon_Phi}}.
+\item At the International Supercomputing Conference (2012, Hamburg),
+  Intel announced the branding of the processor product family as
+  Intel Xeon Phi.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Design}
+\begin{itemize}
+\item The cores of Intel MIC are based on a modified version of P54C
+  design, used in the original Pentium.
+\item The basis of the Intel MIC architecture is to leverage x86
+  legacy by creating a x86-compatible multiprocessor architecture that
+  can utilize existing parallelization software tools.
+\item Having a large number of cores -- for example, 51110P has 60
+  cores running at 1.053 GHz.\footnote{\url{http://ark.intel.com/zh-tw/products/71992/Intel-Xeon-Phi-Coprocessor-5110P-8GB-1_053-GHz-60-core}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Describe the number of cores in at least three current CPU's.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Multiprocessor}
+
+\begin{frame}
+\frametitle{Multiprocessor} 
+\begin{itemize}
+\item A parallel system consists of {\em multiple} processors.
+\item Note that in this course we usually do not distinguish
+  ``processor'' and ``cores'', so we do not make a clear distinction
+  between ``multiprocessor'' and ``multicore''.
+\item The processors are connected by a {\em shared memory}.
+\item Since the processors are connected together by a shared memory,
+  they communicate with each other by writing and reading the shared
+  memory, like writing on bulletin board.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Dual Socket Server}
+\begin{itemize}
+\item Intel Server Board S5000PSL with two Xeon sockets.
+\end{itemize}
+\centerline{\pgfimage[width=0.7\textwidth]{board-sockets.jpg}}
+\end{frame}
+
+
+
+
+\begin{frame}
+\frametitle{Tianhe Cluster Node}
+\begin{itemize}
+\item Tianhe is a huge cluster consisting of 16,000 computers (more
+  details later).  
+\item Each computer (node) has two Intel Ivy Bridge Xeon processors
+  and three Xeon Phi chips. 
+\item A single node has several processors.  The two Xeon and three
+  Xeon Phi share a memory on the same printed circuit board.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Tianhe 2 Node}
+\begin{itemize}
+\item The two Xeon CPU share a memory, and the three MIC (Xeon Phi)
+  have their own memory.
+\end{itemize}
+\centerline{\pgfimage[width=0.7\textwidth]{th2computnode.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Describe the number of processors within a node from any system
+  in the top 10 of the top 500 list.
+\end{itemize}
+\end{frame}
+
+
+\subsection{Multicomputer}
+
+\begin{frame}
+\frametitle{Multicomputer} 
+\begin{itemize}
+\item A parallel system consists of {\em multiple} computers.
+\item The computers are connected by a {\em communication network}.
+\item Since the computers are independent and do not share memory,
+  they communicate with each other by {\em messages}, like making
+  phone calls.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Multicomputer Examples} 
+\begin{itemize}
+\item Cluster computing
+\item Massively parallel computing
+\item Grid computing
+\item Cloud computing
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Cluster}
+\begin{itemize}
+\item A computer cluster consists of a set of loosely or tightly
+  connected computers that work together so that, in many respects,
+  they can be viewed as a single
+  system.\footnote{\url{http://en.wikipedia.org/wiki/Computer_cluster}}
+\item Usually the computers are {\em loosely connected}. i.e., they
+  are {\em not} connected by fast and expensive network.
+\item An economical alternative to those who cannot afford expensive
+  parallel computers.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{My Definition}
+\begin{itemize}
+\item In my humble opinion any computer system that are connected by a
+  network, but not a shared memory, can be considered as a cluster.
+\item The point is that they do not have shared memory so they can
+  only communicate with the network.
+\item The network is not necessarily slow -- some networks are
+  extremely fast, so the term ``loosely coupled'' may not be true in
+  all cases.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Tianhe Cluster}
+\begin{itemize}
+\item Currently the fastest computer on Earth -- 33.86
+  petaflops/second.
+\item Built by China's National University of Defense Technology
+  (NUDT) in collaboration with the Chinese IT firm
+  Inspur.\footnote{\url{http://www.top500.org/featured/top-systems/tianhe-2-milkyway-2-national-university-of-defense/}}
+\item A huge cluster consisting of 16,000 computers.  Each computer
+  (node) has two Intel Ivy Bridge Xeon processors and three Xeon Phi
+  chips. The total number of cores is 3,120,000.
+\item The TH Express-2 interconnect, designed by NUDT, utilizes a fat
+  tree topology with 13 switches each of 576 ports\footnote{\url{http://en.wikipedia.org/wiki/Tianhe-2}}.
+\item For me it is still a cluster.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Hierarchy}
+\begin{itemize}
+\item A Xeon is a multicore CPU.
+\item A Tianhe node is a multiprocessor.
+\item A Tianhe cluster is a multicomputer.
+\item Again we do not intend to have a clear distinction between a
+  multicore CPU and a multiprocessor.
+\item More details in the ``Architecture'' lecture.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Describe the total number of cores within a node from any
+  system in the top 10 of the top 500 list.
+\end{itemize}
+\end{frame}
+
+
+\section{Parallelism}
+
+\begin{frame}
+\frametitle{Parallelism} 
+\begin{itemize}
+\item Instruction-level parallelism
+\item Data parallelism
+\item Task parallelism
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Instruction-level Parallelism} 
+\begin{itemize}
+\item Instructions can be re-ordered and combined into groups which
+  are then executed in parallel without changing the result of the
+  program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Data Parallelism}
+\begin{itemize}
+\item Data parallelism is a form of parallelization of computing
+  across multiple processors in parallel computing environments by
+  distributing the {\em tasks} across different parallel computing
+  nodes.
+\item Often in the form of loops.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Data Parallelism Example}
+\programlisting{loop}{Data Parallelism}
+\begin{itemize}
+\item All the assignment can be done in parallel.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Task Parallelism} 
+\begin{itemize}
+\item Task parallelism is a form of parallelization of computing
+  across multiple processors in parallel computing environments by
+  distributing the {\em tasks} across different parallel computing
+  nodes.
+\item Also called functional parallelism.  Often in the form of
+  function calls.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Data Parallelism Example}
+\programlisting{task}{Task Parallelism}
+%% \begin{itemize}
+%% \item All the tasks can be done in parallel.
+%% \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Give an example of data parallelism and task parallelism.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Dependency Graph}
+\begin{itemize}
+\item Every node is task.
+\item Every edge is a dependency.  This dependency is related to data
+  or synchronization.
+\item A task can only starts when all tasks that precede it finish,
+  i.e., the tasks must be done in a topological sort order.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Dependency Graph}
+\begin{itemize}
+\item We can eat dinner only after we cook it. 
+\item We can listen to music only after we turn on the radio.
+\item We can go to sleep only after we finis dinner and music.
+\item However, we can listen to the music while having dinner.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Wavefront}
+\begin{itemize}
+\item Task parallelism must respect the dependency in dependency graph.
+\item One can image that task parallelism is a series of wave fronts
+  in the dependency graph.  
+\item We want to {\em increase} the number of tasks per wavefront in
+  order to {\em reduce} the number of wavefront.  That is, we want to
+  increase the {\em parallelism} of our algorithm so that it takes
+  less time to complete.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Draw the dependency graph of the previous task parallel example.
+  You may add a {\em start} node and an {\em end} node to indicate the
+  beginning and the end of execution.  Also point out the wavefront
+  and dependency in your drawing.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Quantities} 
+\begin{description}
+\item [$P$] The number of processors
+\item [$N$] The number of tasks 
+\item [$L$] The longest path in the dependency graph
+\item [$W$] The maximum number of tasks in a wavefront
+\item [$T$] The execution time, assuming that it takes one unit of
+  time to finish a task.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Execution Time} 
+\begin{equation}
+N \geq T \ge \max(L, {N \over {\min(P, W)}})
+\end{equation}
+\begin{itemize}
+\item Increase $P$.
+\item Increase $W$, i.e., parallelism.
+\item Decrease $L$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Explain the inequality in the previous page.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Parallel Programming} 
+\begin{itemize}
+\item Program a parallel system to perform parallel computing.
+\item That is why we are here.
+\item more about this in the ``Programming Model'' lecture.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Automatic Parallel Programming?} 
+\begin{itemize}
+\item Can a program convert our sequential programs into parallel
+  programs automatically?
+\item Apparently not, otherwise we will not be here.
+\item Computer scientists have been trying to invent ``smart''
+  compiler that automatically does it, but only have limited success.
+\item More details in the ``Programming Model'' lecture.
+\end{itemize}
+\end{frame}
+
+\section{Distributed Computing}
+
+\begin{frame}
+\begin{itemize}
+\item It is very often that people talk about parallel and distributed
+  computing.
+\item For example, the name of my laboratory is ``Laboratory of
+  Parallel and Distributed Computing''.
+\item Many conferences and journals have both in their titles.
+\begin{itemize}
+\item IEEE International Parallel and Distributed Processing Symposium
+\item IEEE International Conference on Parallel and Distributed Systems
+\item Journal of Parallel and Distributed Computing
+\item IEEE Transactions on Parallel and Distributed Systems
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Difference}
+\begin{description}
+\item[Parallel Computing] A set of processing unit to work on a job
+  {\em at the same time}, i.e., the focus is that the computations is
+  {\em temporally} in parallel.
+\item[Distributed Computing] A set of processing unit to work on a job
+  {\em at different locations}, i.e., the focus is that the
+  computations is {\em geographically} distributed.
+\end{description}
+\end{frame}
+
+\begin{frame}
+\frametitle{Difference}
+\begin{itemize}
+\item The focus of parallel processing is {\em performance}.  We care
+  very much about the speed we can finish a job.
+\item The focus of focus processing is {\em reliability}.  We care
+  very much about can we finish a job no matter what happens --
+  network down, hardware failure, earthquake, Godzilla attacks, etc.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Race-car}
+\centerline{\pgfimage[width=0.6\textwidth]{racecar.jpg}}
+\footnote{\url{http://upload.wikimedia.org/wikipedia/commons/4/4a/Formel3_racing_car_amk.jpg}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Tank}
+\centerline{\pgfimage[width=0.6\textwidth]{tank.png}}
+\footnote{\url{http://pngimg.com/upload/tank_PNG1320.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{In this Course}
+\begin{itemize}
+\item This course will focus on performance, so we mostly discuss
+  parallel processing, and will briefly discuss distributed processing
+  when necessary.
+\item Distributed computing has become increasingly popular because of
+  cloud computing and big data processing.
+\item Nevertheless, the role of parallel processing is still crucial
+  since the processing speed is still essential.
+\item The focus is to combine the speed of parallel processing and the
+  reliability of distributed computing into a ``parallel and
+  distributed system''.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Armored Vehicle}
+\centerline{\pgfimage[width=0.6\textwidth]{JGSDF.jpg}}
+\footnote{\url{http://en.wikipedia.org/wiki/Komatsu_LAV}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} 
+\begin{itemize}
+\item Explain and describe the difference between parallel and
+  distributed computing.  Give examples to illustrate your points.
+\end{itemize}
+\end{frame}
+
+
+\end{CJK}
+\end{document}
