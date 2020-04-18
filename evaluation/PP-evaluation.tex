@@ -1,0 +1,666 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{CJK}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{pgf}
+\usepackage{multicol}
+%\usepackage{algorithm}
+%\usepackage{algorithmic}
+
+\input{../slide-macro}
+
+\begin{document}
+\begin{CJK}{UTF8}{bsmi}
+
+\title{Parallel Algorithm Evaluation}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\section{Introduction} 
+
+\begin{frame}
+\frametitle{Introduction}
+\begin{itemize}
+\item Algorithm describes the procedure that solves a problem.
+\item ``Algorithmic thinking'' is very important when one wants to use
+  computer to solve problems; in a sense that computers can easily
+  realize an algorithm with its powerful computation capability.
+\item This is not confined to solving problem with computers, but in
+  this lecture we focus on algorithm for computer.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Computers}
+\begin{itemize}
+\item Some algorithms are particularly suitable for computers.
+\item Consider Sudoku problem.  You want to place the number of 1 to 9
+  into a 9 by 9 matrix so that every row, every column and the nine 3
+  by 3 sub-matrices have numbers from 1 to 9.
+\item We can use a ``trial-and-error'' algorithm to solve this
+  problem.  However, this is time consuming and error-prone for human
+  to execute this algorithm.
+\item In contrast a computer programmer can easily convert the
+  ``trial-and-error'' algorithm to a computer program that solves this
+  problem in no time.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Definition}
+\begin{itemize}
+\item An algorithm must describe the {\em detailed operations} one
+  wants to performance.
+\item These operations must be {\em well-defined} within the underling
+  model (more on this later).
+\item The algorithm must also describe the {\em temporal dependency}
+  of these operations, i.e., loop, synchronization, etc.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Example}
+\begin{itemize}
+\item How to pick the largest number from a set of numbers.
+\item Look through all the numbers one at a time.
+\item Compare a number with the current largest one you have seen.
+\item If the number is the larger, replace the current largest one
+  with it.
+\item Finally you have the largest number.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Example}
+\begin{itemize}
+\item The operations, i.e., examine, compare, and replace, are well
+  defined.
+\item The temporal sequences of these operations are also well defined
+  -- ``look through all'', ``if something happens then does this''.
+\item This is an algorithm indeed.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Give an example of algorithm.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Parallel Algorithms}
+\begin{itemize}
+\item Now we extend the concept to parallel computation.
+\item A {\em sequential} algorithm describes the procedure that solves
+  a problem with a computer.
+\item A {\em parallel} algorithm describes the procedure that solves a
+  problem with a parallel computer.
+\item In this course we will focus on parallel algorithms.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Parallel Algorithms}
+\begin{itemize}
+\item A sequential algorithm is relatively easy to describe.
+\begin{itemize}
+\item The timing sequence is for one processor only.
+\end{itemize}
+\item A parallel algorithm is {\em harder} to describe since we have
+  to deal with multiple entities working concurrently.
+\begin{itemize}
+\item The timing constraints are about multiple processors, hence much
+  difficult to describe and analyze.
+\item Different processors may need to access the same data, and may
+  have race condition.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Model}
+\begin{itemize}
+\item Any algorithm has a underlining assumption on what can be done,
+  for example, a sorting algorithm assumes that keys can be compared
+  in $O(1)$, i.e., a constant amount of time.
+\item We then follow these assumptions to estimate the {\em cost} of
+  the algorithm we are considering.
+\item The purpose of the model is to estimate the cost accurately, so
+  it has to be realistic, which means it must resemble the real
+  hardware to be meaningful.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Analysis}
+\begin{itemize}
+\item The process of estimating the cost of an algorithm is {\em
+  algorithm complexity analysis}.
+\item Note that we are not actually estimate the running time of the
+  algorithm since this is a moving target.
+\item Instead we measure {\em the number of times} certain operations
+  (e.g., computation or communication), and use them as the estimate
+  on the cost of the algorithm.
+\item We want to design algorithms will low costs.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Analysis}
+\begin{itemize}
+\item A sequential algorithm is usually easy to analyze.
+\item A parallel algorithm is much more difficult to analysis since
+  different models, i.e., the assumption on how the parallel computer
+  can do, have different algorithmic characteristics.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Analysis}
+\begin{itemize}
+\item A shared memory model algorithm on a multiprocessor can be very
+  different from a distributed memory algorithm on a multicomputer.
+\item Nevertheless there are certain criteria that we may follow,
+  mostly from what the actual CPU can do in a fixed amount of time.
+\item In this lecture I will try my best to focus on the parallel
+  computing issues, instead of the computation models, i.e., I want to
+  have generic analysis, instead of model specific analysis.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Give an example of algorithm analysis, like doing an barrier
+  synchronization on a distributed memory parallel computer..
+\end{itemize}
+\end{frame}
+
+\section{Evaluation}
+
+\subsection{Speedup}
+
+\begin{frame}
+\frametitle{Speedup}
+\begin{itemize}
+\item How to determine which parallel algorithm is good, and which is
+  bad?
+\item We use {\em speedup} as a metric to evaluate parallel
+  algorithms, which is the ratio between the best sequential time $T_s$
+  and the parallel time $T_p$.
+\begin{equation} 
+k = {{T_s}\over{T_p}}
+\end{equation}
+\item Note that we need to use the {\em best} $T_s$ for a meaningful
+  comparison.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Speedup Improvement}
+\begin{itemize}
+\item Remember that performance is paramount for parallel processing
+  (remember the racecar?), so speedup is essential.
+\item There are two ways to improve speedup.
+\begin{itemize}
+\item The {\em right} way is to reduce the parallel time.
+\item The {\em wrong} way is to increase the sequential time.  That is why
+  we need to use the best sequential algorithm.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Lesson} \huge When you hear people talking about speedup,
+always make sure that you know the definition of their ``speedup''.
+\end{frame}
+
+\begin{frame}
+\frametitle{Banana and Orange}
+\begin{itemize}
+\item In my opinion, we should always calculate the speedup with {\em
+  the same basis}.
+\item What do we get if we compare the sequential time of a sequential
+  program running on a CPU, with the parallel time of the same program
+  running on five GPU's, and get the speedup of 136?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Banana and Orange}
+\begin{itemize}
+\item The comparison between one CPU ad five GPU's is not {\em
+  quantitatively} meaningful because we cannot derive any {\em
+  quantitative} conclusion on how well we are doing.
+\item We may have a terrible implementation and still get good speedup
+  because the CPU is running slowly, or the GPU's are running fast
+  like hell.
+\item You are comparing banana and orange.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Relative Speedup}
+\begin{itemize}
+\item A speedup comparison is quantitatively meaningful if we can relate
+  the speedup with the extra amount of resources we use in the
+  parallel computation.
+\item Another speedup metric is to compare the parallel time of using
+  $k$ processor with the {\em parallel time} of using a single a
+  single processor.  This is usually referred to as {\em relative
+    speedup}.
+\item As the definition points out, a relative speedup is how well we
+  parallelize a computation.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe the concept of speedup by examples.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Overheads}
+\begin{itemize}
+\item Note that the execution time of a sequential algorithm may be
+  smaller than a parallel program using a single processor.
+\item There are inherent overheads in the execution of parallel
+  program, even if you are using only one processor.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Overheads}
+\begin{itemize}
+\item A parallel system may need to start up.
+\item The parallel program may use extra parallel library, which may
+  incur extra overhead.
+\item There may be synchronization overhead, even if only one
+  processor is involved.
+\item To keep the following theoretic discussion (on efficiency and
+  work) simple we will assume that these two are the same, but keep in
+  mind that there are always overheads in parallel programming.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Parallelism}
+\begin{itemize}
+\item The speedup $k$ alone is not sufficient to evaluate the
+  algorithm, since we do not know how many {\em processors} are used.
+\item Let $p$ be the number of processors used in the parallel
+  algorithm.
+\item The speedup $k$ is between $0$ and $p$.
+\begin{equation}
+0 < k \leq p
+\end{equation}
+\item If the speedup is close to $p$ then we have a {\em linear
+  speedup}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Theoretical Bounds} We can argue mathematically that
+speedup $k$ is between $1$ and $p$.
+\begin{equation}
+1 \leq k \leq p
+\end{equation}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Proof}
+\begin{itemize}
+\item We can use one processor to simulate the sequential algorithm,
+  hence $1 \leq k$.
+  \begin{itemize}
+  \item Recall that we assume that we do not have overheads due to
+    parallelization.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Proof}
+\begin{itemize}
+\item We can simulate one step of the parallel algorithm with $p$
+  steps on one processor.
+\begin{itemize}
+  \item If that takes less than $k$ steps, we have an algorithm that
+    runs faster than our optimal sequential algorithm, which is an
+    contradiction.
+  \item Note that we need to assume that the sequential algorithm is
+    optimal.
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{In Practice}
+\begin{itemize}
+\item In rare occasion we may have $T_s < T_p$.  This is usually
+  caused by a very small workload and a tremendous overheads in
+  parallel execution.
+\item Recall that we have all the overheads due parallelization.  If
+  the benefits of parallelization is not enough to compensate the
+  overheads, we do not have any speedup.
+\item Some problems are better left alone (e.g., inherently sequential
+  problems).
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{In Practice}
+\begin{itemize}
+\item Also in rare occasion we may even have $k > p$, which is {\em
+  super-linear speedup}.  
+\item This is usually due to the size of the working set of the
+  program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Caching Effects}
+\begin{itemize}
+\item If a problem has a very large working set, then it is impossible
+  to fit it into the cache of a single computer.  As a result frequent
+  cache misses degrades performance significantly.
+\item If we divide the problem into many small sub-problems. and then
+  run them in parallel, then it is likely that each working set of
+  these small sub-problems will fit into the cache of a processor,
+  hence having amazing speedup.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Lesson} \huge Always question theory in the context of
+``real world''.
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe the relation of speedup and the number of processors.
+\end{itemize}
+\end{frame}
+
+\subsection{Efficiency}
+
+\begin{frame}
+\frametitle{Efficiency} Another metric to evaluate parallel algorithms
+is {\em efficiency}, which is defined as the speedup divided by the
+number of processors.
+\begin{equation}
+e = {k \over p} =  {T_s \over {p T_p}}
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Efficiency}
+\begin{itemize}
+\item It is easy to see that efficiency $e$ is between 0 and 100\%, if
+  the speed up is between 0 and $p$, where $p$ is the number of
+  processors.
+\item If we fully parallelize a computation, the efficiency is 100\%.
+\item One can think of the efficiency as ``how well we parallelize the
+  computation per processor?'' -- that is, it is the CP value, or
+  performance/cost ratio.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe the relation of efficiency and speedup.
+\end{itemize}
+\end{frame}
+
+\subsection{Work}
+
+\begin{frame}
+\frametitle{Work} 
+
+Another metric for parallel algorithm evaluation is {\em work}, which
+is the product of the number of the processor and the parallel time.
+
+\begin{equation}
+w_p = p T_p
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Energy}
+\begin{itemize}
+\item The concept of {\em work} is like man-month; you used this many
+  processors for this period of time.
+\item It is like that the energy is the product of power and time; you
+  used this much power for a period of time, then you use this much
+  energy.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Extra Work}
+\begin{itemize}
+\item The work done by a sequential algorithm is $w_s = T_s$, and the
+  work done by a parallel algorithm is $w_p = p T_p$.
+\item We assume that all the work done by the sequential algorithm is
+  {\em necessary}; that means all the work done by the sequential
+  algorithm is {\em essential}.
+\item Now if the work done by the parallel algorithm is larger than
+  the work done by the sequential algorithm, then the difference is {\em
+    non-essential} in solving this problem.
+\item This is what we called {\em overheads}.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Extra Work}
+\begin{itemize}
+\item If we parallel a computation well, the two works done by the
+  sequential algorithm and the parallel algorithm should be similar,
+  which implies three things.
+\begin{itemize}
+\item The Efficiency $e$ should be close to 1.
+\item The speedup $k$ should be close to $p$.
+\item $w_s$ should be close to $w_p$.
+\end{itemize}
+\end{itemize}
+
+\begin{equation}
+w_p = p T_p = p {T_s \over k} = {w_s \over e}
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion} Compute the speedup, efficiency, work for the
+following, and describe the circumstance each of these action is
+suitable for
+\begin{itemize}
+\item Using one processor and the time is 40 minutes.
+\item Using two processors and the time is 24 minutes.
+\item Using four processors and the time is 16 minutes.
+\end{itemize}
+\end{frame}
+
+\section{Theory}
+
+\subsection{Amdahl's Law}
+
+\begin{frame}
+\frametitle{Amdahl's Law} 
+\begin{itemize}
+\item The speedup of a program using multiple processors in parallel
+  computing is limited by the time needed for the sequential fraction
+  of the program.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Amdahl's law} 
+\begin{itemize}
+\item Let the portion of inherent sequential in a computation be $x$,
+  the part that can be parallelized will be $1 - x$.
+\item Assume that the sequential time is $1$, then the parallel time
+  will be at least $x + {{1-x} \over p}$ while using $p$ processors.
+\end{itemize}
+
+\begin{equation}
+k = {1 \over {x + {{1-x} \over p}}} \leq {1 \over x}
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Amdahl's Law} 
+\begin{itemize}
+\item Amdahl's law says that if you have 20\% of you code is
+  inherently sequential, the speedup could not be more than $5$.
+\item That hurts!
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Amdahl's Law} 
+\centerline{\pgfimage[width=0.6\textwidth]{AmdahlsLaw}}
+\footnote{\url{http://upload.wikimedia.org/wikipedia/commons/6/6b/AmdahlsLaw.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Implications}
+\begin{itemize}
+\item Every program has an {\em inherently} sequential part, which
+  limits the speedup.
+\item If the inherent part is large, then the program is inherently
+  sequential and we do not want to parallelize it; we have to admit
+  that there are computations that cannot be parallelized efficiently.
+\item The lesson here is to recognize the cases that have only limited
+  parallelism.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe Amdahl's Law.
+\end{itemize}
+\end{frame}
+
+\subsection{Gustafson's Law} 
+
+\begin{frame}
+\frametitle{Two Ways}
+\begin{itemize}
+\item Remember there are two ways to improve speedup.  We either
+  increase the sequential time, or we decrease the parallel time.
+\item In many cases we can increase the sequential time by increasing
+  the {\em problem size}.  If the impact of the increased problem size
+  on sequential time is larger than on the parallel time, then we have
+  a ``better'' speedup.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gustafson's Law} 
+\begin{itemize}
+\item Computations involving {\em arbitrarily} large data sets can be
+  efficiently parallelized.
+\item This is true only when the ``inherently sequential'' part is a
+  constant, i.e., it is not a function of the problem size.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gustafson's Law} 
+\begin{itemize}
+\item Let the portion of inherent sequential in a computation be $x$,
+  the part that can be parallelized will be $1 - x$.
+\item Instead of a fixed problem size, we increase the number of
+  processors to $p$.  Then after $x$ of inherent sequential work, $p$
+  processors does $p (1 - x)$ amount of work.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gustafson's Law} 
+\begin{itemize}
+\item The sequential time is now at least $x + p (1-x)$, since the
+  amount of work done by $p$ processors is $p (1 - x)$, and the
+  sequential program only has one processor to do it.
+\item The parallel time is $x + (1-x) = 1$ with $p$ processors.
+\item We can have speedup close to $p$ for any $x$ by increasing $p$.
+\end{itemize}
+\begin{equation}
+k = p (1 - x) = p - px
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Gustafson's Law} 
+\centerline{\pgfimage[width=0.7\textwidth]{Gustafson}}
+\footnote{\url{http://slashdot.org/topic/wp-content/uploads/2012/08/Screen-Shot-2012-08-29-at-12.19.53-PM-618x425.png}}
+\end{frame}
+
+\begin{frame}
+\frametitle{Notes}
+\begin{itemize}
+\item We assume that $x$ portion of sequential part is still
+  sufficient even if we increase the work $p$ times.
+\item In many cases this is true if $x$ only involves setting up the
+  systems, and data can be read in parallel.
+\item If data cannot be read in parallel, then $x$ will be a function
+  of the problem size, which invalidates the analysis.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Notes}
+\begin{itemize}
+\item Despite the possible complications, this observation is generally
+  useful because $x$ is usually a small constant if only system setup
+  is involved.  In addition, most computation has complexity like
+  $O(n^2)$ so the work of reading the data, even if done sequentially,
+  is not comparable to the actual computation.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Notes}
+\begin{itemize}
+\item If we really really want to have a clear picture about speedup,
+  we would also like to know the problem size when the speedup is
+  measured.
+\item If we have a {\em good} speedup even if problem size is small,
+  then we really have a good parallel implementation.  Otherwise it
+  could be a fabricated phenomenon with the use (or abuse) of
+  Gustafson's Law.
+\item When you examine a speedup report, always question the
+  comparison basis and the problem size.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Describe Gustafson's Law.
+\end{itemize}
+\end{frame}
+
+\end{CJK}
+\end{document}
+
