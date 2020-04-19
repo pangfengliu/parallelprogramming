@@ -1,0 +1,5 @@
+CC = gcc
+CFLAGS =
+
+all: matrix-multiply matrix-multiply-wrong
+
