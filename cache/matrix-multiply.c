@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#define N 2048
+#define N 1024
 #define A 47
 #define B 97
 
@@ -22,11 +22,11 @@ int main(int argc, char *argv[])
   assert (n <= N);
   initMatrix(a, n);
   initMatrix(b, n);
-  for (int i = 0; i < N; i++)
-    for (int j = 0; j < N; j++) {
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < n; j++) {
       c[i][j] = 0;
-      for (int k = 0; k < N; k++)
-	c[i][j] += a[i][k] * b[k][j];
+      for (int k = 0; k < n; k++)
+	c[i][j] += a[i][k] * b[j][k];
     }
   return 0;
 }
