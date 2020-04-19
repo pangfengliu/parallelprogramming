@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =
+CFLAGS = -g -O0
 
 all: matrix-multiply matrix-multiply-wrong
 
