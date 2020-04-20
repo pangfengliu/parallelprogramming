@@ -1,0 +1,4 @@
+/proc/sys/kernel/perf_event_paranoid
+Set to -1 for no restriction
+/proc/sys/kernel/kptr_restrict
+Set to  0 for no restriction
