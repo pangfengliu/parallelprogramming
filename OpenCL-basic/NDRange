@@ -1,0 +1,11 @@
+digraph G {
+	platform_id -> device_id [label = "clGetDeviceIDs"];
+	device_id -> context [label = "clCreateContext"];
+	device_id -> command_queue;
+	context -> command_queue [label = clCreateCommandQueue];
+	string -> program [label = clCreatePrograWithSource];
+	context -> program;
+	program -> kernel [label = clCreateKernel];
+	context -> buffer [label = clCreateBuffer];
+	kernel -> command_queue [label = clEnqueueNDRangeKernel, dir = both, color = blue, fontcolor = blue];	
+}

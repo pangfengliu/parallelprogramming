@@ -1,0 +1,9 @@
+digraph G {
+	platform_id -> device_id [label = "clGetDeviceIDs"];
+	device_id -> context [label = "clCreateContext"];
+	device_id -> command_queue;
+	context -> command_queue [label = clCreateCommandQueue];
+	string -> program [label = clCreatePrograWithSource];
+	context -> program;
+	program -> device_id [label = clBuildProgram, color = blue, dir = both, fontcolor = blue]
+}

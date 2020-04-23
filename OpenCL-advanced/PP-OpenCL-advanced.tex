@@ -1,0 +1,869 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{pgf}
+
+\input{slide-macro}
+
+\begin{document}
+
+\title{Advanced OpenCL Programming}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+\section{Multiple Devices}
+
+\begin{frame}
+  \frametitle{Multiple Devices}
+  \begin{itemize}
+    \item We have been using one device for computation. 
+    \item Now we will use multiple device to solve a problem.
+    \item We will use matrix multiplication as an example.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Partition}
+  \begin{itemize}
+    \item Since we are very poor and cannot afford four GPUs, we will
+      partition the data by rows (not by block) among devices.  
+    \item We will partition matrix by rows, so that the memory
+      assigned to a device is contiguous.
+    \item Each kernel will run on a device, and compute part of the
+      answers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Partition}
+  \begin{itemize}
+    \item We will partition $A$ and $C$ by rows, and do {\em not}
+      partition $B$.
+    \item For example, if we use two devices, then the first kernel
+      will compute the top half of $C$, and another kernel will
+      compute the bottom half of $C$.
+      \item The reason for not partitioning $B$ is that all kernels
+        need the entire $B$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Constants}
+  \begin{itemize}
+    \item {\tt MAXLOG} is the maximum number of bytes for storing
+      compilation log.  More on this later.
+    \item The number of device is {\tt DEVICENUM}.  We will use 2 in
+      our humble installation.
+    \item {\tt ITEMPERDEVICE} is the number of work item in {\tt
+      NDRange} of a kernel.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Constants}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{header}{main}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item If $N$ is 1024, and the number of device is 2, then how many
+      works items are there in a kernel?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Select Devices}
+  \begin{itemize}
+  \item We will select the first {\tt DEVICENUM} GPU device from our
+    humble installation.
+  \item The code is similar to those earlier version, except that
+    now we need to make sure that the number of GPUs found is at
+    least {\tt DEVICENUM}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Devices}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{getdevice}{getcontext}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context}
+  \begin{itemize}
+    \item Since a context can consist of multiple devices, we need
+      only one context.
+      \item Here we include the first {\tt DEVICENUM} GPUs in the
+        context.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{getcontext}{commandqueue}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multiple Queue}
+  \begin{itemize}
+    \item Recall that a command queue connects to a device.  
+    \item Since we have multiple devices, we need multiple
+      command queues.
+    \item We put the command queues in the {\tt commandQueue} array.
+    \item Note that we set the {\tt CL\_QUEUE\_PROFILING\_ENABLE} to
+      enable profiling.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Command Queue}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{commandqueue}{kernelsource}
+\end{frame}
+
+\begin{frame}
+  \frametitle{One Context, Multiple Devices}
+  \begin{itemize}
+    \item Up to this point, we can image there is only one context,
+      which has multiple devices.
+    \item Within this context we will have one command queue to connect
+      to each device.
+    \item Later we will send commands to these devices.  The command
+      sent into a command queue will run on the device this command
+      queue connects to.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item What will be sent into these command queues as commands?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Program}
+  \begin{itemize}
+    \item The kernel will be sent into the command queue as commands.
+    \item Before this can happen we need to compile the kernel.
+    \item Recall that the ``kernel'' at this point is only a set
+      of strings, which need to be compiled.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Build Program}
+  \begin{itemize}
+    \item We call {\tt clBuildProgram} to build executable.
+    \item Note that we pass {\em all} devices we want to use as
+      parameters, so OpenCL will build executable for all our {\tt
+        DEVICENUM} devices.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compilation Log}
+  \begin{itemize}
+    \item The kernel source is compiled when an OpenCL program runs.
+    \item It is very inconvenient because when we run an OpenCL program
+      the execution will not display compilation errors of the kernel.
+    \item We will use {\tt clGetProgramBuildInfo} to show the error
+      message if the compilation of the kernel fails.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clGetProgramBuildInfo.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt program] The compiled program.
+  \item [\tt device] The device you want to query.
+  \item [\tt param\_name] The information you want to query.
+    \item [\tt \tt param\_value\_size] The length of {\tt
+      param\_value} in bytes.
+  \item [\tt param\_value] The location for the query answer.
+  \item [\tt param\_value\_size\_ret] The number of bytes returned
+    from the query.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Error}
+  \begin{itemize}
+    \item When there is an error in {\tt clBuildProgram}, we will call
+      {\tt clGetProgramBuildInfo} to find out.
+    \item Since we are not sure about which device causes the
+      compilation error, we list the information from all of them.
+    \item We query with {\tt CL\_PROGRAM\_BUILD\_LOG} for the
+      compilation log, and place it into the {\tt log} buffer we
+      prepared.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Build Program}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{buildprogram}{createkernel}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item What is the type of the compilation log? 
+    \item What does {\tt puts} do?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Partition}
+  \begin{itemize}
+    \item Now we are ready to partition host buffers $A$, $B$ and $C$.
+    \item We will create {\tt DEVICENUM} buffers for $A$, and each of
+      which will be given to a kernel as a parameter for computations.
+    \item We partition $A$ into sub-matrix of {\tt N / DEVICENUM} rows
+      of $A$ each, and assign each partition to an OpenCL buffer.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer A}
+  \begin{itemize}
+    \item {\tt ITEMPERDEVICE} means the number of items per device.
+    \item The index {\tt device} determines the starting position of a
+      buffer, i.e., where the matrix $A$ will be partitioned.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer for A}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{createbuffer}{bufferB}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer B}
+  \begin{itemize}
+    \item We do not need to partition $B$ because it will be used by
+      all kernels.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer for B}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{bufferB}{bufferC}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer C}
+  \begin{itemize}
+    \item Buffers for $C$ are similarly built as for $A$.
+    \item Unlike $A$ and $B$ that will copy host buffers to device
+      buffers, $C$ will use host memory directly.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer for C}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{bufferC}{NDRange}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Make sure that you understand the offset calculation in $A$
+      and $C$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt NDRange}
+  \begin{itemize}
+    \item According to our partition we declare {\tt NDRange} as a two
+      dimension array with {\tt N / DEVICENUM} rows and {\tt N} columns.
+    \item This is consistent with $C$, where each work item will
+      compute an element of $C$.
+    \item The work group is still {\tt BSIDE} by {\tt BSIDE} since we
+      will use the previous local memory algorithm.
+    \item We will have {\tt DEVICENUM} kernels, so we will need {\tt
+      DEVICENUM} events for synchronization and profiling.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{NDRange}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{NDRange}{setarg}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Set Argument}
+  \begin{itemize}
+    \item We will launch {\tt DEVICENUM} kernels.  Each of them will
+      compute {\tt N / DEVICENUM} rows and {\tt N} columns of $C$.
+    \item We loop through all devices, and assign the argument order
+      as $A$, $B$, and $C$.
+    \item Note that we need to supply the correct $A$ and $C$ since
+      there are {\tt DEVICENUM} of them.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Set Arguments}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{setarg}{startkernel}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \begin{itemize}
+    \item Now we are ready to launch kernel.
+    \item Note that we need to supply the command queue to the device
+      as a parameters.
+    \item The same kernel is launched again and again for {\tt
+      DEVICENUM} times.  The only difference is the buffers $A$ and
+      $C$ used in launching the kernel.
+    \item We associate an event with each kernel launching.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Start Kernel}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{startkernel}{waitforevent}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Wait for Completion}
+  \begin{itemize}
+    \item Since kernel launching is non-blocking. we need to wait for
+      them to complete.
+    \item We simply use {\tt clWaitForEvents}, and wait for all events
+      to complete.
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Wait for Kernels}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{waitforevent}{getbase}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item How many events do we need to wait for the whole thing to
+      complete?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \begin{itemize}
+    \item The kernel function is very similar to the previous local
+      memory version.
+    \item We also use the constant {\tt DEVICENUM} to denote the
+      number of devices.
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Kernel}
+  \programlistingfirst{mul-local-multidevice-kernel.cl}{}{\footnotesize}{constant}{mul}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \programlistingfirst{mul-local-multidevice-kernel.cl}{}{\footnotesize}{mul}{loop}
+\end{frame}
+
+\begin{frame}
+  \frametitle{NDRange}
+  \begin{itemize}
+    \item We declare $A$ and $C$ as {\tt N / DEVICENUM} by {\tt N}
+      arrays, because the domain is partitioned among devices.
+    \item The rest of the code is {\em not} changed at all!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reason}
+  \begin{itemize}
+  \item The reason for this ``no need to change'' is that a kernel
+    function is acting from a local view, i.e., it is a work item
+    within a work group, so all the operations are still the same.
+  \item The kernel still thinks from the point of view of blocks, and
+    the related operations are done in local indices.
+  \item We only need the global index while accessing $A$, $B$, and
+    $C$.
+  \item Since the kernel is given the corresponding parts of $A$ and
+    $B$, so the operation is correct.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Convince yourself that the code is correct.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Timing}
+  \begin{itemize}
+    \item We would like to know the detailed timing of the kernels.
+    \item In particular we would like to prove the two kernel runs {\em in
+      parallel}.
+    \item To do so we need the absolute time of the events from all devices.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Base}
+  \begin{itemize}
+    \item The time returned by the event is difficult to interpret.
+    \item We would like to establish a relative time for inspection.
+      \item We choose the time the first kernel entering the queue as
+        the base time, and report the relative time to it for ease
+        understanding.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Time}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{getbase}{gettime}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Time}
+  \begin{itemize}
+    \item We loop through all devices and get timing information from
+      all of them.
+    \item This part is the same as before.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Time}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{gettime}{getrest}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Time}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{getrest}{printtime}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relative Time}
+  \begin{itemize}
+    \item In addition to queuing time, submission time, and
+      execution, we also report the relative time when the four
+      events happened.
+    \item The relative time is in nanosecond.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Print Time}
+  \programlistingfirst{matrixMul-time-copy-local-multidevice.c}{}{\footnotesize}{printtime}{checkandfree}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt matrixMul-time-copy-local-multidevice-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Does the kernels run in parallel? Observe the results and
+      give your answer.
+  \end{itemize}
+\end{frame}
+
+\section{Dependency}
+
+\begin{frame}
+  \frametitle{Dependency}
+  \begin{itemize}
+    \item We may launch multiple kernels into multiple devices.
+    \item Kernels may have dependency, and we need to ensure dependency
+    among kernels.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example}
+  \begin{itemize}
+  \item In the following example we compute $G = (A + B) + (D + E)$,
+    where all vector has length $N$.
+  \item We compute $C = A + B$, then $F = D + E$, then we compute $G =
+    C + F$.  The last computation must wait for the first two to
+    complete.
+    \item We will use one device for {\em each} of the three additions.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Constants}
+  \begin{itemize}
+    \item We first declare the constants and variables.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\small}{header}{main}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Initialization}
+  \begin{itemize}
+    \item We initialize the $A$, $B$, $D$ and $E$ vectors.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\footnotesize}{vectors}{createbuffer1}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \begin{itemize}
+    \item We then create buffers for kernel parameters.
+    \item $A$ and $B$ are read only, and need to be copied into device.
+    \item $C$ is both read and write enable.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{createbuffer1}{createbuffer2}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \begin{itemize}
+    \item Similarly we create buffers for $D$, $E$ and $F$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{createbuffer2}{createbuffer3}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \begin{itemize}
+    \item We create buffers for $G$.
+    \item This buffer is write only and use the host memory directly,
+      so the host can print it directly.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{createbuffer3}{shape}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item What are the characteristic for read only, read and write,
+      and write only buffers respectively?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \begin{itemize}
+    \item Both {\tt NDRange} and the work group are one dimensional.
+    \item The size of {\tt NDRange} is $N$.
+    \item The size of a work group is 256.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{shape}{ABC}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$C = A + B$}
+  \begin{itemize}
+    \item Now we launch the first kernel for $C = A + B$.
+    \item We have already built three command queues for three devices.  
+    \item We use {\tt commandQueue[0]} for the first addition.
+    \item We also declared three events to denote the completion of
+      the three kernels that we will launch.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{ABC}{DEF}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$F = D + E$}
+  \begin{itemize}
+    \item Similarly  we launch the second kernel for $F = D + E$.
+      \item Note that we used {\tt commandQueue[1]} and {\tt
+        events[1]}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{DEF}{CFG}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$G = C + F$}
+  \begin{itemize}
+    \item Finally  we launch the third kernel for $G = C + F$.
+    \item Note that we used {\tt commandQueue[2]} and {\tt
+      events[2]}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{CFG}{waitforevent}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Wait for Events}
+  \begin{itemize}
+    \item We wait for all three kernel to finish.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency.c}{}{\scriptsize}{waitforevent}{getbase}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Wait for Events}
+  \begin{itemize}
+  \item The rest of the code just prints the timing information, checks
+    for correctness, and releases resources.
+  \item Please refer to previous discussion.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt vectorAdd-dependency-cl}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Does the program produce the correct answer?  
+    \item If not what is the possible reason?
+  \end{itemize}
+\end{frame}
+
+\subsection{Wait for Events}
+
+\begin{frame}
+  \frametitle{Problem}
+  \begin{itemize}
+    \item The previous program waits for all three kernels to
+      complete, but the third kernel did {\em not} wait for the first
+      two.
+    \item We will use the {\em wait for events} mechanism to launch
+      the third kernel.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clEnqueueNDRangeKernel.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$G = C + F$}
+  \begin{itemize}
+    \item We launch the third kernel and wait for the first two events
+      in the {\tt events} array.
+    \item Set {\tt num\_events\_in\_wait\_list} to 2 and {\tt
+      event\_wait\_list} to {\tt events}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency-correct.c}{}{\scriptsize}{CFG}{waitforevent}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt vectorAdd-dependency-correct-cl}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Does the program produce the correct answer?  
+    \item Observe the timing and make sure the first two kernels run
+      in parallel, and the third kernel will wait for the first two.
+  \end{itemize}
+\end{frame}
+
+\subsection{\tt clFinish}
+
+\begin{frame}
+  \frametitle{\tt flFinish}
+  \begin{itemize}
+    \item The host can also explicitly wait for the first two kernels
+      to finish before launching the third kernel by {\tt clFinish}.
+    \item We just need to wait for the command queues to the first two
+      devices to become empty.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-dependency-clfinish.c}{}{\scriptsize}{CFG}{waitforevent}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt vectorAdd-dependency-clfinish-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Does the program produce the correct answer?  
+    \item Observe the timing and make sure the first two kernels run
+      in parallel, and the third kernel will wait for the first two.
+    \item Compare the timing results between {\tt
+      vectorAdd-dependency-correct-cl} and {\tt
+      vectorAdd-dependency-clfinish-cl}, especially in when the last
+      kernel joined the command queue.
+  \end{itemize}
+\end{frame}
+
+\section{Group Size}
+
+\begin{frame}
+  \frametitle{Group Size}
+  \begin{itemize}
+  \item The previous matrix multiplication program has extremely good
+    performance due to two reasons.
+    \begin{itemize}
+      \item It uses local memory to speed up data access.
+      \item It has a larger group size (256).
+    \end{itemize}
+    \item Now we would like to study the effects of group size on
+      performance.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compute Units}
+  \begin{itemize}
+    \item A device has only a limited number of compute units.
+    \item The work items of a work group will occupy a compute unit.
+    \item For a given number of work items, if the work group size is
+      small, then the number of work groups becomes large, and some
+      work groups will wait for compute unit.
+    \item In other words, a small work group size limits the the
+      number of work items that we can process in parallel.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Classroom}
+  \begin{itemize}
+    \item A school has only a limited number of classrooms.
+    \item The students are divided into group, and one group will
+      occupy a classroom.
+    \item For a given number of students, if the group size is small,
+      then the number of groups becomes large, and some groups will
+      wait for classroom.
+    \item In other words, a small group size limits the the number of
+      students that can study in parallel.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Give your own example of this phenomenon.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compute Unit Number}
+  \begin{itemize}
+    \item We need only one GPU device.
+    \item We call {\tt clGetDeviceInfo} with {\tt
+      CL\_DEVICE\_MAX\_COMPUTE\_UNITS} to get the number of compute
+      units on GPU.
+    \item We need the number of compute units to determine the work
+      group size.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-groupsize.c}{}{\footnotesize}{getdevice}{getcontext}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Group Size}
+  \begin{itemize}
+    \item We fix the number of work items to $N$, and vary the size of
+      the work group from 1 to 256.
+    \item We wait for the event before launching the next kernel.
+    \item We will record the timing information into a file {\tt
+      vectorAdd-grouopsize.dat}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-groupsize.c}{}{\scriptsize}{setNDRange}{getbase}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Timing Information}
+  \begin{itemize}
+    \item The rest of the code will retrieve timing information from
+      the event.
+    \item We output the group size and the execution time into a file
+      {\tt vectorAdd-grouopsize.dat}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-groupsize.c}{}{\scriptsize}{printtime}{checkandfree}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item We plot the kernel execution time for different group sizes.
+    \item The x-xis is in log scale.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Execution Time}
+  \centerline{\pgfimage[width=0.9\textwidth]{vectorAdd-groupsize.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Observe the execution time and draw you conclusion about the
+      effects of group size on performance.
+  \end{itemize}
+\end{frame}
+
+\end{document}

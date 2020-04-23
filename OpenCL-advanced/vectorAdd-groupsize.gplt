@@ -1,0 +1,7 @@
+set terminal png
+set xlabel "Group size"
+set ylabel "Execution time"
+set logscale x
+set output "vectorAdd-groupsize.png"
+plot "vectorAdd-groupsize.dat" with linespoints
+

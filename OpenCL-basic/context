@@ -1,0 +1,5 @@
+digraph G {
+	platform_id -> device_id [label = "clGetDeviceIDs"];
+	context [color = blue, fontcolor = blue];
+	device_id -> context [label = "clCreateContext"];
+}

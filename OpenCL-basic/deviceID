@@ -1,0 +1,4 @@
+digraph G {
+	device_id [color = blue, fontcolor = blue];
+	platform_id -> device_id [label = " clGetDeviceIDs"];
+}

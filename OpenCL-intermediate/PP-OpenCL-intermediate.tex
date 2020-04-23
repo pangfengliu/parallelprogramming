@@ -1,0 +1,1023 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{pgf}
+
+\input{slide-macro}
+
+\begin{document}
+
+\title{Intermediate OpenCL Programming}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Buffer Properties}
+
+\begin{frame}
+  \frametitle{Buffer} 
+  There are three exclusive types of buffers.  
+  \begin{description}
+  \item [CL\_MEM\_USE\_HOST\_PTR]
+  \item [CL\_MEM\_ALLOC\_HOST\_PTR]
+  \item [CL\_MEM\_COPY\_HOST\_PTR]
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{CL\_MEM\_USE\_HOST\_PTR} 
+  \begin{itemize}
+  \item OpenCL uses the host memory as the buffer so the {\tt
+    host\_ptr} must not be {\tt NULL}.
+  \item If the device is GPU then the access is slow because the
+    buffer is in the host (CPU).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{CL\_MEM\_ALLOC\_HOST\_PTR} 
+  \begin{itemize}
+  \item OpenCL will allocate a buffer in the device and the device
+    will use it directly.
+  \item This memory is accessible from the host by {\tt
+    clEnqueueWriteBuffer} and {\tt clEnqueueReadBuffer}.
+  \item Since the device will allocate the buffer we cannot provide a
+    non-NULL {\tt host\_ptr}.
+  \item The access is fast because the buffer is in the device
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{CL\_MEM\_COPY\_HOST\_PTR} 
+  \begin{itemize}
+  \item OpenCL will copy the contents of the host buffer to a
+    buffer on the device
+  \item The device will use the device buffer.
+  \item The access is fast because the buffer is in the device
+    (GPU/CPU).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Comparison}
+  \begin{tabular}{|l|l|l|l|} \hline
+    buffer type & {\tt host\_ptr} & device will use & speed from GPU \\ \hline
+    {\tt USE} & {\tt != NULL} & the host buffer directly & slow \\ \hline
+    {\tt ALLOC} & {\tt == NULL} & the device buffer & fast \\ \hline
+    {\tt COPY} & {\tt != NULL} & the device buffer & fast \\
+    & & copied from the &  \\ 
+    & & host buffer & \\ \hline
+  \end{tabular}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Which of the allcoation mode provides the slowest memory
+      access from a device GPU?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Need not to Retrieve}
+  \begin{itemize}
+    \item We would like to implement the vector addition program
+      without getting the  results back from the device.
+    \item The idea is that we copy the vector A and B into device with
+      {\tt CL\_MEM\_COPY\_HOST\_PTR} buffer, and put the results in a
+      {\tt CL\_MEM\_USE\_HOST\_PTR} buffer.
+    \item When the computation is over then we can get the results in
+      the host buffer directly.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{vectorAdd-nofetchC.c}{}{\scriptsize}{createbuffer}{setarg}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Execution}
+  \begin{itemize}
+    \item After creating buffers, setting the parameter order, and
+      set up the dimension of {\tt NDRange}, we run the kernel by
+      placing it into the command queue
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt clFinish}
+  \programlistingfirst{vectorAdd-nofetchC.c}{}{\footnotesize}{setshape}{checkandfree}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt vector-nofetchC-cl} program.
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Does it produce the correct answer?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Non-blocking}
+  \begin{itemize}
+    \item The previous program does not produce the correct answer
+      because the function call {\tt clEnqueueNDRangeKernel} is {\em
+        non-blocking}, which means it will not wait for the completion
+      of the kernel.
+    \item Since we check the contents of {\tt C} before the kernel
+      finishes, the answer is incorrect.
+    \item We need to wait for the commands in the command queue to
+      finish.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clFinish.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt command\_queue] Wait for the commands in this command
+    queue to finish.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt clFinish}
+  \programlistingfirst{vectorAdd-nofetchC-finish.c}{}{\footnotesize}{setshape}{checkandfree}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt vector-nofetchC-finish-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Does it produce the correct answer?
+  \end{itemize}
+\end{frame}
+
+\section{Index Domain}
+
+\subsection{Global Index}
+
+\begin{frame}
+  \frametitle{\tt NDRange} 
+  \begin{itemize}
+    \item We can set the dimension of {\tt NDRange} in the
+      {\tt clEnqueueNDRangeKernel} call.
+    \item In the previous example we set the dimension to one, now we
+      want to set it to two.
+    \item Now a work item in {\tt NDRange} will have two indices for
+      two dimensions.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Index}
+  \begin{itemize}
+    \item We can call {\tt get\_global\_id(i)} to know its index in
+      the $i$-th dimension.
+    \item The parameter {\tt i} must be within the dimension of {\tt
+      NDRange}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{getGlobalId.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt dimindx] The dimension in which we want to know the
+    index.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Domain}
+  \begin{itemize}
+    \item We will use an array to keep track of the global indices a
+      kernel function can see from a work item.
+      \item We declare this array as {\tt int globalId[2][N][N]},
+        where {\tt N} is 16.
+      \item The first 2 is for two dimensions.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \programlisting{get-global-id.cl}{}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \begin{itemize}
+  \item We first call {\tt get\_global\_id(0)} and {\tt
+    get\_global\_id(1)} to know the indices of this work item on the
+    two dimensions, and put them into {\tt id0} and {\tt id1}.
+  \item Then we place {\tt id0} and {\tt id1} into corresponding
+        cells of {\tt globalId}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Google {\tt \_\_global} to and find out what it means.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer}
+  \begin{itemize}
+    \item In the main program we declare a host buffer {\tt
+      bufferGlobalId} to hold the global indices.
+    \item This buffer will link to the {\tt globalId[2][N][N]}
+      parameter in the kernel function.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{get-global-id.c}{}{\scriptsize}{createbuffer}{setshape}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dimension}
+  \begin{itemize}
+    \item Now we set the dimension of {\tt NDRange} to 2, and set the
+      size of each dimension to {\tt N}, as in {\tt globalDim}.
+    \item Since {\tt NDRange} has two dimensions, a work group will
+      also have two dimension.  For simplicity we set it to one by
+      one, as in {\tt localDim}. 
+      \item We place the kernel into the command queue, then call {\tt
+        clFinish} to wait for the completion.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{get-global-id.c}{}{\scriptsize}{setshape}{printids}
+\end{frame}
+
+\begin{frame}
+  \frametitle{printId}
+  \begin{itemize}
+    \item We implement a {\tt printId} function to print the contents
+      in any array.
+    \item The first parameter is a string for identification purpose,
+      and the second parameter is the array of indices to print.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{get-global-id.c}{}{\scriptsize}{printid}{main}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt get-global-id-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the printed indices.
+  \item Will the output be affected if we set the work group size
+    differently?
+  \end{itemize}
+\end{frame}
+
+\subsection{Local Index}
+
+\begin{frame}
+  \frametitle{\tt NDRange} 
+  \begin{itemize}
+    \item Local index is the index within a work group.
+    \item We can specify the size of each dimension for a work group
+      in a {\tt clEnqueueNDRangeKernel} call.
+    \item In this example we will set the size of local dimension and
+      observe the results.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Local Index}
+  \begin{itemize}
+    \item We call {\tt get\_local\_id(i)} to know its index in the
+      $i$-th dimension.
+    \item The parameter {\tt i} must be within the dimension of {\tt
+      NDRange} because the local and the global index have the same
+      number of dimensions.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{getLocalId.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt dimindx] The dimension in which we want to know the
+    index.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Domain}
+  \begin{itemize}
+    \item We will use two arrays to keep track of global and local
+      index a kernel function can see from a work item respectively.
+    \item We declare two arrays as {\tt int globalId[2][N][N]} and
+      {\tt int localId[2][N][N]}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \programlisting{get-global-local-id.cl}{}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \begin{itemize}
+  \item We first call {\tt get\_global\_id(0)} and {\tt
+    get\_global\_id(1)} to know the indices of this work item in {\tt
+    NDRange}, and put them into {\tt id0} and {\tt id1}.
+  \item Then we call {\tt get\_global\_id} and {\tt get\_local\_id} to
+    get the indices.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \begin{itemize}
+    \item In the main program we declare two host buffers {\tt
+      bufferGlobalId} and {\tt bufferLocalId} to hold the global and
+      local indices.
+    \item This buffer will link to parameters {\tt globalId[2][N][N]}
+      and {\tt localId[2][N][N]} in the kernel function.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{get-global-local-id.c}{}{\scriptsize}{createbuffer}{setshape}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dimension}
+  \begin{itemize}
+    \item Now we set the dimension of {\tt NDRange} to 2, and set the
+      size of each dimension to {\tt N}, as in {\tt globalDim}.
+    \item We set the size of dimension of a work group from the
+      command line arguments, and place the sizes into {\tt localDim}.
+    \item We place the kernel into the command queue, then call {\tt
+      clFinish} to wait for the completion.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{get-global-local-id.c}{}{\scriptsize}{setshape}{check}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt get-global-id-cl} program by setting the work
+      group size to be 4 by 4.
+    \item Run the {\tt get-global-id-cl} program by setting the work
+      group size to be 2 by 4.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the printed indices under different group sizes.
+  \end{itemize}
+\end{frame}
+
+\subsection{Matrix Multiplication}
+
+\begin{frame}
+  \frametitle{Matrix Multiplication} 
+  \begin{itemize}
+    \item We now use matrix multiplication as an example of using
+      global index.
+    \item We will multiply two $N$ by $N$ matrices using GPU.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \begin{itemize}
+    \item The multiplication kernel has three parameters -- {\tt A},
+      {\tt B} and {\tt C}.
+    \item We will multiply {\tt A} with {\tt B}, and place the results
+      in {\tt C}.
+    \item We first get the row and column number of this work item,
+      then preform an inner product.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \programlisting{mul-kernel.cl}{}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrices}
+  \begin{itemize}
+    \item The main program first prepares host memory matrices {\tt A}
+      and {\tt B}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{matrixMul.c}{}{\scriptsize}{vector}{createbuffer}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \begin{itemize}
+    \item The main program then creates OpenCL buffers for {\tt A},
+      {\tt B} and {\tt C}.
+    \item The contents of A and B will be copied into devices
+      ({\tt CL\_MEM\_COPY\_HOST\_PTR}), and the GPU will use host memory buffer
+      directly ({\tt CL\_MEM\_USE\_HOST\_PTR}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{matrixMul.c}{}{\scriptsize}{createbuffer}{setarg}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Run Kernel}
+  \begin{itemize}
+  \item We set the size of both dimensions to {\tt N}, as in {\tt
+    globalDim}.
+  \item We set the sizes of dimensions of a work group as 1 by 1 and
+    place the sizes into {\tt localDim}.
+  \item We place the kernel into the command queue, then call {\tt
+    clFinish} to wait for the completion.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffers}
+  \programlistingfirst{matrixMul.c}{}{\scriptsize}{setshape}{checkandfree}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt matrixMul-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Did you notice the significant speed difference in the
+    computation and verification parts?
+  \end{itemize}
+\end{frame}
+
+\section{Time Measurement}
+
+\subsection{Event}
+
+\begin{frame}
+  \frametitle{Time Measurement}
+  \begin{itemize}
+    \item We would like to measure the kernel execution time.
+    \item The kernel is sent to a device through a {\em command
+      queue}, so we need to enable the command queue for profiling.
+    \item We associate an event with the end of a kernel execution,
+      then wait for the event.
+    \item We retrieve the timing information from the event.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Steps}
+  \begin{itemize}
+    \item We set the property of the command queue to allow profiling.
+    \item We then declare a variable of type {\tt cl\_event} for
+      the event.
+    \item We then supply the event as the last parameter when calling
+      {\tt clEnqueueNDRangeKernel}.
+    \item We then wait for this event by calling a function {\tt
+      clWaitForEvents}.
+    \item Finally we extract the timing information from the event by
+      calling {\tt clGetEventProfilingInfo}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Command Queue}
+  \begin{itemize}
+    \item The kernel is sent to a device through a {\em command
+      queue}.
+    \item If we want to time (profile) the kernel execution, we need
+      to explicitly set the property of the command queue to {\tt
+        CL\_PROFILING\_COMMAND\_QUEUED}.  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clCreateCommandQueue.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Property}
+  \begin{itemize}
+    \item We explicitly set the {\tt CL\_PROFILING\_COMMAND\_QUEUED}
+      property of the command queue when we created it.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{matrixMul-time.c}{}{\footnotesize}{commandqueue}{kernelsource}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Google to find out other properties that can be set for a
+      command queue.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel Execution}
+  \begin{itemize}
+  \item After setting the command queue for profiling, we can start
+    the kernel.
+  \item We supply {\tt event} as the last parameter while calling
+    {\tt clEnqueueNDRangeKernel}, so now we have associated the
+    event with the kernel execution.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clEnqueueNDRangeKernel.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{matrixMul-time.c}{}{\footnotesize}{setshape}{waitforevent}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Wait for Event}
+  \begin{itemize}
+    \item Now we have submitted the kernel to execution, we just wait
+      for the event to happen.
+    \item We call {\tt clWaitForEvents} to wait for event(s).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{clWaitForEvents}
+  \prototypedetail{clWaitForEvents.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt num\_events] The number of events to wait for.
+  \item [\tt event\_list] The array of events to wait for.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{matrixMul-time.c}{}{\footnotesize}{waitforevent}{gettime}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Trace the {\tt matrixMul-time.c} to understand the flow so far.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Three Stages}
+  A kernel execution will go through three stages.
+  \begin{itemize}
+    \item First the kernel joined the command queue for execution.
+    \item When it is the turn of the kernel, it is submitted to the
+      device for execution.
+    \item When the kernel finished execution, it will trigger the
+      event you associated with it.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Information}
+  The event can provide the following four times.
+  \begin{itemize}
+    \item The time when the kernel joined the command queue.
+    \item The time when the kernel was sent to the device for execution.
+    \item The time when the kernel started execution.
+    \item The time when the kernel finished execution.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Information}
+  \begin{itemize}
+    \item We call {\tt clGetEventProfilingInfo} to know the four
+      times.
+    \item The time-stamp is of type {\tt cl\_ulong}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt clGetEventProfilingInfo}
+  \prototypedetail{clGetEventProfilingInfo.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt event] The event that we want to query.
+  \item [\tt param\_name] The information to query.
+  \item [\tt param\_value\_size] The length of buffer ({\tt
+    param\_value}) to store the answer.
+  \item [\tt param\_value] The buffer to store the answer.
+  \item [\tt param\_value\_size\_ret] The actual length of the
+    returned answer.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Four Time Points}
+  \begin{itemize}
+  \item We put the four times in four variables -- {\tt
+    timeEnterQueue}, {\tt timeSubmit}, {\tt timeStart}, and {\tt
+    timeEnd}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Time Calculation}
+  \programlistingfirst{matrixMul-time.c}{}{\scriptsize}{gettime}{printtime}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Time Calculation}
+  \begin{itemize}
+  \item We calculate the duration of each stage by the difference of
+    the beginning and the ending time-stamps.
+  \item The unit of time is nano ($10^{-9}$) second. 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{matrixMul-time.c}{}{\footnotesize}{printtime}{checkandfree}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt matrixMul-time-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Observe the times of the three stages.
+  \end{itemize}
+\end{frame}
+
+\subsection{Example}
+
+\begin{frame}
+  \frametitle{Buffer Comparison}
+  \begin{itemize}
+    \item Now we know how to measure kernel execution time, we can
+      compare the effects of different communication buffers on the
+      execution time.
+    \item We will compare the executive time of using {\tt
+      CL\_MEM\_COPY\_HOST\_PTR} and {\tt CL\_MEM\_USE\_HOST\_PTR} for
+      creating {\tt A} and {\tt B} buffers.
+    \item We will fix the allocation method of {\tt C} to make a
+      meaning comparison.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Difference}
+  \begin{itemize}
+    \item The only difference between the following two programs is
+      how they allocate {\tt A} and {\tt B} matrices.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{matrixMul-time-copy.c}{}{\scriptsize}{createbuffer}{setarg}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{matrixMul-time-use.c}{}{\scriptsize}{createbuffer}{setarg}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt matrixMul-time-copy-cl} and {\tt
+      matrixMul-time-use-cl} programs.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compare the execution times of the two programs.
+  \item What is the reason for this difference in kernel execution
+    time?
+  \end{itemize}
+\end{frame}
+
+\section{Local Memory}
+
+\begin{frame}
+  \frametitle{Local Memory}
+  \begin{itemize}
+    \item Local memory is shared by processing units in the same work
+      group.
+    \item Local memory is fast but small.
+    \item We will use local memory to speed up matrix multiplication.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Idea}
+  \begin{itemize}
+    \item Both matrices $A$ and $B$ are $N$ by $N$.
+    \item We will partition the matrices into $Blk$ by $Blk$ blocks,
+      so each block has $N / Blk$ rows and columns.
+    \item For ease of notation we will use $Block(A, i, j)$ to denote
+      the block in $i$-th row of blocks and $j$-th column of blocks in
+      $A$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Work Group}
+  \begin{itemize}
+  \item Each work group will compute a block in $C$.
+  \item Each thread will compute an element of $C$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Divide and Conquer}
+  \begin{itemize}
+  \item Now consider the work group that is responsible for
+    computing the $Block(C, i, j)$.
+  \item This work group will first multiply $Block(A, i, 1)$ by
+    $Block(B, 1, j)$.
+  \item This work group will then multiply $Block(A, i, 2)$ by
+    $Block(B, 2, j)$.
+  \item ...
+  \item This work group will then multiply $Block(A, i, N)$ by
+    $Block(B, N, j)$.
+  \item Then $Block(C, i, j)$ is the sum of all these products.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Divide and Conquer}
+  \centerline{\pgfimage[height=0.6\textheight]{matrix-mul.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Make sure that you understand this algorithm.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fast multiplication}
+  \begin{itemize}
+    \item If we know how to do matrix multiplication on two blocks, we
+      know how to solve the whole problem.
+    \item The problem is that if we do this on global memory, it will
+      be slow.
+    \item The idea is to bring $Block(A, i, 1)$ and $Block(B, 1,
+      j)$ into local memory, then we can multiply them fast.
+    \item How??
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Memory Movement}
+  \begin{itemize}
+  \item There are $(N / Blk)^2$ elements in $Block(A, i, 1)$.
+  \item There are $(N / Blk)^2$ threads in this work group.
+  \item We make each thread to move an element from both $Block(A, i,
+    1)$ $Block(B, 1, j)$ into local memory, then from both $Block(A,
+    i, 2)$ and $Block(B, 2, j)$, and so on.
+  \item After each movement each thread computes an element in
+    $Block(C, i, j)$ using the data in local memory.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Move to Local Memory}
+  \centerline{\pgfimage[height=0.8\textheight]{matrix-mul-move.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Profitable}
+  \begin{itemize}
+    \item Why is this profitable?
+    \item Each thread only moves two data.
+    \item Each thread will do a vector inner product on two vector of
+      length $(N / Blk)$.
+    \item That is, every data moved into local memory is shared by
+      $(N / Blk)$ other threads.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Make sure that you understand this profitable theory.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Steps} Now from a thread, or a kernel point of view, it
+  will go through the following steps.
+  \begin{itemize}
+    \item Get the global and local indices of this work item.
+    \item Go through $Blk$ iterations, where each of these
+      iterations multiplies two blocks.
+      \begin{itemize}
+        \item Move a data from A in global memory into local memory.
+        \item Move a data from B in global memory into local memory.
+        \item After both steps are done compute the inner product and
+          add it to a variable {\tt sum}
+      \end{itemize}
+    \item Put sum into the corresponding $C$ element.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Constants}
+  \begin{itemize}
+    \item Since the kernel function file cannot include other source
+      files, we can only define these constants here. A more
+      consistent method should be used in the future.
+    \item We define a symbol {\tt BSIDE} for the size of a side of the
+      a block.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{mul-local-kernel.cl}{}{}{constant}{mul}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Interface}
+  \begin{itemize}
+    \item We use global memory as the interface between the kernel and
+      the host, and the interface is the same as before.
+    \item We declare two local matrices in local memory, using the
+      {\tt \_\_local} keyword.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{mul-local-kernel.cl}{}{}{mul}{loop}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Data Movement}
+  \begin{itemize}
+    \item Each thread (kernel function) moves one data into local $A$
+      and $B$.
+    \item However, we need to make sure that when we start the inner
+      product, {\em all} the data are there.
+    \item Remember a thread only moves two data, other data are moved
+      by other threads -- we do not know if they have finished or not.
+    \item We need to synchronize with all other threads in the work group.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{mul-local-kernel.cl}{}{\footnotesize}{loop}{inner}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Move to Local Memory}
+  \centerline{\pgfimage[height=0.8\textheight]{matrix-mul-move.pdf}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Do we need to synchronize with thread in other work groups?
+    \item Convince yourself that the index calculation is correct.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Synchronization}
+  \begin{itemize}
+    \item We use {\tt barrier} to synchronize threads.
+    \item All threads in the same group will synchronize.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{barrier}
+  \prototypedetail{barrier.h}{\small}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt flags] The memory level this synchronization guarantees.
+    \begin{description}
+      \item [\tt CLK\_LOCAL\_MEM\_FENCE] Guarantees that all local
+        memory operations will finish.
+      \item [\tt CLK\_GLOBAL\_MEM\_FENCE] Guarantees that all global
+        memory operations will finish.
+    \end{description}
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{mul-local-kernel.cl}{}{\footnotesize}{loop}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{C}
+  \begin{itemize}
+    \item The answer in $C$ is accumulated throughout the iterations in
+      variable {\tt sum}.
+    \item We place another barrier after the inner product.
+    \item We only update local memory so we use {\tt CLK\_LOCAL\_MEM\_FENCE}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{C}
+  \centerline{\pgfimage[height=0.6\textheight]{matrix-mul-inner.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt matrixMul-time-copy-local-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Do we need both synchronizations?
+    \item Observe the timing.
+  \end{itemize}
+\end{frame}
+
+\end{document}

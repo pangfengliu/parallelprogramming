@@ -1,0 +1,231 @@
+
+% global setting
+
+\newcommand{\comment}[1]{}
+
+% list environment gloabal setting
+
+% to specify the size of fonts in lst environment
+
+\lstset{showstringspaces=false}
+\lstset{language=C}
+\lstset{basicstyle=\tt}
+\lstset{keywordstyle=\color{blue}}
+\lstset{emphstyle=\color{red}}
+\lstset{numbers=left}
+\lstset{frame=single}
+\lstset{rangeprefix=\/*\ }
+\lstset{rangesuffix=\ *\/}
+\lstset{includerangemarker=false}
+
+%% slides related macros
+
+\newenvironment{mytitle}[2]
+{\begin{frame}{#1} \vspace{0.2\textheight}{\huge #2} \end{frame}}
+
+%% Macro for non-numbered frames listing 
+%% \nonumberlisting{title}{file}{options}
+
+\newcommand{\nonumberlisting}[3]
+{\noindent{#1}
+{\lstinputlisting[#3]{#2}}}
+
+%% Program listing macros
+
+%% \programlisting{file}{desp}{font}
+%% \programlistingfirst{file}{desp}{font}{start}{end}
+%% \programlistingrest{file}{descp}{font}{start}{end}
+
+
+%% List a program in one page with a font size.
+
+\newcommand{\programlisting}[3]
+{\renewcommand{\lstlistingname}{#3 \bf Example}
+\lstinputlisting[basicstyle={#3 \tt},caption={#3 \bf (#1) #2}]{#1}}
+
+%% List a program for the first page within a given range.
+
+\newcommand{\programlistingfirst}[5]
+{\renewcommand{\lstlistingname}{#3 \bf Example}
+\lstinputlisting[basicstyle={#3 \tt},linerange={#4-#5},caption={#3 \bf (#1) #2}]{#1}}
+
+%% List a program for the second page (or later).
+
+\newcommand{\programlistingrest}[5]
+{\lstinputlisting[basicstyle={#3 \tt},linerange={#4-#5}]{#1}}
+
+%% List a program in two pages.
+
+\newcommand{\programlistingtwoslides}[6]
+{\begin{frame}                  % do not add [fragile]
+\programlistingfirst{#1}{#2}{#3}{#4}{#5}
+\end{frame}
+\begin{frame}
+\programlistingrest{#1}{#2}{#3}{#5}{#6}
+\end{frame}}
+
+%% List a program in three pages.
+
+\newcommand{\programlistingthreeslides}[7]
+{\begin{frame}                  % do not add [fragile]
+\programlistingfirst{#1}{#2}{#3}{#4}{#5}
+\end{frame}
+\begin{frame}
+\programlistingrest{#1}{#2}{#3}{#5}{#6}
+\end{frame}
+\begin{frame}
+\programlistingrest{#1}{#2}{#3}{#6}{#7}
+\end{frame}
+}
+
+
+%% Program input/output macros
+
+%% \programoutput{file}
+%% \programoutputfirst{file}{font}{options}
+%% \programoutputrest{file}{font}{startline}{endline}
+%% \programoutputtwoslides{file}{font}{start}{endl}{start2}{end2}
+
+%% Program output macor with default setting
+
+\newcommand{\programoutput}[1]
+{\programoutputfirst{#1}{}{}}
+
+%% Program output macor for the first page
+
+\newcommand{\programoutputfirst}[3]
+{\lstset{basicstyle={#2 \tt}}
+\nonumberlisting{#2 \bf 輸出}{#1.out}{#3}}
+
+%% Program output macor for later page
+
+\newcommand{\programoutputrest}[4]
+{\lstinputlisting[firstnumber={#3},basicstyle={\tt #2},linerange={#3-#4}]
+{#1.out}}
+
+%% Program output macor for two slides
+
+\newcommand{\programoutputtwoslides}[6]
+{\begin{frame}                  % do not add [fragile]
+\programoutputfirst{#1}{#2}{linerange={#3-#4}}
+\end{frame}
+\begin{frame}
+\programoutputrest{#1}{#2}{#5}{#6}
+\end{frame}}
+
+
+%% \programinput{file}
+%% \programinputfirst{file}{font}{option}
+
+%% Program input macor with default setting
+
+\newcommand{\programinput}[1]
+{\programinputfirst{#1}{}{}}
+
+%% Program input macor for the first page
+
+\newcommand{\programinputfirst}[3]
+{\lstset{basicstyle={#2 \tt}}
+\nonumberlisting{#2 \bf 輸入}{#1.in}{#3}}
+
+
+%% \piotwocol{file}
+
+\newcommand{\piotwocol}[1]{\piotwocoldetail{#1}{}{}}
+
+\newcommand{\piotwocoldetail}[2]{
+\begin{columns}[t,onlytextwidth]
+\begin{column}{0.45\textwidth}
+\programinputfirst{#1}{#2}{}
+\end{column}
+\begin{column}{0.45\textwidth}
+\programoutputfirst{#1}{#2}{}
+\end{column}
+\end{columns}}
+
+%% \piotworow{file}
+
+\newcommand{\piotworow}[1]
+{\programinput{#1}
+\programoutput{#1}}
+
+\newcommand{\piotworowdetail}[2]
+{\programinputfirst{#1}{#2}{}
+\programoutputfirst{#1}{#2}{}}
+
+
+%% \newcommand{\headerfile}[1]
+%% {\nonumberlisting {{\bf 標頭檔} {\tt #1}}{#1}{}}
+
+\newcommand{\header}[2]{\headerdetail{#1}{#2}{}}
+
+\newcommand{\headerdetail}[3]
+{{\renewcommand{\lstlistingname}{#3 \bf Header}
+\lstset{basicstyle={#3 \tt}}
+\lstset{label=header:#1,caption={(#1) #2}}
+\lstinputlisting{#1}}}
+
+%% Macro for prototype
+%% \prototype{file}
+
+\newcommand{\prototype}[1]{\prototypedetail{#1}{}}
+
+%% Macro for prototype with detialed setting
+%% \prototypedetail{file}{font}
+
+\newcommand{\prototypedetail}[2]
+{{\renewcommand{\lstlistingname}{#2 \bf Prototype}
+\lstset{basicstyle={#2 \tt}}
+\lstset{frame=single,label=prototype:#1,caption={#1}}
+\lstinputlisting{#1}}}
+
+%% Macro for phrase
+%% \nphrase{file}{desc}
+
+%% \newcommand{\nphrase}[2]
+%% {{\renewcommand{\lstlistingname}{\lstfontsize \bf 片語}
+%% \lstset{label=phr:#1,frame=single,caption={\lstfontsize #2}}
+%% \lstset{basicstyle={\lstfontsize \tt}}
+%% \lstinputlisting{#1.p}}
+%% }
+
+\newcommand{\nphrase}[2]
+{\nphrasedetail{#1}{#2}{}}
+
+%% Macro for detail phrase
+%% \nphrasedetail{file}{desc}{font}
+
+\newcommand{\nphrasedetail}[3]
+{{\renewcommand{\lstlistingname}{#3 \bf 片語}
+\lstset{label=phr:#1,frame=single,caption={#3 #2}}
+\lstset{basicstyle={#3 \tt}}
+\lstinputlisting{#1.p}}}
+
+
+
+\newcommand{\inputfile}[1]
+{\nonumberlisting {{\bf 輸入檔} {\tt #1}}{#1}{}}
+
+\newcommand{\outputfile}[1]
+{\nonumberlisting {{\bf 輸出檔} {\tt #1}}{#1}{}}
+
+% Macro for listings that are labeled.
+% [1] is the filename, [2] is the description
+
+\newcommand{\commandline}[1]
+{\lstset{basicstyle={\tt}}
+\nonumberlisting{\bf 命令列}{#1.bat}{}}
+
+% {\boxedlisting{\bf 命令列}{#1.bat}}
+
+% Macro for listings that are labeled.
+% [1] is the filename, [2] is the description
+
+\newcommand{\out}[2]
+{{\renewcommand{\lstlistingname}{\bf 執行結果}
+\lstset{label=out:#1,caption=#2}
+\lstinputlisting{#1.out}}}
+
+
+
+

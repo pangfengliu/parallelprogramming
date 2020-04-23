@@ -1,0 +1,1398 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{pgf}
+
+\input{slide-macro}
+
+\begin{document}
+
+\title{Basic OpenCL Programming}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}
+  \frametitle{OpenCL} 
+  \begin{itemize}
+  \item Open Computing Language (OpenCL) is a framework for writing
+    programs that execute across heterogeneous platforms consisting of
+    central processing units (CPUs), graphics processing units (GPUs),
+    digital signal processors (DSPs), field-programmable gate arrays
+    (FPGAs) and other processors.\footnote{\url
+      http://en.wikipedia.org/wiki/OpenCL}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Model} 
+  \begin{itemize}
+  \item OpenCL specifies a language (based on C99) for programming these
+    devices and application programming interfaces (APIs) to control the
+    platform and execute programs on the compute devices. 
+  \item OpenCL provides parallel computing using task-based and
+    data-based parallelism.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Standard}
+  \begin{itemize}
+  \item OpenCL is an open standard maintained by the non-profit
+    technology consortium Khronos Group.  
+  \item Conformant implementations are available from Altera, AMD,
+    Apple, ARM Holdings, Creative Technology, IBM, Imagination
+    Technologies, Intel, Nvidia, Qualcomm, Samsung, Vivante, Xilinx, and
+    ZiiLABS.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{OpenCL Vendors}
+  \centerline{\pgfimage[width=0.9\textwidth]{SPIR5.png}}\footnote{\url{http://images.anandtech.com/doci/7161/SPIR5.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the relation between parallel programming and OpenCL.
+  \item Google ``SPIR'' and describe its importance and its
+    relation to OpenCL.
+  \item What will happen if the implementation of an ``integer'' is
+    different among the devices?
+  \end{itemize}
+\end{frame}
+
+\subsection{GPGPU}
+
+\begin{frame}
+  \frametitle{GPGPU}
+  \begin{itemize}
+  \item General-purpose computing on graphics processing units (GPGPU)
+    is the use of a graphics processing unit (GPU), which typically
+    handles computation only for computer graphics, to perform
+    computation in applications traditionally handled by the central
+    processing unit
+    (CPU).\footnote{\url{http://en.wikipedia.org/wiki/General-purpose_computing_on_graphics_processing_units}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{itemize}
+  \item The use of multiple graphics cards in one computer, or large
+    numbers of graphics chips, further parallelizes the already parallel
+    nature of graphics processing.
+  \item In addition, even a single GPU-CPU framework provides advantages
+    that multiple CPUs on their own do not offer due to specialization
+    in each chip.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Advantages}
+  \begin{itemize}
+  \item Fast vector processing for data parallel algorithms on regular
+    data structures.
+  \item High performance-to-price ratio for cost effective high
+    performance computing.
+  \item Leverage the fast growing 3D graphics rendering technology for
+    high performance computing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Compare the price, clock rate, and performance (measured in
+    floating point operations per second) of GPU and CPU.
+  \item What is the reason that GPU usually deal with ``regular
+    computation''?  Give your reasoning.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{History}
+  \begin{itemize}
+  \item General-purpose computing on GPUs only became practical and
+    popular after ca. 2001, with the advent of both programmable
+    shaders and floating point support on graphics processors.
+  \item In particular, problems involving matrices and/or vectors were
+    easy to translate to a GPU, which acts with native speed and
+    support on those types.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{History}
+  \begin{itemize}
+  \item The scientific computing community's experiments with the new
+    hardware started with a matrix multiplication routine (2001); one
+    of the first common scientific programs to run faster on GPUs than
+    CPUs was an implementation of LU factorization (2005).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pretend to be Pixels}
+  \begin{itemize}
+  \item The early efforts to use GPUs as general-purpose processors
+    required reformulating computational problems in terms of graphics
+    primitives, as supported by the two major APIs for graphics
+    processors, OpenGL and DirectX. 
+  \item This cumbersome translation was obviated by the advent of
+    general-purpose programming languages and APIs such as Sh/RapidMind,
+    Brook and Accelerator.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{No Need to Pretend}
+  \begin{itemize}
+  \item Nvidia's CUDA allows programmers to ignore the underlying
+    graphical concepts in favor of more common high-performance
+    computing concepts.
+  \item Newer, hardware vendor-independent offerings include Microsoft's
+    DirectCompute and Apple/Khronos Group's OpenCL.
+  \item Modern GPGPU pipelines can act on any "big data" operation and
+    leverage the speed of a GPU without requiring full and explicit
+    conversion of the data to a graphical form.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Find out the full name of CUDA.
+  \item What does the name imply?
+  \end{itemize}
+\end{frame}
+
+\subsection{Heterogeneity}
+
+\begin{frame}
+  \frametitle{Heterogeneity}
+  \begin{itemize}
+  \item Modern computer systems consist of different types of
+    processing units, e.g., CPU and GPU.
+  \item Different processing units have different characteristics.
+    \begin{itemize}
+    \item CPU is suitable for complex control, e.g., recursion,
+      complex branching, etc.
+    \item GPU is suitable for regular computation patterns, e.g.,
+      linear algebra and matrix manipulation.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Advantages}
+  \begin{itemize}
+  \item Different processing units for different applications according
+    to their requirements.
+  \item Flexibility for dispatching jobs.
+  \item Energy conservation while maintaining quality of service
+    simultaneously.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Management Issues}
+  \begin{itemize}
+  \item Different processing units has different ISA's and requires
+    different binary codes.
+  \item A single programming model may not be flexible enough to
+    cover all the processing units.
+  \item Serious compiler support for heterogeneity among processing
+    units.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Why does a heterogeneous computing environment is more
+    complicated than a homogeneous one?  Give your reasoning.
+  \end{itemize}
+\end{frame}
+
+\subsection{HSA in the Future}
+
+\begin{frame}
+  \frametitle{Heterogeneous System Architecture}
+  \begin{itemize}
+  \item Heterogeneous System Architecture (HSA) is a computer
+    processor architecture that integrates central processing units
+    and graphics processors on the same bus, with shared memory and
+    tasks.\footnote{\url{http://en.wikipedia.org/wiki/Heterogeneous_System_Architecture}}
+  \item Heterogeneous computing itself refers to systems that contain
+    multiples processing units – central processing units (CPUs),
+    graphics processing units (GPUs), digital signal processors
+    (DSPs), or any type of application-specific integrated circuits
+    (ASICs).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Unified View}
+  \begin{itemize}
+  \item The HSA is being developed by the HSA Foundation, which includes
+    (among many others) AMD and ARM. 
+  \item HSA is to reduce communication latency between CPUs, GPUs and
+    other compute devices, and make these various devices more
+    compatible from a programmer's perspective, relieving the programmer
+    of the task of planning the moving of data between devices' disjoint
+    memories, which is done by OpenCL or CUDA right now.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Features}
+  \begin{itemize}
+  \item HSA defines a unified virtual address space space for
+    compute devices: where GPUs traditionally have their own memory,
+    separate from the main (CPU) memory.
+  \item HSA requires these devices to share page tables so that
+    devices can exchange data by sharing pointers, which is to be
+    supported by custom memory management units.  
+  \item To render interoperability possible and also to ease
+    various aspects of programming, HSA is intended to be
+    ISA-agnostic for both CPUs and accelerators, and to support
+    high-level programming languages.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item What do you think are the key issues in the success of HSA?
+    Give your reasoning.
+  \end{itemize}
+\end{frame}
+
+\section{OpenCL Models}
+
+\subsection{Hardware}
+
+\begin{frame}
+  \frametitle{Hierarchy}
+  \begin{itemize}
+  \item An OpenCL computing system consisting of a {\em host} and {\em
+    computing resources}.
+  \item The computing resources consist of a number of {\em compute
+    devices}\footnote{might be central processing units (CPUs) or
+    ``accelerators'' such as graphics processing units (GPUs).}
+  \item A single compute device typically consists of many {\em compute
+    units}.
+  \item A single compute unit typically consists of {\em processing
+    elements} (PEs).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{OpenCL Hardware Model}
+  \centerline{\pgfimage[width=0.9\textwidth]{opencl_platform_model.png}}\footnote{\url{http://www.rastergrid.com/blog/wp-content/uploads/2010/11/opencl_platform_model.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Host}
+  \begin{itemize}
+  \item The host machine is a CPU.
+  \item The computation is dispatched to computing resources for
+    execution.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Computational Resources}
+  \begin{enumerate}
+  \item Compute device 1
+    \begin{enumerate}
+    \item Compute unit 1
+      \begin{enumerate}
+      \item Processing unit 1
+      \item Processing unit 2
+      \item ...
+      \end{enumerate}
+    \item Compute unit 2
+    \item ...
+    \end{enumerate}
+  \item Compute device 2
+  \item ...
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Host v.s. Device}
+  \begin{itemize}
+  \item Host
+    \begin{itemize}
+    \item Sequential code written in C/C++
+    \item For coordination
+    \item Single threaded
+    \end{itemize}
+  \item Device
+    \begin{itemize}
+    \item Parallel code written in OpenCL 
+    \item For computation
+    \item Multi-threaded
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the three layer architecture in OpenCL hardware
+    architecture.
+  \end{itemize}
+\end{frame}
+
+\subsection{Data}
+
+\begin{frame}
+  \frametitle{Domain and Kernel}
+  \begin{itemize}
+  \item The computation is defined on a N-dimensional {\em domain}
+    called {\tt NDRange}.
+  \item You can think of domain as a N-dimensional array, and each
+    array element stores a data.
+  \item We perform {\em kernel} computation on these array elements in
+    a data parallel fashion.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Hierarchy}
+  \begin{itemize}
+  \item The entire computation domain is divided into {\em work groups}.
+  \item A work group is divided into {\em work items}.
+  \item A kernel describes the work to be done for a work item.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Hierarchy}
+  \centerline{\pgfimage[width=0.9\textwidth]{Basic_Concepts.jpg}}\footnote{\url{https://software.intel.com/sites/landingpage/opencl/optimization-guide/OG_files/Basic_Concepts.jpg}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Mapping}
+  \begin{itemize}
+  \item The entire computation domain is run on the OpenCL devices.
+  \item A work group is run on a compute unit.
+  \item A work item is run on a compute element.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the three layer architecture in OpenCL data domain.
+  \end{itemize}
+\end{frame}
+
+\subsection{Memory}
+
+\begin{frame}
+  \frametitle{Memory}
+  \begin{itemize}
+  \item The OpenCL memory is consistent with the hardware hierarchy.
+  \item A processing unit has its own private memory.
+  \item Processing units in the same compute unit share a local memory.
+  \item Processing units in the same compute device share a global memory.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Memory}
+  \centerline{\pgfimage[width=0.9\textwidth]{memory.png}}\footnote{\url{http://1.bp.blogspot.com/-KLUr3r0tOt8/UoIWBwwqSGI/AAAAAAAABzA/WWXaDG4KAkg/s1600/img10.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Host v.s. Device}
+  \begin{itemize}
+  \item Different memory system from the host.
+  \item Host cannot address the memory on device and device cannot
+    address the memory on host, so memory copying is necessary.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Performance}
+  \begin{itemize}
+  \item The global memory is larger than the local memory, which is
+    larger than the private memory.
+  \item The private memory is faster than the local memory, which is
+    faster than the global memory.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Memory Movement}
+  \begin{itemize}
+  \item Data must be given to the host by I/O operation.
+  \item Data is then transfer from the host to the device global memory
+    for processing.
+  \item Optionally one can move the data from global into local
+    memory for faster access.
+  \item Even more optionally one can move the data from the local
+    memory into Private memory for even faster processing.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Memory Movement}
+  \begin{itemize}
+  \item OK now data processing finishes, you need to move data {\em
+    all the way back} to the host for visualization.
+  \item This is tedious -- hopefully later architecture like HSA
+    will give us a unified, and better, view on memory, from both
+    GPU and CPU.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mapping}
+  \begin{center}
+    \begin{tabular}{|l|l|l|} \hline
+      hardware & programming & memory  \\  \hline \hline
+      host & host data & host memory   \\  \hline \hline
+      compute device & computation domain & global memory  \\  \hline
+      compute unit & work group & local memory \\ \hline 
+      processing unit & work item & private memory \\ \hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Describe the three layer architecture in OpenCL memory view.
+  \end{itemize}
+\end{frame}
+
+\section{Information Query}
+
+\subsection{Platform}
+
+\begin{frame}
+  \frametitle{Platform and Device}
+  \begin{itemize}
+  \item We start with querying the system to understand its
+    configuration.
+  \item The first thing we do is to know the number of platforms the
+    system has.
+  \item A system can have many platforms, and each platform can
+    have many devices.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clGetPlatformIDs.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{clGetPlatformIDs}
+  \begin{description}
+  \item [\tt num\_entries] The size of platform ids provided by the
+    next parameter {\tt platforms}, where the platform ids will be
+    added into.  It must be positive if {\tt platforms} is not {\tt
+      NULL}.
+  \item [\tt platforms] An array of {\tt cl\_platform\_id} found. 
+  \item [\tt num\_platforms] The number of platforms available in the
+    system.  {\tt NUll} will be ignored.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt clGetPlatformIDs}
+  \programlisting{getPlatformID.c}{}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compilation}
+  \begin{itemize}
+  \item Our platform is an AMD implementation of OpenCL.
+  \item In order to compile the OpenCL on AMD platform we need to
+    specify the directory for the OpenCL headers and library.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Makefile}
+  \programlisting{Makefile}{}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compilation}
+  \begin{description}
+  \item [\tt INCDIRS] Directories for the OpenCL headers.
+  \item [\tt LIBS] Libraries for OpenCL.
+  \item [\tt LINKOPT] Linker options.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt getPlatformID-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item How many platform do we have in the system?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Platform Information}
+  \begin{itemize}
+    \item After knowing the number of platform and their ids, we want
+      to know their information.
+    \item OpenCL provides a function {\tt clGetPlatformInfo} for this.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clGetPlatformInfo.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt platform] The id of the platform you want to query.
+  \item [\tt param\_name] The property you want to query.
+  \item [\tt param\_value\_size] The length of {\tt param\_value} in
+    bytes.
+  \item [\tt param\_value] The location for the query answer.
+  \item [\tt param\_value\_size\_ret] The number of bytes returned
+    from the query.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Request}
+  We may request the following information from a platform.
+  \begin{description}
+  \item[\tt CL\_PLATFORM\_PROFILE]
+  \item[\tt CL\_PLATFORM\_VERSION]
+  \item[\tt CL\_PLATFORM\_NAME]
+  \item[\tt CL\_PLATFORM\_VENDOR]
+  \item[\tt CL\_PLATFORM\_EXTENSIONS]
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Platform ID}
+  \begin{itemize}
+  \item We first call {\tt clGetPlatformIDs} to get the ids into array
+    {\tt platform\_id}.
+  \item The actual number of platforms found will be in {\tt
+    platform\_id\_got}.
+  \item We then use the platform id to find out its properties.
+  \end{itemize}
+\end{frame}
+
+\programlistingtwoslides{getPlatformInfo.c}{}{\scriptsize}{header}{getinfo}{end}
+
+\begin{frame}
+  \frametitle{Platform Information}
+  \begin{itemize}
+  \item The actual number of platforms found is in {\tt
+    platform\_id\_got}.
+  \item The platform ids are in {\tt platform\_id}.
+  \item We loop through all platform ids and use {\tt
+    clGetPlatformInfo} to retrieve the property we need.
+  \item The id will be in the {\tt buffer} we provided, and the length
+    of query result will be in {\tt length}.
+  \item We are not sure about anything after the specified length so
+    we place a zero character at the end.  This may not be necessary.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Platform Property}
+  \begin{itemize}
+  \item We request the name, the vendor, the OpenCL version, and the
+    profile of the platform.
+  \item A full profile means a full implementation of OpenCL.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt getPlatformInfo-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Does the implementation place an zero character at the end of
+    the answer?
+  \item Google {\tt CL\_PLATFORM\_EXTENSIONS} and find out its
+    meaning.
+  \end{itemize}
+\end{frame}
+
+\subsection{Device}
+
+\begin{frame}
+  \frametitle{Device ID and Information}
+  \begin{itemize}
+    \item After knowing platform ids we can find out the ids of the
+      devices in that platform.
+    \item After knowning the device id we can know the information
+      about a device.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clGetDeviceIDs.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \begin{description}
+  \item [\tt platform] The id of the platform you want to query.
+  \item [\tt device\_type] The type of device you want to query.
+  \item [\tt num\_entries] The number of devices that can be added into
+    the buffer provided by the next parameter {\tt devices}.
+  \item [\tt devices] A pointer to the buffer to store the devices.
+  \item [\tt num\_devices] The actual number of devices returned.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Device Types}
+  There are five types of devices one can query.
+  \begin{description}
+  \item[CL\_DEVICE\_TYPE\_CPU]
+  \item[CL\_DEVICE\_TYPE\_GPU]
+  \item[CL\_DEVICE\_TYPE\_ACCELERATOR]
+  \item[CL\_DEVICE\_TYPE\_DEFAULT]
+  \item[CL\_DEVICE\_TYPE\_ALL]
+  \end{description}
+\end{frame}
+
+\programlistingthreeslides{getDeviceID.c}{}{\scriptsize}{header}{getinfo}{getDeviceID}{end}
+
+\begin{frame}
+  \frametitle{Device IDs}
+  \begin{itemize}
+  \item The number of device id returned is in {\tt device\_id\_got},
+    and the ids are in {\tt devices}.
+  \item We test all device type, CPU type, and GPU types.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt getDeviceID-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Does the platform have anything other than CPU and GPU?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{clGetDeviceInfo}
+  \begin{itemize}
+  \item After receiving the device ids, we can query the detailed
+    information about a device.
+  \item The procedure is very similar to {\tt clGetPlatformInfo}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clGetDeviceInfo.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{clGetDeviceInfo}
+  \begin{description}
+  \item [\tt device] The id of the device you want to query.
+  \item [\tt param\_name] The property you want to query.
+  \item [\tt param\_value\_size] The size of the answer that will be
+    returned.
+  \item [\tt param\_value] The buffer for the answer.
+  \item [\tt param\_value\_size\_ret] The actual size of answer returned.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \programlistingfirst{getDeviceInfo.c}{}{\scriptsize}{getDeviceInfo}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Device Information}
+  \begin{itemize}
+  \item We know the number of devices from the previous {\tt
+    device\_id\_got}.
+  \item We first query the name of the device, which is given as a
+    character buffer.
+  \item The we query the global memory size, local memory size, the
+    maximum number of compute units, and the maximum number of
+    work groups.
+  \item These numbers are of type {\tt cl\_ulong}, which is defined by
+    OpenCL.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt getDeviceInfo-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Google what can be queried from {\tt clGetDeviceInfo}.  Make a
+    list of property that you think is useful.
+  \end{itemize}
+\end{frame}
+
+\section{Program Execution}
+
+\subsection{Context}
+
+\begin{frame}
+  \frametitle{Vector Add}
+  \begin{itemize}
+  \item We will use a simple example to work through the execution
+    of OpenCL program.
+  \item This example will add two vectors with GPU.
+  \item We first query the system to get the platform and device
+    information we need.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Platform and Device}
+  \programlistingfirst{vectorAdd.c}{}{}{header}{main}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Headers}
+  \begin{itemize}
+  \item We need to include OpenCL header file.
+  \item The length of the vector is {\tt N}.
+  \item The maximum length of the kernel source is {\tt MAXK}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Platform and Device}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{main}{getcontext}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Platform and Device}
+  \begin{itemize}
+  \item We then get only one device, and all of its GPUs.
+  \item Note that we need to check the return status.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Platform and Device}
+  \centerline{\pgfimage[height=0.9\textheight]{deviceID.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Read the code and identify the part that we will use only GPU.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{clCreateContext}
+  \begin{itemize}
+  \item After knowing the platform and device information, we can build
+    a {\em context} to run our OpenCL applications.
+  \item The context consists mostly the devices that will participate
+    this computation.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clCreateContext.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt properties] A list of properties for this context.
+  \item [\tt num\_devices] The number of devices this context will
+    use. The devices are in the next parameter {\tt devices}.
+  \item [\tt devices] The devices used by this context.
+  \item [\tt pfn\_notify] A callback routine for error.
+  \item [\tt user\_data] A parameter that will be supplied to the
+    callback routine {\tt pfn\_notify}.
+  \item [\tt errcode\_ret] The error code.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Simplicity}
+  \begin{itemize}
+  \item For simplicity in this lecture we will not use callback
+    function and property.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{getcontext}{commandqueue}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context}
+  \centerline{\pgfimage[height=0.9\textheight]{context.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Read the code and identify the part that the context we
+    build uses all GPUs.
+  \end{itemize}
+\end{frame}
+
+\subsection{CommandQueue}
+
+\begin{frame}
+  \frametitle{Command Queue}
+  \begin{itemize}
+  \item Within a context the kernel will start execution and send
+    commands to devices.
+  \item We need to build a command queue from the host to a device so
+    that the command from the kernel can be sent there.
+  \item A command queue connects to a device.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clCreateCommandQueue.h}{\small}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt context] The context this command queue belongs to.
+  \item [\tt device] The device connected by this command queue. It has
+    to be one of the devices in the context.
+  \item [\tt properties] A bit field for the property.
+  \item [\tt errcode\_ret] The error code.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Simplicity}
+  \begin{itemize}
+  \item For simplicity in this lecture we will not set property.
+  \item Note that the property is a bit field so we can set it to 0.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Command Queue}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{commandqueue}{kernelsource}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Command Queue}
+  \centerline{\pgfimage[height=0.9\textheight]{command_queue.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Which GPU does this command queue connect to?
+  \end{itemize}
+\end{frame}
+
+\subsection{Program}
+
+\begin{frame}
+  \frametitle{Kernel Program}
+  \begin{itemize}
+  \item We must specify the computation as a kernel.
+  \item The source of a kernel is in the form of string, not file.
+  \item OpenCL provides functions to build kernel program from strings.
+  \item For ease of kernel modification we will place the kernel
+    source into a file ``kernel.cl''.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clCreateProgramWithSource.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt context] The context for which to build the program.
+  \item [\tt count] The number of strings in the program.
+  \item [\tt strings] A pointer array to store the strings.  That is,
+    your kernel program may consist of many strings.
+  \item [\tt lengths] An array of string lengths for the pointer array
+    {\tt strings}.
+  \item [\tt errcode\_ret] The error code.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel Source}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{kernelsource}{buildprogram}
+\end{frame}
+
+\begin{frame}
+  \frametitle{From File to String}
+  \begin{itemize}
+  \item We store our kernel in a file ``kernel.cl''.
+  \item We read the contents of ``kernel.cl'' into a buffer {\tt
+    kernelBuffer} with fread.  We also know the length of the file
+    by the return value of fread.
+  \item The we call {\tt clCreateProgramWithSource} with the {\tt
+    kernelBuffer}.  Note that we only have one string.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Program}
+  \centerline{\pgfimage[height=0.9\textheight]{program.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Identify the part of the code that determines the length of
+    the kernel string.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Compile and Build}
+  \begin{itemize}
+  \item After building your program object from a string, you need to
+    compile and link it.
+  \item OpenCL provides a {\tt clBuildProgram} to do this.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clBuildProgram.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt program] The program to be build.
+  \item [\tt num\_devices] The number of devices to be used in {\tt
+    device\_list}.
+  \item [\tt device\_list] The device list.
+  \item [\tt options] The build option to be used.
+  \item [\tt pfn\_notify] The callback function for error.
+  \item [\tt user\_data] The parameter supplied to {\tt pfn\_notify}.
+  \end{description}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Build Program}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{buildprogram}{createkernel}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Identify the GPUs for which we have compiled and built the
+    program.
+  \end{itemize}
+\end{frame}
+
+\subsection{Kernel}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \begin{itemize}
+  \item After building the program object, we are ready to build
+    kernel.
+  \item We only need the program object to do this.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clCreateKernel.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt program] The kernel program we built.
+  \item [\tt kernel\_name] The name of the kernel function.
+  \item [\tt errcode\_ret] Error code.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Create Kernel}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{createkernel}{vector}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Kernel}
+  \centerline{\pgfimage[height=0.9\textheight]{kernel.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Look into file kernel.cl and make sure that the kernel
+    function name there matches the name we provided while creating
+    the kernel.
+  \end{itemize}
+\end{frame}
+
+\subsection{Buffer}
+
+\begin{frame}
+  \frametitle{Vectors}
+  \begin{itemize}
+  \item We now prepare the input vectors {\tt A} and {\tt B}, and
+    the output vector {\tt C} in host memory.
+  \item We place them on heap and properly initialize them.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vector}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{vector}{createbuffer}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Observe the code and determine the correct value of {\tt C}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer}
+  \begin{itemize}
+  \item Devices cannot access the memory of the host directly.
+  \item After the host receives the input from I/O, it needs to
+    create a buffer object and link it with the host memory the data
+    is in, so the device can access the data.  
+  \item OpenCL provide this linkage by a pointer to {\tt cl\_mem},
+    i.e., a buffer.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clCreateBuffer.h}{\small}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt context] The context this buffer belongs to.
+  \item [\tt flags] Properties for this buffer.
+  \item [\tt size] The size of the buffer.
+  \item [\tt host\_ptr] The memory on the host this buffer refers to.
+  \item [\tt errcode\_ret] Error code.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Buffer Property}
+  We can set the following property for a buffer.
+  \begin{description}
+  \item[CL\_MEM\_READ\_ONLY] The buffer is read only.
+  \item[CL\_MEM\_WRITE\_ONLY] The buffer is write only.
+  \item[CL\_MEM\_READ\_WRITE] We can read and write the buffer
+  \item[CL\_MEM\_USE\_HOST\_PTR] OpenCL uses the host memory as the buffer.
+  \item[CL\_MEM\_COPY\_HOST\_PTR] OpenMP copies the contents of the
+    host memory into a buffer accessible from GPU.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Create Buffer}
+  \begin{itemize}
+  \item We set the buffer for {\tt A} and {\tt B} to be read only,
+    and the buffer for {\tt C} to be write only.
+  \item Note that we need to check the status for errors.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vector}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{createbuffer}{setarg}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Buffer}
+  \centerline{\pgfimage[height=0.9\textheight]{buffer.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Observe the flag we give to each buffer.  Why some of them
+      are read only and some of them are write only?
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Parameter Linking}
+  \begin{itemize}
+  \item Now we want to connect the parameters kernel will see with the
+    buffers we provide.
+  \item This is set by the order the parameters appearing in the
+    prototype.  That is, we need to make sure the order is A, B, then
+    C.  Please refer to the following kernel source.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \programlisting{kernel.cl}{}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clSetKernelArg.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt kernel] The kernel to set the argument.
+  \item [\tt arg\_index] the index of the argument (staring from 0).
+  \item [\tt arg\_size] The location of the argument.
+  \item [\tt arg\_value] The size of the argument.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mapping}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{setarg}{setshape}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Observe the code and make sure that the order of parameters
+      is correct.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shape of Data}
+  \begin{itemize}
+  \item Now we need to define the shape of the data domain we will
+    work on.
+  \item First we determine the dimension of the data domain.
+  \item Then we determine the size of each dimension of the global
+    domain, and the size of each dimension of the a work group.
+  \item These two information also determine the number of work groups.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clEnqueueNDRangeKernel.h}{\scriptsize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt command\_queue] The commandqueue to send the kernel code.
+  \item [\tt kernel] the kernel to run.
+  \item [\tt work\_dim] The dimension of work items.
+  \item [\tt global\_work\_offset] {\tt NULL} for now.
+  \item [\tt global\_work\_size] An array of {\tt work\_dim} integers
+    that specify the dimension of the global data domain.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt local\_work\_size] An array of {\tt work\_dim} integers
+    that specify dimensions of a work group.
+  \item [\tt num\_events\_in\_wait\_list] The number of events this
+    computation must wait for completion.
+  \item [\tt event\_wait\_list] The list of events to wait for.
+  \item [\tt event] Returns an event the describes the result of this
+    computation.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Data Shape}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{setshape}{getcvector}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Domain Shape}
+  \begin{itemize}
+  \item We set the domain as one dimensional.  The size is {\tt N}.
+  \item The size of a work group is set to 1, so there will be $N$
+    work groups.  Each work group has one work item.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt NDRange}
+  \centerline{\pgfimage[height=0.9\textheight]{NDRange.pdf}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item How many work groups do we have?
+    \item How many work items do we have?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Result}
+  \begin{itemize}
+  \item Finally we need to get the result from buffer back to host
+    array {\tt C}
+  \item We accomplish this by placing a read buffer command into the
+    command queue.  
+  \item When the GPU runs this command the buffer will be copied
+    into {\tt C}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \prototypedetail{clEnqueueReadBuffer.h}{\footnotesize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt command\_queue] The command queue to place the read
+    buffer command.
+  \item [\tt buffer] The buffer to read.
+  \item [\tt blocking\_read] If the read is blocking.
+  \item [\tt offset] The offset in buffer to read.
+  \item [\tt cb] The amount of data to read.
+  \item [\tt ptr] The location of host memory the data will be read
+    into.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parameters}
+  \begin{description}
+  \item [\tt num\_events\_in\_wait\_list] The number of events this
+    computation must wait for completion.
+  \item [\tt event\_wait\_list] The list of events to wait for.
+  \item [\tt event] Returns an event the decibels the result of this
+    computation.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Results}
+  \programlistingfirst{vectorAdd.c}{}{\footnotesize}{getcvector}{checkandfree}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Read Buffer}
+  \centerline{\pgfimage[height=0.9\textheight]{readbuffer.pdf}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Receive Results}
+  \begin{itemize}
+  \item We set the mode to be blocking because we can only check the
+    result when all data are ready.
+  \item We read the data from the {\em beginning} so we set the offset to 0.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Which GPU does this command queue connect to?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Check}
+  \begin{itemize}
+  \item Finally the host checks the correctness of the computation.
+  \item The host also releases the objects it created.
+    \begin{itemize}
+      \item The buffers {\tt A}, {\tt B}, and {\tt C}.
+      \item Other objects related to OpenCL.
+        \begin{itemize}
+        \item context
+        \item program
+        \item kernel
+        \item command queue
+        \item buffers
+        \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Release Object} The object releasing API is as
+  follow. The only parameter is the object you want to release.
+  \begin{itemize}
+  \item {\tt clReleaseContext}
+  \item {\tt clReleaseCommandQueue}
+  \item {\tt clReleaseProgram}
+  \item {\tt clReleaseKernel}
+  \item {\tt clReleaseMemObject}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Get Results}
+  \programlistingfirst{vectorAdd.c}{}{\scriptsize}{checkandfree}{end}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+  \item Run the {\tt vectorAdd-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Have we released all objects we created?
+  \end{itemize}
+\end{frame}
+
+\end{document}
