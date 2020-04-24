@@ -77,7 +77,7 @@
 \begin{itemize}
 \item {\tt \#pragma omp} is a preprocessor directive.
 \item All OpenMP directives start with {\tt \#pragma omp}.
-\item The effect of a OpenMP directive only applies to the {\em next}
+\item The effect of an OpenMP directive only applies to the {\em next}
   statement.
 \item This directive instructs the compiler to generate OpenMP
   parallel code if it supports OpenMP.
@@ -137,7 +137,7 @@
 \frametitle{Discussion}
 \begin{itemize}
 \item Can you tell how many cores are there in your computer by running
-  a OpenMP program?
+  an OpenMP program?
 \end{itemize}
 \end{frame}
 
@@ -242,7 +242,7 @@
 \begin{frame}
 \frametitle{Compound Statement}
 \begin{itemize}
-\item The compound statement has three {\tt printf}.
+\item The compound statement has three {\tt printf} statements.
 \item Each of the threads created by the {\tt parallel} directive will
   run all these three statements.
 \end{itemize}
@@ -350,7 +350,7 @@
 \frametitle{Get the Index}
 \begin{itemize}
 \item We print the index of a thread by calling {\tt
-  omp\_get\_thread\_num}
+  omp\_get\_thread\_num}.
 \item After knowing the index a thread can do things accordingly.
 \item The thread number starts with 0.
 \end{itemize}
@@ -380,7 +380,7 @@
 \item Now we are ready to partition a loop.
 \item Previously we used {\tt parallel} directive to instruct all
   threads to do the {\em same} thing.
-\item Now er use {\tt parallel for} directive to ask all threads to
+\item Now we use {\tt parallel for} directive to ask all threads to
   {\em share} the workload of a for loop.
 \end{itemize}
 \end{frame}
@@ -463,7 +463,7 @@
 \frametitle{Discussion}
 \begin{itemize}
 \item Observe the output of for-omp and describe the rule about which
-  thread executes which loop iteration.
+  thread executes which loop iterations.
 \end{itemize}
 \end{frame}
 
@@ -648,7 +648,7 @@
   from one iteration, and a variable {\tt numSolution} to store the
   total number of solutions.
 \item The parallel for directive applies only to the for loop, so the
-  printf after the loop will only be run by the main thread.
+  printf after the loop will only be executed by the main thread.
 \end{itemize}
 \end{frame}
 
@@ -804,7 +804,7 @@
 \begin{itemize}
 \item It is very common that we need to collect answers from all
   threads and combine them.
-\item OpenMP provides a {\em simple} mechanism called reduction to
+\item OpenMP provides a {\em simple} mechanism called {\em reduction} to
   derive the final answer by combining many values into one.
 \end{itemize}
 \end{frame}
