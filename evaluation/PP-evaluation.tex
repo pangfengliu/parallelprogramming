@@ -58,7 +58,7 @@
 \frametitle{Definition}
 \begin{itemize}
 \item An algorithm must describe the {\em detailed operations} one
-  wants to performance.
+  wants to perform.
 \item These operations must be {\em well-defined} within the underling
   model (more on this later).
 \item The algorithm must also describe the {\em temporal dependency}
@@ -129,7 +129,7 @@
 \begin{frame}
 \frametitle{Model}
 \begin{itemize}
-\item Any algorithm has a underlining assumption on what can be done,
+\item Any algorithm has an underlining assumption on what can be done,
   for example, a sorting algorithm assumes that keys can be compared
   in $O(1)$, i.e., a constant amount of time.
 \item We then follow these assumptions to estimate the {\em cost} of
@@ -159,7 +159,7 @@
 \frametitle{Analysis}
 \begin{itemize}
 \item A sequential algorithm is usually easy to analyze.
-\item A parallel algorithm is much more difficult to analysis since
+\item A parallel algorithm is much more difficult to analyze since
   different models, i.e., the assumption on how the parallel computer
   can do, have different algorithmic characteristics.
 \end{itemize}
@@ -256,7 +256,7 @@ always make sure that you know the definition of their ``speedup''.
   the speedup with the extra amount of resources we use in the
   parallel computation.
 \item Another speedup metric is to compare the parallel time of using
-  $k$ processor with the {\em parallel time} of using a single a
+  $k$ processors with the {\em parallel time} of using a single a
   single processor.  This is usually referred to as {\em relative
     speedup}.
 \item As the definition points out, a relative speedup is how well we
@@ -341,7 +341,7 @@ speedup $k$ is between $1$ and $p$.
   steps on one processor.
 \begin{itemize}
   \item If that takes less than $k$ steps, we have an algorithm that
-    runs faster than our optimal sequential algorithm, which is an
+    runs faster than our optimal sequential algorithm, which is a
     contradiction.
   \item Note that we need to assume that the sequential algorithm is
     optimal.
@@ -354,7 +354,7 @@ speedup $k$ is between $1$ and $p$.
 \frametitle{In Practice}
 \begin{itemize}
 \item In rare occasion we may have $T_s < T_p$.  This is usually
-  caused by a very small workload and a tremendous overheads in
+  caused by a very small workload and a tremendous amount of overheads in
   parallel execution.
 \item Recall that we have all the overheads due parallelization.  If
   the benefits of parallelization is not enough to compensate the

@@ -299,7 +299,7 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Describe the concpet ``critical section''.
+\item Describe the concept ``critical section''.
 \end{itemize}
 \end{frame}
 
@@ -345,7 +345,7 @@ coordinate their actions, and exchange data if necessary.
 \item The hardware must guarantee that the memory and cache are in a
   consistent state.  There are various levels of guarantees.
 \item If one processor changes the content of the memory, the hardware
-  should invalid data that have been cached in other processor.
+  should invalidate data that have been cached in other processor.
 \item If one processor changes the data in its cache, other processor
   should be able to see it.
 \end{itemize}
@@ -464,7 +464,7 @@ coordinate their actions, and exchange data if necessary.
 \item GPU is a device, and it needs a host to get its
   data/instructions.
 \item A large number of cores -- usually much larger than a CPU.
-\item Instruction are streamed to processors for execution, which
+\item Instructions are streamed to processors for execution, which
   means they must run the same set of instructions.
 \item Processors have their local memory, as well as access to a
   shared device memory.
@@ -506,7 +506,7 @@ coordinate their actions, and exchange data if necessary.
   send {\em messages} to each other.
 \item This network could be very slow or very fast, depending on the
   applications.
-\item The network must provide {\em point-to-point} data transfer so
+\item The network must provide {\em point-to-point} data transfer to
   move data from one processor to another.
 \item Processors can only synchronize themselves via the network, which
   is a difficult task.
@@ -573,7 +573,7 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Compare the way multicomputer and multiprocessot does a barrier
+\item Compare the way multicomputer and multiprocessor does a barrier
  synchronization.
 \end{itemize}
 \end{frame}
@@ -913,12 +913,12 @@ coordinate their actions, and exchange data if necessary.
 \frametitle{MIMD}
 \begin{itemize}
 \item Strongly related to functional parallelism since different
-  processors executes different instructions on different data.
+  processors execute different instructions on different data.
 \item The instructions are different because they are from different
   tasks in a wavefront, i.e., tasks that can be done in parallel.
 \item The data are different because they are for different tasks.
 \item Most multicomputers support MIMD computation model -- computers
-  works independently, and synchronize themselves when necessary.
+  work independently, and synchronize themselves when necessary.
 \end{itemize}
 \end{frame}
 

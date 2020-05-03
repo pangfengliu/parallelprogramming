@@ -294,7 +294,7 @@
 \frametitle{\tt nowait}
 \begin{itemize}
 \item Sometimes we do not wish the the threads to wait for each other.
-\item Those finish earlier can go on to the next statement to improve
+\item Those finished earlier can go on to the next statement to improve
   performance.
 \item We can only do this if the following statement does {\em not}
   depend on the previous statement.
@@ -376,7 +376,7 @@ a descending workload.
 \item Previously the second marking {\tt for} will synchronize before
   going back to the outside {\tt for}.
 \item We would like to remove this synchronization, and let each
-  threads to start the ``prime'' finding as soon as possible.
+  thread start the ``prime'' finding as soon as possible.
 \item This will not cause a race condition since the threads will
   still synchronize at the beginning of the next inner loop.
 \end{itemize}
