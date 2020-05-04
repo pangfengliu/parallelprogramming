@@ -25,7 +25,7 @@
   \frametitle{Multiple Devices}
   \begin{itemize}
     \item We have been using one device for computation. 
-    \item Now we will use multiple device to solve a problem.
+    \item Now we will use multiple devices to solve a problem.
     \item We will use matrix multiplication as an example.
   \end{itemize}
 \end{frame}
@@ -415,7 +415,7 @@
   \frametitle{Timing}
   \begin{itemize}
     \item We would like to know the detailed timing of the kernels.
-    \item In particular we would like to prove the two kernel runs {\em in
+    \item In particular we would like to prove the two kernel run {\em in
       parallel}.
     \item To do so we need the absolute time of the events from all devices.
   \end{itemize}
@@ -572,7 +572,7 @@
 \begin{frame}
   \frametitle{Discussion}
   \begin{itemize}
-    \item What are the characteristic for read only, read and write,
+    \item What are the characteristics for read only, read and write,
       and write only buffers respectively?
   \end{itemize}
 \end{frame}
@@ -662,7 +662,7 @@
   \frametitle{Discussion}
   \begin{itemize}
     \item Does the program produce the correct answer?  
-    \item If not what is the possible reason?
+    \item If not, what is the possible reason?
   \end{itemize}
 \end{frame}
 
@@ -716,7 +716,7 @@
 \subsection{\tt clFinish}
 
 \begin{frame}
-  \frametitle{\tt flFinish}
+  \frametitle{\tt clFinish}
   \begin{itemize}
     \item The host can also explicitly wait for the first two kernels
       to finish before launching the third kernel by {\tt clFinish}.
