@@ -1,18 +1,19 @@
 CC = gcc
-CFLAGS = -std=c99 -msse2 -m64 -rdynamic
-INCDIRS = -I/opt/AMDAPPSDK-3.0-0-Beta/include -I/opt/AMDAPPSDK-3.0-0-Beta/include/SDKUtil 
-LIBS = /opt/AMDAPPSDK-3.0-0-Beta/lib/x86_64/libOpenCL.so -lrt
-LINKOPT = -Wl,-rpath,/opt/AMDAPPSDK-3.0-0-Beta/lib/x86_64
+CFLAGS = -std=c99
+CL_TARGET = getPlatformID-cl getPlatformInfo-cl getDeviceID-cl getDeviceInfo-cl vectorAdd-cl
+LIBS = -lOpenCL -lm
 
-all: getPlatformID-cl getPlatformInfo-cl getDeviceID-cl getDeviceInfo-cl \
-	vectorAdd-cl 
+all: $(CL_TARGET)
 
 %-cl: %.c
-	$(CC) $(CFLAGS) $(INCDIRS) $< $(LIBS) $(LINKOPT) -o $@
+	$(CC) $(CFLAGS) $< -o $@ $(LIBS)
 
 opencltest: opencltest.cpp
-	g++  $(CFLAGS) $(INCDIRS) $< $(LIBS) $(LINKOPT) -o $@
+	g++  $(CFLAGS) $< -o $@ $(LIBS)
 
-tar: 
+tar:
 	tar -cvf PP-OpenCL-basic.tar *.c kernel.cl Makefile
 
+clean:
+	rm -f $(CL_TARGET)
+	rm -f opencltest
