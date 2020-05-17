@@ -1,5 +1,4 @@
 /* header */
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS 
 
 #include <stdio.h>
 #include <assert.h>
@@ -32,7 +31,7 @@ int main(int argc, char *argv[])
   assert(status == CL_SUCCESS);
   /* commandqueue */
   cl_command_queue commandQueue =
-    clCreateCommandQueue(context, GPU[0], 0, &status);
+    clCreateCommandQueueWithProperties(context, GPU[0], NULL, &status);
   assert(status == CL_SUCCESS);
   /* kernelsource */
   FILE *kernelfp = fopen(argv[1], "r");
