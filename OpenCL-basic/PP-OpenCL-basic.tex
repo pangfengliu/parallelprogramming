@@ -902,7 +902,7 @@
   \item [\tt context] The context this command queue belongs to.
   \item [\tt device] The device connected by this command queue. It has
     to be one of the devices in the context.
-  \item [\tt properties] A bit field for the property.
+  \item [\tt properties] A pointer to the properties.
   \item [\tt errcode\_ret] The error code.
   \end{description}
 \end{frame}
@@ -911,7 +911,7 @@
   \frametitle{Simplicity}
   \begin{itemize}
   \item For simplicity in this lecture we will not set property.
-  \item Note that the property is a bit field so we can set it to 0.
+  \item Note that the property is a pointer so we can set it to NULL.
   \end{itemize}
 \end{frame}
 
