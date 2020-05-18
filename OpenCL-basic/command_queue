@@ -3,5 +3,5 @@ digraph G {
 	device_id -> context [label = "clCreateContext"];
 	command_queue [color = blue, fontcolor = blue];
 	device_id -> command_queue;
-	context -> command_queue [label = clCreateCommandQueue];
+	context -> command_queue [label = clCreateCommandQueueWithProperties];
 }
