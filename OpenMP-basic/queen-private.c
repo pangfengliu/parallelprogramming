@@ -34,9 +34,9 @@ int main (int argc, char *argv[])
   n = atoi(argv[1]);
   assert(n <= MAXN);
 
-  int position[MAXN];
-#pragma omp parallel for private (position)
+#pragma omp parallel for 
   for (int i = 0; i < n; i++) {
+    int position[MAXN];
     position[0] = i;
     printf("iteration %d # of solution = %d\n", 
 	   i, queen(position, 1));
