@@ -521,24 +521,15 @@
 \begin{frame}
   \frametitle{Compilation}
   \begin{itemize}
-  \item Our platform is an AMD implementation of OpenCL.
-  \item In order to compile the OpenCL on AMD platform we need to
-    specify the directory for the OpenCL headers and library.
+  \item Our platform is a NVIDIA implementation of OpenCL.
+  \item In order to compile OpenCL we need to specify OpenCL headers
+    and library.
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{Makefile}
   \programlisting{Makefile}{}{\scriptsize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Compilation}
-  \begin{description}
-  \item [\tt INCDIRS] Directories for the OpenCL headers.
-  \item [\tt LIBS] Libraries for OpenCL.
-  \item [\tt LINKOPT] Linker options.
-  \end{description}
 \end{frame}
 
 \begin{frame}
