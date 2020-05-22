@@ -1,5 +1,4 @@
 /* header */
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS 
 
 #include <stdio.h>
 #include <assert.h>
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
   assert(status == CL_SUCCESS);
   /* commandqueue */
   cl_command_queue commandQueue =
-    clCreateCommandQueue(context, GPU[0], 0, &status);
+    clCreateCommandQueueWithProperties(context, GPU[0], NULL, &status);
   assert(status == CL_SUCCESS);
   /* kernelsource */
   FILE *kernelfp = fopen(argv[1], "r");
@@ -102,7 +101,13 @@ int main(int argc, char *argv[])
   assert(status == CL_SUCCESS);
   printf("Specify the shape of the domain completes.\n");
   /* getcvector */
+#ifdef USEclFINSIH
   clFinish(commandQueue);
+#else
+  clEnqueueReadBuffer(commandQueue, bufferC, CL_TRUE,
+		      0, N * N * sizeof(cl_uint), C, 
+		      0, NULL, NULL);
+#endif
   printf("Kernel execution completes.\n");
   /* checkandfree */
   for (int i = 0; i < N; i++)
