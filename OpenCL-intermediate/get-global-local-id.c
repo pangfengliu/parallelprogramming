@@ -102,7 +102,16 @@ int main(int argc, char *argv[])
   assert(status == CL_SUCCESS);
   printf("Specify the shape of the domain completes.\n");
   /* getresult */
+  #ifdef USEclFINSIH
   clFinish(commandQueue);
+#else
+  clEnqueueReadBuffer(commandQueue, bufferGlobalId, CL_TRUE,
+		      0, 2 * N * N * sizeof(cl_uint), globalId, 
+		      0, NULL, NULL);
+  clEnqueueReadBuffer(commandQueue, bufferLocalId, CL_TRUE,
+		      0, 2 * N * N * sizeof(cl_uint), localId, 
+		      0, NULL, NULL);
+#endif
   printf("Kernel execution completes.\n");
   /* pritnid */
   printId("get_global_id(0)", globalId[0]);
