@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   assert(status == CL_SUCCESS);
   printf("Specify the shape of the domain completes.\n");
   /* getresult */
-  #ifdef USEclFINSIH
+#ifdef USEclFINSIH
   clFinish(commandQueue);
 #else
   clEnqueueReadBuffer(commandQueue, bufferGlobalId, CL_TRUE,
