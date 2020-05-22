@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
 		    &status);
   assert(status == CL_SUCCESS);
   /* commandqueue */
-  const cl_queue_properties properties[] = {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
+  const cl_queue_properties properties[] =
+    {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
   cl_command_queue commandQueue =
     clCreateCommandQueueWithProperties(context, GPU[0], 
 			 properties, &status);
