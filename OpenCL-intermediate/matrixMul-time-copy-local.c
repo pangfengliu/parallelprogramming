@@ -1,5 +1,4 @@
 /* header */
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS 
 
 #include <stdio.h>
 #include <assert.h>
@@ -34,10 +33,11 @@ int main(int argc, char *argv[])
 		    &status);
   assert(status == CL_SUCCESS);
   /* commandqueue */
+  const cl_queue_properties properties[] =
+    {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
   cl_command_queue commandQueue =
-    clCreateCommandQueue(context, GPU[0], 
-			 CL_QUEUE_PROFILING_ENABLE, 
-			 &status);
+    clCreateCommandQueueWithProperties(context, GPU[0], 
+			 properties, &status);
   assert(status == CL_SUCCESS);
   /* kernelsource */
   FILE *kernelfp = fopen(argv[1], "r");
@@ -112,7 +112,10 @@ int main(int argc, char *argv[])
 printf("status = %d\n", status);
   assert(status == CL_SUCCESS);
   /* waitforevent */
-  clWaitForEvents(1, &event); 
+  clWaitForEvents(1, &event);
+  clEnqueueReadBuffer(commandQueue, bufferC, CL_TRUE,
+		      0, N * N * sizeof(cl_uint), C, 
+		      0, NULL, NULL);
   printf("Kernel execution completes.\n");
   /* gettime */
   cl_ulong timeEnterQueue, timeSubmit, timeStart, timeEnd;
