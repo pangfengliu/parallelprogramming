@@ -10,4 +10,8 @@ all:  vectorAdd-nofetchC-cl vectorAdd-nofetchC-finish-cl vectorAdd-fetchC-cl \
 %-cl: %.c
 	$(CC) $(CFLAGS) $< -o $@ $(LIBS)
 
+clean:
+	rm *-cl
+
+
 
