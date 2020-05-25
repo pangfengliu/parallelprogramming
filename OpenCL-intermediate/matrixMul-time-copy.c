@@ -1,5 +1,4 @@
 /* header */
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS 
 
 #include <stdio.h>
 #include <assert.h>
@@ -33,10 +32,11 @@ int main(int argc, char *argv[])
 		    &status);
   assert(status == CL_SUCCESS);
   /* commandqueue */
+  const cl_queue_properties properties[] =
+    {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
   cl_command_queue commandQueue =
-    clCreateCommandQueue(context, GPU[0], 
-			 CL_QUEUE_PROFILING_ENABLE, 
-			 &status);
+    clCreateCommandQueueWithProperties(context, GPU[0], 
+			 properties, &status);
   assert(status == CL_SUCCESS);
   /* kernelsource */
   FILE *kernelfp = fopen(argv[1], "r");
