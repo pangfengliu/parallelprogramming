@@ -103,12 +103,11 @@ int main(int argc, char *argv[])
 			   0, NULL, NULL);
   assert(status == CL_SUCCESS);
   printf("Kernel execution completes.\n");
-  /* getcvector */
 #ifdef USEclFINSIH
   clFinish(commandQueue);
 #else
   clEnqueueReadBuffer(commandQueue, bufferC, CL_TRUE,
-		      0, N * sizeof(cl_uint), globalId, 
+		      0, N * sizeof(cl_uint), C, 
 		      0, NULL, NULL);
 #endif
   /* checkandfree */

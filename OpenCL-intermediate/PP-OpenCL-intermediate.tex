@@ -176,6 +176,34 @@
   \end{itemize}
 \end{frame}
 
+
+\begin{frame}
+  \frametitle{Host Buffer?}
+  \begin{itemize}
+    \item In this NVIDIA implementation it seems that the buffer C is not on host.
+    \item We need to copy C back to the host.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Read the buffer C back}
+  \programlistingfirst{vectorAdd-fetchC.c}{}{\footnotesize}{setshape}{checkandfree}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration}
+  \begin{itemize}
+    \item Run the {\tt vector-fetchC-cl} program.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Does it produce the correct answer?
+  \end{itemize}
+\end{frame}
+
 \section{Index Domain}
 
 \subsection{Global Index}
