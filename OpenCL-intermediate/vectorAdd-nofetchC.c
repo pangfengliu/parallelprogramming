@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
 			   0, NULL, NULL);
   assert(status == CL_SUCCESS);
   printf("Kernel execution completes.\n");
+  clFinish(commandQueue);
   /* checkandfree */
   for (int i = 0; i < N; i++)
     assert(A[i] + B[i] == C[i]);

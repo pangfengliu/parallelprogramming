@@ -1,5 +1,5 @@
 /* header */
-#define CL_USE_DEPRECATED_OPENCL_2_0_APIS 
+
 #include <stdio.h>
 #include <assert.h>
 #include <CL/cl.h>
@@ -41,12 +41,13 @@ int main(int argc, char *argv[])
 		    &status);
   assert(status == CL_SUCCESS);
   /* commandqueue */
+  const cl_queue_properties properties[] =
+    {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
   cl_command_queue commandQueue[DEVICENUM];
   for (int device = 0; device < DEVICENUM; device++) {
     commandQueue[device] = 
-      clCreateCommandQueue(context, GPU[device],
-			   CL_QUEUE_PROFILING_ENABLE, 
-			   &status);
+      clCreateCommandQueueWithProperties(context, GPU[device],
+					 properties, &status);
     assert(status == CL_SUCCESS);
   }
   /* kernelsource */
