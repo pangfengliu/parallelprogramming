@@ -143,7 +143,12 @@ int main(int argc, char *argv[])
     assert(status == CL_SUCCESS);
   }
   /* waitforevent */
-  clWaitForEvents(DEVICENUM, events); 
+  clWaitForEvents(DEVICENUM, events);
+  for (int device = 0; device < DEVICENUM; device++) {
+    clEnqueueReadBuffer(commandQueue[device], bufferC[device], CL_TRUE,
+			0, ITEMPERDEVICE * sizeof(cl_uint), C[device * (N / DEVICENUM)], 
+			0, NULL, NULL);
+  }
   printf("Kernel execution completes.\n");
   /* getbase */
   cl_ulong base;
