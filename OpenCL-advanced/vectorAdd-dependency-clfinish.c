@@ -7,8 +7,10 @@
 #define MAXGPU 10
 #define MAXK 1024
 #define MAXLOG 4096
-#define DEVICENUM 3
+#define DEVICENUM 2
 #define NANO2SECOND 1000000000.0
+
+#define COPYG
 
 cl_uint A[N], B[N], C[N], D[N], E[N], F[N], G[N];
 /* main */
@@ -37,12 +39,13 @@ int main(int argc, char *argv[])
 		    &status);
   assert(status == CL_SUCCESS);
   /* commandqueue */
+  const cl_queue_properties properties[] =
+    {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
   cl_command_queue commandQueue[DEVICENUM];
   for (int device = 0; device < DEVICENUM; device++) {
     commandQueue[device] = 
-      clCreateCommandQueue(context, GPU[device],
-			   CL_QUEUE_PROFILING_ENABLE, 
-			   &status);
+      clCreateCommandQueueWithProperties(context, GPU[device],
+			   properties, &status);
     assert(status == CL_SUCCESS);
   }
   /* kernelsource */
@@ -128,7 +131,8 @@ int main(int argc, char *argv[])
   size_t globalThreads[] = {(size_t)N};
   size_t localThreads[] = {256};
   /* ABC */
-  cl_event events[3];
+#define EVENT 3
+  cl_event events[EVENT];
   status = clSetKernelArg(kernel, 0, sizeof(cl_mem), 
 			  (void*)&bufferA);
   assert(status == CL_SUCCESS);
@@ -172,14 +176,14 @@ int main(int argc, char *argv[])
 			  (void*)&bufferG);
   assert(status == CL_SUCCESS);
   status = 
-    clEnqueueNDRangeKernel(commandQueue[2], kernel, 1, NULL, 
+    clEnqueueNDRangeKernel(commandQueue[0], kernel, 1, NULL, 
 			   globalThreads, localThreads, 
 			   0, NULL, &(events[2])); 
   assert(status == CL_SUCCESS);
   /* waitforevent */
   status = clWaitForEvents(1, &(events[2])); 
   assert(status == CL_SUCCESS);
-  printf("All three kernels complete.\n");
+  printf("All kernels complete.\n");
   /* getbase */
   cl_ulong base;
   status = 
@@ -188,27 +192,27 @@ int main(int argc, char *argv[])
       sizeof(cl_ulong), &base, NULL);
   assert(status == CL_SUCCESS);
   /* gettime */
-  for (int device = 0; device < DEVICENUM; device++) {
+  for (int event = 0; event < EVENT; event++) {
     cl_ulong timeEnterQueue, timeSubmit, timeStart, 
       timeEnd;
     status = 
-      clGetEventProfilingInfo(events[device], 
+      clGetEventProfilingInfo(events[event], 
         CL_PROFILING_COMMAND_QUEUED, 
         sizeof(cl_ulong), &timeEnterQueue, NULL);
     assert(status == CL_SUCCESS);
     status = 
-      clGetEventProfilingInfo(events[device], 
+      clGetEventProfilingInfo(events[event], 
         CL_PROFILING_COMMAND_SUBMIT, 
         sizeof(cl_ulong), &timeSubmit, NULL);
     assert(status == CL_SUCCESS);
     /* getrest */
     status = 
-      clGetEventProfilingInfo(events[device], 
+      clGetEventProfilingInfo(events[event], 
         CL_PROFILING_COMMAND_START, 
         sizeof(cl_ulong), &timeStart, NULL);
     assert(status == CL_SUCCESS);
     status = 
-      clGetEventProfilingInfo(events[device], 
+      clGetEventProfilingInfo(events[event], 
         CL_PROFILING_COMMAND_END, 
          sizeof(cl_ulong), &timeEnd, NULL); 
     assert(status == CL_SUCCESS);
@@ -229,6 +233,11 @@ int main(int argc, char *argv[])
 	 (timeEnd - timeStart) / NANO2SECOND);
   }  
   /* checkandfree */
+#ifdef COPYG
+  clEnqueueReadBuffer(commandQueue[0], bufferG, CL_TRUE,
+		      0,  N * sizeof(cl_uint), G, 
+		      0, NULL, NULL);
+#endif
   for (int i = 0; i < N; i++) 
     assert(G[i] == A[i] + B[i] + D[i] + E[i]);
 

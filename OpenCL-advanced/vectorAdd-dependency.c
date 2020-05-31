@@ -177,6 +177,11 @@ int main(int argc, char *argv[])
   /* waitforevent */
   status = clWaitForEvents(DEVICENUM, events); 
   assert(status == CL_SUCCESS);
+#ifdef COPYG
+  clEnqueueReadBuffer(commandQueue[0], bufferG, CL_TRUE,
+		      0,  N * sizeof(cl_uint), G, 
+		      0, NULL, NULL);
+#endif
   printf("All three kernels complete.\n");
   /* getbase */
   cl_ulong base;
