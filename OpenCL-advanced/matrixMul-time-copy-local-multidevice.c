@@ -1,4 +1,5 @@
 /* header */
+#define COPYC
 
 #include <stdio.h>
 #include <assert.h>
@@ -144,11 +145,13 @@ int main(int argc, char *argv[])
   }
   /* waitforevent */
   clWaitForEvents(DEVICENUM, events);
+#ifdef COPYC  
   for (int device = 0; device < DEVICENUM; device++) {
     clEnqueueReadBuffer(commandQueue[device], bufferC[device], CL_TRUE,
 			0, ITEMPERDEVICE * sizeof(cl_uint), C[device * (N / DEVICENUM)], 
 			0, NULL, NULL);
   }
+#endif  
   printf("Kernel execution completes.\n");
   /* getbase */
   cl_ulong base;
