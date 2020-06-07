@@ -2,7 +2,7 @@
 #include <cuda.h>
 
 #ifndef Size
-#define Size 20
+#define Size 10
 #endif
 
 __global__ void hello(int A[Size][Size], int B[Size][Size], int C[Size][Size])
@@ -35,8 +35,7 @@ int main(void)
   bptr = host_B;
   for (i = 0; i < Size; i++)
     for (j = 0; j < Size; j++) {
-      *aptr++ = i + j;
-      *bptr++ = i + j;
+      *aptr++ = *bptr++ = (i == j);
     }
 
   cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);

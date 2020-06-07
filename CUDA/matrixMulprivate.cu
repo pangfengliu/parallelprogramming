@@ -2,24 +2,24 @@
 #include <cuda.h>
 
 #ifndef N
-#define N 20
+#define N 32
 #endif
 
-#define b 4
+#define b 8
 
 __global__ void matrixMul(int A[N][N], int B[N][N], int C[N][N])
 {
-  int k, sum = 0;
   int row = blockIdx.x * b + threadIdx.x;
   int column = blockIdx.y * b + threadIdx.y;
-  int r;
   __shared__ int sA[b][b];
   __shared__ int sB[b][b];
-  for (r = 0; r < b; r++) {
+
+  int sum = 0;
+  for (int r = 0; r < b; r++) {
     sA[threadIdx.x][threadIdx.y] = A[row][r * b + threadIdx.y];
     sB[threadIdx.x][threadIdx.y] = B[r * b + threadIdx.x][column];
     __syncthreads();
-    for (k = 0; k < b; k++)
+    for (int k = 0; k < b; k++)
       sum += sA[threadIdx.x][k] * sB[k][threadIdx.y];
     __syncthreads();
   }
@@ -35,8 +35,6 @@ int main(void)
   int size = sizeof(int) * N * N;
   int *aptr, *bptr;
 
-
-
   cudaMalloc((void **)&device_A, size);
   cudaMalloc((void **)&device_B, size);
   cudaMalloc((void **)&device_C, size);
@@ -48,8 +46,7 @@ int main(void)
   bptr = host_B;
   for (i = 0; i < N; i++)
     for (j = 0; j < N; j++) {
-      *aptr++ = i + j;
-      *bptr++ = i + j;
+      *aptr++ = *bptr++ = ((i == j)? 1 : 0);
     }
 
   cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
