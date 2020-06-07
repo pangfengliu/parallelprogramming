@@ -10,7 +10,7 @@
 #define DEVICENUM 2
 #define NANO2SECOND 1000000000.0
 
-#define COPYG
+// #define COPYG
 
 cl_uint A[N], B[N], C[N], D[N], E[N], F[N], G[N];
 /* main */
