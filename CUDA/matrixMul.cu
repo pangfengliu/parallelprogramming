@@ -18,7 +18,6 @@ int main(void)
 {
   int *device_A, *device_B, *device_C;
   int *host_A, *host_B, *host_C;
-  int i, j, k;
   int size = sizeof(int) * Size * Size;
   int *aptr, *bptr;
 
@@ -33,8 +32,8 @@ int main(void)
 
   aptr = host_A;
   bptr = host_B;
-  for (i = 0; i < Size; i++)
-    for (j = 0; j < Size; j++) {
+  for (int i = 0; i < Size; i++)
+    for (int j = 0; j < Size; j++) {
       *aptr++ = *bptr++ = (i == j);
     }
 
@@ -45,9 +44,9 @@ int main(void)
 			   (int (*)[Size])device_C);
   cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
 
-  k = 0;
-  for (i = 0; i < Size; i++)
-    for (j = 0; j < Size; j++)
+  int k = 0;
+  for (int i = 0; i < Size; i++)
+    for (int j = 0; j < Size; j++)
       printf("host_C[%d][%d] = %d\n", i, j, host_C[k++]);
 
   cudaFree(device_A);
