@@ -1,5 +1,5 @@
 CC = nvcc
-CFLAGS = -Xcompiler "-Wall"
+CFLAGS = -Xcompiler "-Wall -O2"
 CUDA_TARGET =  globalID-cu globalID2D-cu matrixMul-cu matrixMultiming-cu matrixMulprivate-cu matrixMulprivatetiming-cu
 
 all: $(CUDA_TARGET)
