@@ -3,10 +3,10 @@
 #include <assert.h>
 
 #ifndef N
-#define N 1024
+#define N 256
 #endif
 
-#define b 8
+#define b 16
 
 #define CHECKC
 
@@ -34,23 +34,19 @@ int host_A[N][N], host_B[N][N], host_C[N][N];
 int main(void)
 {
   int *device_A, *device_B, *device_C;
-
   int size = sizeof(int) * N * N;
-
   cudaMalloc((void **)&device_A, size);
   cudaMalloc((void **)&device_B, size);
   cudaMalloc((void **)&device_C, size);
 
   for (int i = 0; i < N; i++)
     for (int j = 0; j < N; j++) {
-      host_A[i][j] = i + j;
-      host_B[i][j] = i - j;
+      host_A[i][j] = host_B[i][j] = ((i == j)? 1 : 0);
     }
 
   cudaMemcpy(device_A, host_A, size, cudaMemcpyHostToDevice);
   cudaMemcpy(device_B, host_B, size, cudaMemcpyHostToDevice);
 
-  
   dim3 block(b, b);
   dim3 grid(N / b, N / b);
 
@@ -67,17 +63,12 @@ int main(void)
   printf("the multiplcaition takes %f seconds\n", time);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
-  
-  cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
 
+  cudaMemcpy(host_C, device_C, size, cudaMemcpyDeviceToHost);
 #ifdef CHECKC
   for (int i = 0; i < N; i++)
-    for (int j = 0; j < N; j++) {
-      int sum = 0;
-      for (int k = 0; k < N; k++)
-	sum += host_A[i][k] * host_B[k][j];
-      assert(host_C[i][j] == sum);
-    }
+    for (int j = 0; j < N; j++) 
+      assert(host_C[i][j] == (i == j)? 1 : 0);
 #endif
 
   cudaFree(device_A);
