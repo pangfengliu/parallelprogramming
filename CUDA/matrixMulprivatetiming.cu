@@ -15,10 +15,9 @@ __global__ void matrixMul(int A[N][N], int B[N][N], int C[N][N])
   int k, sum = 0;
   int row = blockIdx.x * b + threadIdx.x;
   int column = blockIdx.y * b + threadIdx.y;
-  int r;
   __shared__ int sA[b][b];
   __shared__ int sB[b][b];
-  for (r = 0; r < N / b; r++) {
+  for (int r = 0; r < N / b; r++) {
     sA[threadIdx.x][threadIdx.y] = A[row][r * b + threadIdx.y];
     sB[threadIdx.x][threadIdx.y] = B[r * b + threadIdx.x][column];
     __syncthreads();
