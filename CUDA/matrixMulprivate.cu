@@ -19,7 +19,7 @@ __global__ void matrixMul(int A[N][N], int B[N][N], int C[N][N])
   __shared__ int sB[b][b];
 
   int sum = 0;
-  for (int r = 0; r < b; r++) {
+  for (int r = 0; r < N / b; r++) {
     sA[threadIdx.x][threadIdx.y] = A[row][r * b + threadIdx.y];
     sB[threadIdx.x][threadIdx.y] = B[r * b + threadIdx.x][column];
     __syncthreads();
