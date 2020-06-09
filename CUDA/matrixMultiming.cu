@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #ifndef N
-#define N 256
+#define N 1024
 #endif
 
 #define b 16

@@ -7,10 +7,9 @@
 
 __global__ void hello(int A[Size][Size], int B[Size][Size], int C[Size][Size])
 {
-  int k, sum = 0;
-  for (k = 0; k < Size; k++)
+  int sum = 0;
+  for (int k = 0; k < Size; k++)
     sum += A[threadIdx.x][k] * B[k][threadIdx.y];
-
   C[threadIdx.x][threadIdx.y] = sum;
 }
 

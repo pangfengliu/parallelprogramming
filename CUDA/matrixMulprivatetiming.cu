@@ -3,10 +3,10 @@
 #include <assert.h>
 
 #ifndef N
-#define N 256
+#define N 1024
 #endif
 
-#define b 16
+#define b 8
 
 #define CHECKC
 
@@ -18,7 +18,7 @@ __global__ void matrixMul(int A[N][N], int B[N][N], int C[N][N])
   int r;
   __shared__ int sA[b][b];
   __shared__ int sB[b][b];
-  for (r = 0; r < b; r++) {
+  for (r = 0; r < N / b; r++) {
     sA[threadIdx.x][threadIdx.y] = A[row][r * b + threadIdx.y];
     sB[threadIdx.x][threadIdx.y] = B[r * b + threadIdx.x][column];
     __syncthreads();
@@ -60,7 +60,7 @@ int main(void)
   cudaEventRecord(stop, 0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&time, start, stop);
-  printf("the multiplcaition takes %f seconds\n", time);
+  printf("the multiplcaition takes %f seconds\n", time / 1000);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
