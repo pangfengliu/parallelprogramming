@@ -52,7 +52,7 @@ int main(void)
   cudaEventRecord(stop, 0);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&time, start, stop);
-  printf("the multiplcaition takes %f seconds\n", time);
+  printf("the multiplcaition takes %f seconds\n", time / 1000.0);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
