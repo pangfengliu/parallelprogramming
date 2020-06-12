@@ -95,7 +95,7 @@
 \begin{frame}
   \frametitle{Discussion}
   \begin{itemize}
-    \item Descirbe the advantage and disadvantages of large block size
+    \item Describe the advantage and disadvantages of large block size
       in a file system.
   \end{itemize}
 \end{frame}
@@ -159,9 +159,9 @@
 \begin{frame}
   \frametitle{Discussion}
   \begin{itemize}
-    \item Give example of most high level and most low level of
-      parallel programming you are aware of.
-    \item Discuss the advantage and disadvantage of abstraction on
+    \item Give an example of the most high level and the most low
+      level parallel programming model that you are aware of.
+    \item Discuss the advantages and disadvantages of abstraction on
       parallel programming.
   \end{itemize}
 \end{frame}
@@ -183,7 +183,8 @@
     \item In the map stage the map function reads inputs and produces
       intermediate key/value pairs.
     \item In the shuffle stage the system processes intermediate
-      key/value pairs so that later the reduce function can read them.
+      key/value pairs so that later the reduce function can process
+      them.
     \item In the reduce stage the reduce function reads the processed
       intermediate key/value pairs and produces the output.
   \end{itemize}
@@ -192,7 +193,7 @@
 \begin{frame}
   \frametitle{Responsibility}
   \begin{itemize}
-    \item The programmer provides the map and reduce function.
+    \item The programmer provides the map and reduce functions.
     \item The MapReduce runtime system does the shuffling.
   \end{itemize}
 \end{frame}
@@ -221,8 +222,9 @@
 \begin{frame}
   \frametitle{A Map Example} 
   \begin{itemize}
-    \item Given a string, produces a multi-set of pairs that are in
-      the form of $(w, 1)$, where $w$ is a word in the string.
+    \item Given a string, the map function produces a multi-set of
+      pairs that are in the form of $(w, 1)$, where $w$ is a word in
+      the string.
     \item The input is ``this is a book not a pencil''.
     \item The output will be (this, 1), (is, 1), (a, 1), (book,
       1), (not, 1), (a, 1), (pencil, 1).
@@ -232,7 +234,7 @@
 \begin{frame}
   \frametitle{An Example} 
   \begin{itemize}
-    \item The same map function may have different inputs.
+    \item The same map function may be given different inputs.
     \item Assume that the input is ``this is a pencil not a chair''.
     \item the output will be (this, 1), (is, 1), (a, 1), (pencil,
       1), (not, 1), (a, 1), (chair, 1).
@@ -242,9 +244,8 @@
 \begin{frame}
   \frametitle{Key/Value Pairs}
   \begin{itemize}
-    \item Now the system collects all the output from all inputs from
-      map function.  This is called {\em intermediate key/value
-        pairs}.
+    \item Now the system collects all outputs from the map function.
+    \item This is called {\em intermediate key/value pairs}.
     \item From the previous example we have the intermediate key/value
       pairs from two inputs as (this, 1), (is, 1), (a, 1), (book,
       1), (not, 1), (a, 1), (pencil, 1), (this, 1), (is, 1), (a, 1),
@@ -256,19 +257,19 @@
 \begin{frame}
   \frametitle{Another Example}
   \begin{itemize}
-    \item Given a document $d$, produces a set of pairs that ares in
-      the form of $(w, d)$, where $w$ is a word in $u$.
-      \item The input is a document ``readme'', which has words
-        ``this'', ``is'', ``a'', ``pencil''.
-      \item The output will be a set (this, readme), (is,
-        readme), (a, readme), (pencil, readme).
+    \item Given a document $d$, the map function produces a set of
+      pairs $(w, d)$, where $w$ is a word in $u$.
+    \item The input is a document ``readme'', which has words
+      ``this'', ``is'', ``a'', ``pencil''.
+    \item The output will be a set (this, readme), (is, readme), (a,
+      readme), (pencil, readme).
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{An Example} 
   \begin{itemize}
-    \item The same map function may have different inputs.
+    \item The same map function may be given different inputs.
     \item The input is a document ``note'', which has words ``that'',
       ``is'', ``a'', ``chair''.
     \item The output will be (that, note), (is, note), (a,
@@ -288,8 +289,8 @@
 \begin{frame}
   \frametitle{Discussion}
   \begin{itemize}
-    \item Can you guess the purpose of these two examples?  What kind
-      of problem they want to solve?
+    \item Can you guess the purposes of these two examples?  What
+      problems they want to solve?
   \end{itemize}
 \end{frame}
 
@@ -298,8 +299,8 @@
 \begin{frame}
   \frametitle{Shuffle}
   \begin{itemize}
-    \item The {\em shuffle} in MapReduce means transferring data from
-      map to reduce via network transfer.
+    \item The term {\em shuffle} in MapReduce means transferring data
+      from map function to reduce function via network transfer.
     \item Before we pass the intermediate key/value pairs to the
       reduce function, we must {\em sort} them.
     \item The reason is that a reduce function will work on the values
