@@ -1,0 +1,1144 @@
+\documentclass{beamer}
+\usetheme{Warsaw}
+
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\usepackage{pgf}
+
+\input{slide-macro}
+
+\begin{document}
+
+\title{MapReduce Programming}
+
+\author{Pangfeng Liu \\ National Taiwan University}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}
+  \frametitle{Topics}
+  \begin{itemize}
+    \item Google File System
+    \item MapReduce Programming Model
+  \end{itemize}
+\end{frame}
+
+\section{Google File System}
+\begin{frame}
+  \frametitle{GFS in a Nutshell}
+  \begin{itemize}
+    \item Google File System (GFS) is a scalable distributed file
+      system for large distributed data-intensive applications.
+    \item GFS provides fault tolerance while running on inexpensive
+      commodity hardware, and it delivers high aggregate performance
+      to a large number of clients.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Objectives} 
+  \begin{itemize}
+  \item GFS shares many of the same goals as previous distributed file
+    systems such as performance, scalability, reliability, and
+    availability. However, its design has been driven by key
+    observations of our application workloads and technological
+    environment.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Observations}
+  \begin{itemize}
+    \item Component failures are the norm rather than the exception.
+    \item Files are huge by traditional standards.
+    \item Most files are mutated by appending new data rather than
+      overwriting existing data. Random writes within a file are
+      practically non-existent.
+    \item Co-designing the applications and the file system API
+      benefits the overall system by increasing our flexibility.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Assumptions}
+  \begin{itemize}
+    \item The system is built from many inexpensive commodity
+      components that often fail.
+    \item The system stores a modest number of large files.
+    \item The workloads primarily consist of two kinds of reads: large
+      streaming reads and small random reads.
+    \item The workloads also have many large, sequential writes that
+      append data to files.
+    \item The system must efficiently implement well-defined semantics
+      for multiple clients that concurrently append to the same file.
+    \item High sustained bandwidth is more important than low latency.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Characteristics}
+  \begin{itemize}
+    \item One master stores metadata including data locations and
+      multiple chunk servers stores actual data.
+    \item Metadata are stored in memory for fast access.
+    \item Actual data has three replicas for fault tolerance, and
+      replicas are stored within and not within locality.
+    \item Complicated protocol for storing data.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Descirbe the advantage and disadvantages of large block size
+      in a file system.
+  \end{itemize}
+\end{frame}
+
+\section{MapReduce Programming}
+
+\begin{frame}
+  \frametitle{MapReduce}
+  \begin{itemize}
+  \item A programming model and an associated implementation for
+    processing and generating large data sets.
+  \item Programs written in MapReduce style are automatically
+    parallelized and executed on a large cluster of commodity
+    machines.
+  \item Google implementation of MapReduce runs on a large cluster of
+    commodity machines and is highly scalable.
+  \end{itemize}
+\end{frame}
+
+\subsection{Introduction}
+
+\begin{frame}
+  \frametitle{Simple Computation}
+  \begin{itemize}
+  \item Google has implemented hundreds of special-purpose
+    computations that process large amounts of raw data.
+  \item Most such computations are conceptually straightforward but
+    the input data is usually large and the computations have to be
+    distributed across hundreds or thousands of machines.
+  \item The issues of how to parallelize the computation, distribute
+    the data, and handle failures obscure the original simple
+    computation with large amounts of complex code to deal with these
+    issues.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Abstraction}
+  \begin{itemize}
+    \item Google designed a new abstraction that allows programmers to
+      express the simple computations but hides the messy details of
+      parallelization, fault-tolerance, data distribution and load
+      balancing.  
+    \item The programmers focus on the computation, not the
+      parallelization.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Abstraction}
+  \begin{itemize}
+    \item The abstraction applies a {\em map} operation to each
+      logical record in our input in order to compute a set of
+      intermediate {\em key/value pairs}.
+    \item Then the system applies a {\em reduce} operation to all the
+      values that shared the {\em same} key, in order to combine the
+      derived data.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Give example of most high level and most low level of
+      parallel programming you are aware of.
+    \item Discuss the advantage and disadvantage of abstraction on
+      parallel programming.
+  \end{itemize}
+\end{frame}
+
+\subsection{Programming Model}
+
+\begin{frame}
+  \frametitle{Map and Reduce}
+  \begin{itemize}
+  \item The programming model consists of a {\em map} function, a {\em
+    reduce} function, and a {\em shuffle stage}.
+  \item Map and reduce are borrowed from functional programming.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Stages}
+  \begin{itemize}
+    \item In the map stage the map function reads inputs and produces
+      intermediate key/value pairs.
+    \item In the shuffle stage the system processes intermediate
+      key/value pairs so that later the reduce function can read them.
+    \item In the reduce stage the reduce function reads the processed
+      intermediate key/value pairs and produces the output.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Responsibility}
+  \begin{itemize}
+    \item The programmer provides the map and reduce function.
+    \item The MapReduce runtime system does the shuffling.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item What does a programmer have to do in MapReduce style of
+      programming?
+  \end{itemize}
+\end{frame}
+
+\subsubsection{Map}
+
+\begin{frame}
+  \frametitle{Map}
+  \begin{itemize}
+    \item Map is a function.
+  \end{itemize}
+  \begin{description}
+  \item[input] An input I.
+  \item[output] A multi-set $\{ (k_1, v_1), \ldots , (k_n, v_n) \}$.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Map Example} 
+  \begin{itemize}
+    \item Given a string, produces a multi-set of pairs that are in
+      the form of $(w, 1)$, where $w$ is a word in the string.
+    \item The input is ``this is a book not a pencil''.
+    \item The output will be (this, 1), (is, 1), (a, 1), (book,
+      1), (not, 1), (a, 1), (pencil, 1).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{An Example} 
+  \begin{itemize}
+    \item The same map function may have different inputs.
+    \item Assume that the input is ``this is a pencil not a chair''.
+    \item the output will be (this, 1), (is, 1), (a, 1), (pencil,
+      1), (not, 1), (a, 1), (chair, 1).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Key/Value Pairs}
+  \begin{itemize}
+    \item Now the system collects all the output from all inputs from
+      map function.  This is called {\em intermediate key/value
+        pairs}.
+    \item From the previous example we have the intermediate key/value
+      pairs from two inputs as (this, 1), (is, 1), (a, 1), (book,
+      1), (not, 1), (a, 1), (pencil, 1), (this, 1), (is, 1), (a, 1),
+      (pencil, 1), (not, 1), (a, 1), (chair, 1).
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Another Example}
+  \begin{itemize}
+    \item Given a document $d$, produces a set of pairs that ares in
+      the form of $(w, d)$, where $w$ is a word in $u$.
+      \item The input is a document ``readme'', which has words
+        ``this'', ``is'', ``a'', ``pencil''.
+      \item The output will be a set (this, readme), (is,
+        readme), (a, readme), (pencil, readme).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{An Example} 
+  \begin{itemize}
+    \item The same map function may have different inputs.
+    \item The input is a document ``note'', which has words ``that'',
+      ``is'', ``a'', ``chair''.
+    \item The output will be (that, note), (is, note), (a,
+      note), (chair, note).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Key/Value Pairs}
+  \begin{itemize}
+    \item We have the intermediate key/value pairs as (this,
+      readme), (is, readme), (a, readme), (pencil, readme), (that,
+      note), (is, note), (a, note), (chair, note).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Can you guess the purpose of these two examples?  What kind
+      of problem they want to solve?
+  \end{itemize}
+\end{frame}
+
+\subsubsection{Shuffle}
+
+\begin{frame}
+  \frametitle{Shuffle}
+  \begin{itemize}
+    \item The {\em shuffle} in MapReduce means transferring data from
+      map to reduce via network transfer.
+    \item Before we pass the intermediate key/value pairs to the
+      reduce function, we must {\em sort} them.
+    \item The reason is that a reduce function will work on the values
+      from the {\em same} key only, so we need to shuffle the pairs so
+      that the pairs of the same key go to the same reduce function.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Key/Value Pairs}
+  \begin{itemize}
+    \item From the previous example we have the intermediate key/value
+      pairs as (this, 1), (is, 1), (a, 1), (book, 1), (not, 1),
+      (a, 1), (pencil, 1), (this, 1), (is, 1), (a, 1), (pencil, 1),
+      (not, 1), (a, 1), (chair, 1)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shuffle}
+  \begin{itemize}
+    \item The intermediate key value pairs will be sorted according to
+      keys for later use.
+    \item We will have (a, 1), (a, 1), (a, 1), (a, 1), (book, 1),
+      (chair, 1) (is, 1), (is, 1), (not, 1), (not, 1), (pencil, 1),
+      (pencil, 1), (this, 1), (this, 1)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Group Values Together}
+  \begin{itemize}
+    \item The values of the same key will be grouped into a list
+    \item We will have the following lists.
+      \begin{itemize}
+        \item (a, (1, 1, 1, 1))
+        \item (book, (1))
+        \item (chair, (1))
+        \item (is, (1, 1))
+        \item (not, (1, 1))
+        \item (pencil, (1, 1))
+        \item (this, (1, 1))
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Can you guess the purpose of this example now? What kind of
+      problem they want to solve?
+    \item Now if we want to solve this problem, what else do we (or
+      the reducer) need to do?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Key/Value Pairs}
+  \begin{itemize}
+    \item We have the intermediate key/value pairs as (this,
+      readme), (is, readme), (a, readme), (pencil, readme), (that,
+      note), (is, note), (a, note), (chair, note).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shuffle}
+  \begin{itemize}
+    \item The intermediate key value pairs will be sorted according to
+      keys for later use.
+    \item We will have (a, note), (a, readme), (chair, note), (is,
+      readme), (is, note), (pencil, readme), (that, note), (this,
+      readme).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Group Values Together}
+  \begin{itemize}
+    \item The values of the same key will be grouped into a list
+    \item We will have the following lists.
+      \begin{itemize}
+        \item (a, (note, readme))
+        \item (chair, (note))
+        \item (is, (note, readme))
+        \item (pencil, (readme))
+        \item (that, (note))
+        \item (this, (readme))
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Can you guess the purpose of this example now? What kind of
+      problem they want to solve?
+    \item Now if we want to solve this problem, what else do we (or
+      the reducer) need to do?
+  \end{itemize}
+\end{frame}
+
+\subsubsection{Reduce}
+
+\begin{frame}
+  \frametitle{Reduce}
+  \begin{itemize}
+    \item Reduce is a function.
+  \end{itemize}
+  \begin{description}
+  \item[input] A key and a list of values.
+  \item[output] A result from the list of values.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Reduce Example} 
+  \begin{itemize}
+    \item Given a key and a list of numbers, produces a pair of the
+      key and the sum of these numbers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Word Count} 
+  \begin{itemize}
+    \item Given (a, (1, 1, 1, 1)) produces (a, 4).
+    \item Given (book, (1)) produces (book, 1).
+    \item Given (chair, (1)) produces (chair, 1).
+    \item Given (is, (1, 1)) produces (is, 2).
+    \item Given (not, (1, 1)) produces (not, 2).
+    \item Given (pencil, (1, 1)) produces (pencil, 2).
+    \item Given (this, (1, 1)) produces (this, 2).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \huge{We have a word counting program!!!}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Can you think of any optimization that a map can do to
+      reduce the amount of data from map to reduce in this example?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Reduce Example} 
+  \begin{itemize}
+    \item Given a key and a list of values, produces the {\em same
+      thing}.
+    \item Like an identify function.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Word Count} 
+  \begin{itemize}
+  \item Given (a, (note, readme)) produces (a, (note, readme)).
+  \item Given (chair, (note)) produces (chair, (note)).
+  \item Given (is, (note, readme)) produces (is, (note, readme)).
+  \item Given (pencil, (readme)) produces (pencil, (readme)).
+  \item Given (that, (note)) produces (that, (note)).
+  \item Given (this, (readme)) produces (this, (readme)).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \huge{We have a word index program!!!}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item If the map function produces a multi-set instead of a set,
+      then what will be the output?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mapper and Reducer}
+  \begin{itemize}
+    \item Both map and reduce functions are run by multiple machines
+      in parallel.
+    \item A machine running a map function is called a {\em mapper}.
+    \item A machine running a reduce function is called a {\em
+      reducer}.
+    \item We will assume that we have $M$ mappers and $R$ reducers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Partition Function}
+  \begin{itemize}
+    \item A {\em partition function} determines the reducer an
+      intermediate key/value pair will go to.
+    \item Usually we use a simple hash function to hash the key into a
+      integer from 0 to $R - 1$.
+    \item Each reducer writes its data according to its index (from 0
+      to $R -1$.
+    \item The final answer is a concatenation of all files according
+      to reducer ids.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+  \item Can any reducer run before any mapper finishes?  Explain your
+    answer.
+  \item How do we do sorting with MapReduce if we know the key
+    distribution?  In particular, how do we design our partition
+    function, so that the final result is sorted?
+  \end{itemize}
+\end{frame}
+
+\subsubsection{Example Code}
+
+\begin{frame}
+  \frametitle{Map}
+  \begin{itemize}
+    \item The user defined map function extends (inherits) the base
+      class {\tt MapReduceBase}
+    \item The first two template parameters of interface {\tt Mapper}
+      describe the input, and second two template parameters describe
+      the output.
+    \item The output type is a template using the parameter of {\tt
+      Mapper}, and is the type of intermediate key/value pairs.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Map Parameters}
+  \begin{description}
+    \item[key] The line number of file.
+    \item[value] The line at {\tt key}.
+    \item[output] The output object.
+    \item[reporter] The error/information handle.
+  \end{description}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt StringTokenizer}
+  \begin{itemize}
+  \item We convert value to string, then convert the string with the
+    constructor of {\tt StringTokenizer}.
+  \item The {\em hasMoreToken} and {\em nextToken} are methods of {\tt
+    StringTokenizer} that works as an iterator.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt OutputColelctor}
+  \begin{itemize}
+  \item {\tt OutputColelctor} is the type of intermediate key value.
+  \item We write the string (of type {\tt Text}) first, then a constant
+    1.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Map}
+  \programlistingfirst{WordCount.java}{}{\scriptsize}{mapper}{mapperend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Did we use the parameter {\tt key}?
+    \item Guess why the parameter {\tt key} has type {\tt
+      LongWritable} not simply a {\tt IntWritable}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduce}
+  \begin{itemize}
+    \item The user defined {\tt reduce} function extends (inherits)
+      the base class {\tt MapReduceBase}
+    \item The first two template parameters of interface {\tt Reducer}
+      describe the input, and second two template parameters describe
+      the output.
+    \item The input type is a template using the parameter of {\tt
+      Reducer}, and is the type of intermediate key/value pairs.
+
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduce Parameters}  \begin{description}
+    \item[key] The intermediate key.
+    \item[values] intermediate values.
+    \item[output] The output object.
+    \item[reporter] The error/information handle.
+  \end{description}
+  Note that we have only one key but multiple values, so we need an
+  iterator over values.
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt IntWritable}
+  \begin{itemize}
+  \item The {\em hasNext} and {\em next} are methods of {\tt Iterator}
+    that works as an iterator over {\tt IntWritable}.
+  \item {\tt get} is a method to get the actual value of an {\tt
+    IntWritable}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\tt OutputColelctor}
+  \begin{itemize}
+  \item {\tt OutputColelctor} is the type of intermediate key value.
+  \item We write the string (of type {\tt Text}) first, then the sum.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduce}
+  \programlistingfirst{WordCount.java}{}{\scriptsize}{mapperend}{reducerend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Check the consistency of the second two parameter of {\tt
+      Map} and first two parameter of {\tt Reduce}.  Why do they have
+      to be the same?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduce}
+  \programlistingfirst{WordCount.java}{}{\scriptsize}{mapperend}{reducerend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Main Program}
+  \begin{itemize}
+    \item The {\tt JobConf} is the job configuration object.
+    \item First we set the name of the job, which has to be the same
+      as our object name (and the file name).
+    \item Then we set the mapper and reducer. 
+    \item We also set the combiner, which is also the reducer.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Main Program}
+  \programlistingfirst{WordCount.java}{}{\scriptsize}{reducerend}{setkeyvalue}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Set Key/Value Type}
+  \begin{itemize}
+    \item We set the output type for mapper and reducer.
+    \item The API for mapper is {\tt setMapOutputKeyClass} and {\tt
+      setMapOutputValueClass}
+    \item The API for reducer is {\tt setOutputKeyClass} and {\tt
+      setOutputValueClass}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Set Key/Value Type}
+  \programlistingfirst{WordCount.java}{}{\scriptsize}{setkeyvalue}{setio}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Set I/O Type}
+  \begin{itemize}
+    \item We set the input and output for the main program.
+    \item {\tt setInputFormat} is for mappers to read.
+    \item {\tt setOutputFormat} is for reducers to write.
+    \item {\tt setInputPaths} is the path name of the input
+    \item {\tt setOutputPaths} is the path name of the output.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduce}
+  \programlistingfirst{WordCount.java}{}{\scriptsize}{setio}{mainend}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Why the combiner is also the reducer?
+  \end{itemize}
+\end{frame}
+
+\subsection{Implementation}
+
+\begin{frame}
+  \frametitle{Implementation}
+  \begin{itemize}
+    \item Commodity machines and networking hardware are used.
+    \item A cluster consists of hundreds or thousands of machines,
+      and therefore machine failures are common.  
+    \item Storage is provided by inexpensive disks attached directly
+      to individual machines.
+    \item GFS is used to manage the data stored on these disks. The
+      file system uses replication to provide availability and
+      reliability on top of unreliable hardware.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Stages}
+  \begin{itemize}
+    \item The execution of a MapReduce program goes through seven
+      stages.
+      \begin{itemize}
+      \item Split input
+      \item Master initialization
+      \item Start mappers
+      \item Network transfer
+      \item Start reducers
+      \item Reduces output
+      \item Master cleanup
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Split Input}
+  \begin{itemize}
+    \item The MapReduce library in the user program first splits the
+      input files into $M$ pieces of typically 16 megabytes to 64
+      megabytes (MB) per piece.
+    \item The MapReduce library then starts up many copies of the
+      program on a cluster of machines.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{MapReduce}
+\centerline{\pgfimage[height=0.7\textheight]{MapReduce.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Why input files are split into $M$ pieces of typically 16
+      megabytes to 64 megabytes (MB) per piece?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Master Initialization}
+  \begin{itemize}
+    \item One of the copies of the program is the master and the rest
+      are workers that are assigned work by the master. 
+    \item There are $M$ map tasks and $R$ reduce tasks to assign.
+    \item The master picks idle workers and assigns each one a map
+      task or a reduce task.
+  \end{itemize}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{Start Mappers}
+  \begin{itemize}
+    \item A worker who is assigned a map task reads the contents of
+      the corresponding input split. 
+    \item It parses key/value pairs out of the input data and passes
+      each pair to the user-defined Map function. 
+    \item The intermediate key/value pairs produced by the Map
+      function are buffered in {\em memory}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{MapReduce}
+\centerline{\pgfimage[height=0.7\textheight]{MapReduce.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Network Transfer}
+  \begin{itemize}
+    \item Periodically, the buffered pairs are written to local disk,
+      partitioned into R regions by the partitioning function. 
+    \item The locations of these buffered pairs on the local disk are
+      passed back to the master, who is responsible for forwarding
+      these locations to the reduce workers.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{MapReduce}
+\centerline{\pgfimage[height=0.7\textheight]{MapReduce.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Start Reducers}
+  \begin{itemize}
+    \item When a reduce worker is notified by the master about these
+      locations, it uses remote procedure calls to read the buffered
+      data from the local disks of the map workers. 
+    \item When a reduce worker has read {\em all} intermediate data,
+      it sorts it by the intermediate keys so that all occurrences of
+      the same key are grouped together.
+    \item The sorting is needed because typically many different keys
+      map to the same reduce task.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{MapReduce}
+\centerline{\pgfimage[height=0.7\textheight]{MapReduce.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item What is remote procedure call?  What requirement is needed
+      for doing RPC?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reduces Output}
+  \begin{itemize}
+    \item The reduce worker iterates over the sorted intermediate data
+      and for each unique intermediate key encountered, it passes the
+      key and the corresponding set of intermediate values to the
+      user’s Reduce function. 
+    \item The output of the Reduce function is {\em appended} to a
+      final output file for this reduce partition.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{MapReduce}
+\centerline{\pgfimage[height=0.7\textheight]{MapReduce.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Master Cleanup}
+  \begin{itemize}
+    \item When all map tasks and reduce tasks have been completed, the
+      master wakes up the user program.  
+    \item At this point, the MapReduce call in the user program
+      returns back to the user code.
+  \end{itemize}
+\end{frame}
+
+\subsubsection{Fault Tolerance}
+
+\begin{frame}
+  \frametitle{Fault Tolerance}
+  \begin{itemize}
+    \item Since the MapReduce library is designed to help process very
+      large amounts of data using hundreds or thousands of machines,
+      the library must tolerate machine failures gracefully.
+    \item We will discuss worker failure and master failure
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Worker Failure}
+  \begin{itemize}
+    \item The master pings every worker periodically. If no response
+      is received from a worker in a certain amount of time, the
+      master marks the worker as failed.
+    \item Completed map tasks are re-executed on a failure because
+      their output is stored on the local disk(s) of the failed
+      machine and is therefore inaccessible.
+    \item Completed reduce tasks do not need to be re-executed since
+      their output is stored in a global file system.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Master Failure}
+  \begin{itemize}
+    \item The current implementation aborts the MapReduce computation
+      if the master fails.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Why do we re-execute a failed mapper, but not a reducer?
+    \item Why master failure is different from worker failure? Explain
+      you answer.
+  \end{itemize}
+\end{frame}
+
+\subsubsection{Locality}
+
+\begin{frame}
+  \frametitle{Locality}
+  \begin{itemize}
+    \item We conserve network bandwidth by taking advantage of the
+      fact that the input data, managed by GFS, is stored on the local
+      disks of the machines that make up our cluster.
+    \item GFS divides each file into 64 MB blocks, and stores several
+      copies of each block (typically 3 copies) on different
+      machines. 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Locality}
+  \begin{itemize}
+    \item The MapReduce master takes the location information of the
+      input files into account and attempts to schedule a map task on
+      a machine that contains a replica of the corresponding input
+      data.
+    \item Failing that, it attempts to schedule a map task near a
+      replica of that task’s input data (e.g., on a worker machine
+      that is on the same network switch as the machine containing the
+      data).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item How dose the system know where to find the replica of a
+      block? Who has that location information?
+  \end{itemize}
+\end{frame}
+
+\subsubsection{Granularity}
+
+\begin{frame}
+  \frametitle{Granularity}
+  \begin{itemize}
+    \item We tend to choose $M$ so that each individual task is
+      roughly 16 MB to 64 MB of input data (so that the locality
+      optimization described above is most effective), 
+    \item We make $R$ a small multiple of the number of worker
+      machines we expect to use.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Straggler}
+  \begin{itemize}
+    \item A ``straggler'' is a machine that takes an unusually long
+      time to complete one of the last few map or reduce tasks in the
+      computation.
+    \item For example, a machine with a bad disk may experience
+      frequent correctable errors that slow its read performance from
+      30 MB/s to 1 MB/s.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Backup Tasks}
+  \begin{itemize}
+    \item When a MapReduce operation is close to completion, the
+      master schedules {\em backup executions} of the remaining
+      in-progress tasks.
+    \item The task is marked as completed whenever either the primary
+      or the backup execution completes.
+    \item The sort program takes 44\% longer to complete when the
+      backup task mechanism is disabled.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item If the probability for a machine to be a straggler is $p$,
+      what is the pro-ability that a system of 1800 machines does {\em
+        not} have a straggler?  Let $p$ be 0.0001 and calculate the
+      answer.
+  \end{itemize}
+\end{frame}
+  
+\subsection{Optimization}
+
+\begin{frame}
+  \frametitle{Partition Function}
+  \begin{itemize}
+    \item The default partitioning function uses hashing
+      (e.g. hash(key) mod R) and tends to result in fairly
+      well-balanced partitions.
+    \item Sometimes the output keys are URLs, and we want all entries
+      for a single host to end up in the same output file. 
+    \item We can specify a partitioning function using
+      hash(Hostname(urlkey)) mod $R$, and all URLs from the same host
+      will end up in the same output file.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Combiner Function}
+  \begin{itemize}
+    \item There is significant repetition in the intermediate keys
+      produced by each map task, and the user-specified Reduce
+      function is commutative and associative.
+    \item For example in work counting each map task will produce
+      hundreds or thousands of records of the form (the, 1).
+    \item We allow the user to specify an optional {\em Combiner
+      function} that does partial merging of this data before it is
+      sent over the network.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example}
+  \begin{itemize}
+    \item For example, the map function of word counting example after
+      seeing ``this is a book not a pencil'', will report (a, (2)),
+      instead of (a (1, 1)).
+    \item Similar, the map function of word counting example after
+      seeing ``this is a pencil not a chair'' will also report (a,
+      (2)), instead of (a (1, 1)).
+    \item The reducer will see two (a, (2)), instead of two (a, (1,
+      1)).
+      \item This is like ``preprocessing'' in order to reduce the
+        network traffic.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion}
+  \begin{itemize}
+    \item Give another example of combiner.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Local Execution}
+  \begin{itemize}
+    \item Debugging problems in Map or Reduce functions can be tricky,
+      since the actual computation happens in a distributed system of
+      several thousand machines.
+    \item To help facilitate debugging, profiling, and small-scale
+      testing, we have developed an alternative implementation of
+      the MapReduce library that sequentially executes all of the work
+      for a MapReduce operation on the local machine.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Counters}
+  \begin{itemize}
+    \item The MapReduce library provides a counter facility to count
+      occurrences of various events.
+    \item Some counter values are automatically maintained by the
+      MapReduce library, such as the number of input key/value pairs
+      processed and the number of output key/value pairs produced.
+    \item Users have found the counter facility useful for sanity
+      checking the behavior of MapReduce operations.
+  \end{itemize}
+\end{frame}
+
+\subsection{Performance}
+
+\begin{frame}
+  \frametitle{Performance} 
+  \begin{itemize} 
+    \item The experiments run on a cluster of 1800 machines connected
+      by a two-level tree-shaped switched network with approximately
+      100-200 Gbps of aggregate bandwidth available at the root.
+    \item Each machine had two 2GHz Intel Xeon processors with
+        Hyper-Threading enabled, 4GB of memory, two 160GB IDE disks.
+    \item The benchmarks include Grep and sort.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Mapper Reading}
+\centerline{\pgfimage[height=0.7\textheight]{mapper-read.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mapper Reading Rate}
+  \begin{itemize}
+    \item This graph shows the rate at which input is read. 
+    \item The rate peaks at about 13 GB/s and dies off fairly quickly
+      since all map tasks finish before 200 seconds have elapsed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Shuffle}
+\centerline{\pgfimage[height=0.7\textheight]{shuffle.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Network Transfer Rate}
+  \begin{itemize}
+    \item This graph shows the rate at which data is sent over the
+      network from the map tasks to the reduce tasks.
+    \item This shuffling starts as soon as the first map task
+      completes.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Network Transfer Rate}
+  \begin{itemize}
+    \item The first hump in the graph is for the first batch of
+      approximately 1700 reduce tasks (the entire MapReduce was
+      assigned about 1700 machines and each machine executes at most
+      one reduce task at a time).
+    \item Roughly 300 seconds into the computation, some of these
+      first batch of reduce tasks finish and we start shuffling data
+      for the remaining reduce tasks.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Reducer Writing}
+\centerline{\pgfimage[height=0.7\textheight]{reducer-write.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reducer Writing Rate}
+  \begin{itemize}
+    \item There is a delay between the end of the first shuffling
+      period and the start of the writing period because the machines
+      are busy sorting the intermediate data.
+    \item The writes continue at a rate of about 2-4 GB/s for a while
+      and all writes finish about 850 seconds into the computation.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Observation}
+  \begin{itemize}
+    \item The input rate is higher than the shuffle rate and the
+      output rate because of our locality optimization.
+    \item The shuffle rate is higher than the output rate because the
+      output phase writes two copies of the sorted data (we make two
+      replicas of the output for reliability and availability
+      reasons).
+  \end{itemize}
+\end{frame}
+
+
+
+\end{document}
