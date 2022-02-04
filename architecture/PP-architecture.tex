@@ -46,11 +46,9 @@
 \begin{frame}
 \frametitle{Uniprocessor}
 \begin{itemize}
-\item A single processor for computation.
-\item A single memory for storing instructions and data.
-\item The CPU fetches instructions from the memory, executes the
-  instructions, updates the contents of registers, and possibly data in
-  the memory, and then repeats.
+\item It has a single processor for computation.
+\item It has a single memory for storing instructions and data.
+\item The CPU fetches instructions from memory, executes the instructions, updates the contents of registers and possibly data in the memory, and then repeats.
 \item Intel 486, Pentium, etc.
 \end{itemize}
 \end{frame}
@@ -61,10 +59,8 @@
 \begin{frame}
 \frametitle{Multiple Uniprocessors}
 \begin{itemize}
-\item It is intuitive to have multiple uniprocessors working together
-  to have high performance.
-\item Why? It is {\em expected} that having more processors to work
-  together, we can solve the problem faster.
+\item It is intuitive to have multiple uniprocessors working together to have high performance.
+\item We believe that we can solve the problem faster if we have more processors working together.
 \item How do they work {\em together}?
 \end{itemize}
 \end{frame}
@@ -94,13 +90,10 @@ coordinate their actions, and exchange data if necessary.
 \frametitle{Race Condition}
 \begin{itemize}
 \item Suppose two processors want to add 1 to the same counter.
-\item The first processor fetches the old contents of the counter, adds
-  1 to it.
-\item Before the first processor can store the new content, the
-  second processor fetches the old content.
+\item The first processor fetches the old contents of the counter and adds 1 to it.
+\item Before the first processor can store the new content, and the second processor fetches the old content.
 \item The first processor now stores its new content to memory.
-\item The second processor adds 1 to the old content, and stores the
-  new content back to memory.
+\item The second processor adds 1 to the old content and stores the new content back to memory.
 \item The counter only increases by 1, which is {\em incorrect}.
 \item More details later.
 \end{itemize}
@@ -142,17 +135,15 @@ coordinate their actions, and exchange data if necessary.
 \item This shared memory provides a {\em shared addressing space} for
   all processors.
 \item This {\em shared} memory is also a {\em global memory}.
-\item The cost for every processor to access every part of the memory
-  is the same, then we have Uniform Memory Access (UMA).
+\item The cost for every processor to access every part of the memory is the same, and then we have Uniform Memory Access (UMA).
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Distributed Shared Memory}
 \begin{itemize}
-\item A distributed version of shared memory.
-\item Every processor has a local memory, and the collection of the
-  memory form a global memory.
+\item It is a distributed version of shared memory.
+\item Every processor has local memory, and the collection of the local memory forms a global memory.
 \item We connect the processors to a memory management unit, which
   determines the address is local or remote.
 \end{itemize}
@@ -168,8 +159,7 @@ coordinate their actions, and exchange data if necessary.
 \begin{itemize}
 \item If the address is local, then it is retrieved from the
   local memory.
-\item If the address is remote, then it is retrieved from someone
-  else's  local memory.
+\item If the address is remote, it is retrieved from someone else's local memory.
 \item The cost for every processor to access every part of the memory
   is {\em not} the same, then we have Non-Uniform Memory Access
   (NUMA).
@@ -209,35 +199,27 @@ coordinate their actions, and exchange data if necessary.
 \begin{itemize}
 \item Conceptually multiple processors are connected by a shared
   memory -- that is all we need to know in terms of programming.
-\item However, in some programming models we still need to consider
-  the possibility of race condition, and use the construct provided
-  by the programming model to avoid it.
+\item I in some programming models, we still need to consider the possibility of race condition and use the construct provided by the programming model to avoid it.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Functions} 
 \begin{itemize}
-\item Every processor has its own computing resource, like ALU,
-  registers, etc, so you can run multiple processes on them
-  simultaneously.
-\item Every processor works on the tasks assigned to it, using its own
-  computing resource.
-\item Every processor can read and write the shared memory, so as to
-  communicate or synchronize with other processors.
+\item Every processor has its computing resource, like ALU, registers, etc., so you can run multiple processes on them simultaneously.
+\item Every processor works on its assigned tasks using its computing resource.
+\item Every processor can read and write the shared memory to communicate or synchronize with other processors.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Synchronization}
 \begin{itemize}
-\item Processor can synchronize with each other by a shared memory.
-\item For example, in a barrier synchronization, a processor cannot
-  proceed until all others have reached the same conclusion.
-\item We can set a shared variable {\tt count}.  Every finished
-  processor add 1 to {\tt count}.  When the value of {\tt count}
-  reaches the number of processors then every processor knows that it
-  has synchronized with everyone.
+\item Processor can synchronize with each other by shared memory.
+\item For example, in a barrier synchronization, a processor cannot proceed until all others have reached the same conclusion.
+\item We can set a shared variable {\tt count}. 
+Every finished processor adds 1 to {\tt count}. 
+When the value of {\tt count} reaches the number of processors, then every processor knows that it has synchronized with everyone.
 \end{itemize}
 \end{frame}
 
@@ -309,11 +291,10 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{Cache}
 \begin{itemize}
-\item To make the case even worst, we need to deal with cache.
-\item Cache are fast memory -- usually they are small and expensive.
-\item To improve performance we have cache for those often used
-  data/instructions.  If we need the data/instructions again we can
-  access them in fast cache, instead of slow main memory.
+\item To make the case even worst, we need to deal with the cache.
+\item Cache is fast memory, usually small and expensive.
+\item To improve performance, we put often-used data/instructions in a  cache. 
+If we need the data/instructions again, we can access them in the fast cache instead of the slow main memory.
 \end{itemize}
 \end{frame}
 
@@ -342,12 +323,9 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{Hardware Solution}
 \begin{itemize}
-\item The hardware must guarantee that the memory and cache are in a
-  consistent state.  There are various levels of guarantees.
-\item If one processor changes the content of the memory, the hardware
-  should invalidate data that have been cached in other processor.
-\item If one processor changes the data in its cache, other processor
-  should be able to see it.
+\item The hardware must guarantee that the memory and cache are in a consistent state. There are various levels of guarantees.
+\item If one processor changes the content of the memory, the hardware should invalidate data that other processors have cached.
+\item If one processor changes the data in its cache, other processors should be able to see it.
 \end{itemize}
 \end{frame}
 
@@ -403,11 +381,9 @@ coordinate their actions, and exchange data if necessary.
 \item The memory controller controls and coordinates the access to a
   shared memory.
 \item Cores can communicate with the queue.  
-\item Two L3 caches, and each is shared by three cores.  
+\item Three cores share two L3 caches.  
   \begin{itemize}
-    \item Shared L3 cache indicates that if we place wrong
-      processes/threads into the cores that share the L3 cache, the
-      performance will suffer.
+    \item Shared L3 cache indicates that if we place wrong processes/threads into the cores that share the L3 cache, the performance will suffer.
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -461,13 +437,10 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{Characteristics}
 \begin{itemize}
-\item GPU is a device, and it needs a host to get its
-  data/instructions.
-\item A large number of cores -- usually much larger than a CPU.
-\item Instructions are streamed to processors for execution, which
-  means they must run the same set of instructions.
-\item Processors have their local memory, as well as access to a
-  shared device memory.
+\item A GPU is a device that needs a host to provide data and instructions.
+\item A GPU has many cores -- usually much more than a CPU.
+\item CPU cores receive instructions from the host for execution, which means they must run the same set of instructions.
+\item  GPU cores have their local memory and share a device memory.
 \item More details in the ``OpenCL'' lectures.
 \end{itemize}
 \end{frame}
@@ -502,9 +475,9 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{Multiple Uniprocessor}
 \begin{itemize}
-\item We connect all the computers with a {\em network} so they can
+\item We connect all the computers with a {\em network}, so they can
   send {\em messages} to each other.
-\item This network could be very slow or very fast, depending on the
+\item This network could be very slow or fast, depending on the
   applications.
 \item The network must provide {\em point-to-point} data transfer to
   move data from one processor to another.
@@ -562,10 +535,8 @@ coordinate their actions, and exchange data if necessary.
 \item Processor can synchronize with each other by messages.
 \item In a barrier synchronization, a processor cannot proceed until
   all others have reached the same conclusion.
-\item We can ask every finished processor to send a message to a {\em
-  master} when it is done.
-\item When the master receives a message from every processor, he
-  knows everybody has finished.
+\item Every processor sends a message to a master after finishing its work.
+\item When the master receives a message from every processor, he knows everybody has finished.
 \item The master sends a message to everyone that it can continue.
 \end{itemize}
 \end{frame}
@@ -661,9 +632,9 @@ coordinate their actions, and exchange data if necessary.
 \item A computer cluster consists of a set of {\em tightly} connected
   {\em high performance} computers that work together so that in many
   respects they can be viewed as a single system.
-\item Tightly connected means they are connected by {\em fast}
+\item Tightly connected means they connected by {\em fast}
   network.
-\item The performance is paramount, and usually achieved by
+\item The performance is paramount and usually achieved by
   aggregation of a large number of processors.
 \end{itemize}
 \end{frame}
@@ -693,12 +664,12 @@ coordinate their actions, and exchange data if necessary.
 \frametitle{K computer}
 \begin{itemize}
 \item The K computer -- named for the Japanese word ``kei'' (京),
-  meaning 10 quadrillion ($10^{16}$).
+  meaning ten quadrillions ($10^{16}$).
 \item A supercomputer manufactured by Fujitsu, currently installed at
   the RIKEN Advanced Institute for Computational Science campus in
   Kobe, Japan.
 \item In June 2011, TOP500 ranked K the world's fastest supercomputer,
-  with a rating of over 8 petaflops, and in November 2011, K became
+  with a rating of over eight petaflops, and in November 2011, K became
   the first computer to top 10 petaflops.\footnote{\url{http://en.wikipedia.org/wiki/K_computer}}
 \end{itemize}
 \end{frame}
@@ -767,9 +738,7 @@ coordinate their actions, and exchange data if necessary.
 \item 1 cabinet, 15 Intel X5570 quad-core processors, 120 cores.
 \item A standard Ethernet switch.
 \item Gluster file system.
-\item Roystonea operating system, developed by Parallel and
-  Distributed Processing Laboratory, Department of Computer Science
-  and Information Engineering, National Taiwan University.
+\item Roystonea operating system, developed by the Parallel and Distributed Processing Laboratory, Department of Computer Science and Information Engineering, National Taiwan University.
 \item Never made it to top 500.
 \end{itemize}
 \end{frame}
@@ -788,15 +757,9 @@ coordinate their actions, and exchange data if necessary.
 \begin{itemize}
 \item We (the Parallel and Distributed Processing Laboratory) learn
   many things in building Roystonea for the Trend cluster.
-\item The things we learned include network virtual machine management,
-  virtual machines deployment, network management for cluster,
-  distributed file system for cluster, distributed database and NoSQL
-  database for cloud system.
-\item We built a cloud OS called ``Roystonea'' to manage the Trend
-  cludter.
-\item These experiences later enables us to take on more ambitious
-  projects, like the optimization of billing system of ChungHwa
-  Telecommunication.
+\item We learned network virtual machine management, virtual machines deployment, network management for the cluster, distributed file system for the cluster, distributed database, and NoSQL database for a cloud system.
+\item We built a cloud OS called ``Roystonea'' to manage the Trend cluster.
+\item These experiences later enable us to take on more ambitious projects, like optimizing the billing system of Chunghwa Telecommunication.
 \end{itemize}
 \end{frame}
 
@@ -875,12 +838,8 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{SIMD}
 \begin{itemize}
-\item Strongly related to data parallel programming since the same
-  instruction is applied on different data, so as to achieve
-  performance by data parallelism.
-\item The architecture of GPUs follows the SIMD model -- the host
-  issues the same command to all processors so as to process a large
-  amount of data simultaneously.
+\item SIMD is strongly related to data-parallel programming since it applies the same instruction to different data and achieves high performance by data parallelism.
+\item The architecture of GPUs follows the SIMD model -- the host issues the same command to all processors to process a large amount of data simultaneously.
 \end{itemize}
 \end{frame}
 
@@ -915,10 +874,9 @@ coordinate their actions, and exchange data if necessary.
 \item Strongly related to functional parallelism since different
   processors execute different instructions on different data.
 \item The instructions are different because they are from different
-  tasks in a wavefront, i.e., tasks that can be done in parallel.
+  tasks in a wavefront, i.e., tasks that can run in parallel.
 \item The data are different because they are for different tasks.
-\item Most multicomputers support MIMD computation model -- computers
-  work independently, and synchronize themselves when necessary.
+\item Most multicomputers support the MIMD computation model -- computers work independently and synchronize themselves when necessary.
 \end{itemize}
 \end{frame}
 
@@ -954,14 +912,9 @@ coordinate their actions, and exchange data if necessary.
 \begin{frame}
 \frametitle{Fault Tolerance}
 \begin{itemize}
-\item In fact if we consider MISD as multiple copies of SISD, then it
-  can tolerate faults.
-\item The same computation is repeated multiple times, by different
-  processors, so that at least of them can deliver the results, in
-  case some of them fail.
-\item For example, in Google MapRedcue computation certain tasks are
-  duplicated exactly for the purpose of fault tolerance and
-  performance improvement.
+\item If we consider MISD as multiple copies of SISD, it can tolerate faults.
+\item The same computation is repeated multiple times by different processors so that at least they can deliver the results even if some of them fail.
+\item For example, in Google MapReduce computation, certain tasks are duplicated exactly for fault tolerance and performance improvement.
 \end{itemize}
 \end{frame}
 
