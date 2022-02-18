@@ -49,7 +49,7 @@
 \item It has a single processor for computation.
 \item It has a single memory for storing instructions and data.
 \item The CPU fetches instructions from memory, executes the instructions, updates the contents of registers and possibly data in the memory, and then repeats.
-\item Intel 486, Pentium, etc.
+\item Intel, AMD, ARM, etc.
 \end{itemize}
 \end{frame}
 
@@ -60,7 +60,7 @@
 \frametitle{Multiple Uniprocessors}
 \begin{itemize}
 \item It is intuitive to have multiple uniprocessors working together to have high performance.
-\item We believe that we can solve the problem faster if we have more processors working together.
+\item We believe that we can solve the problem faster/better if we have more processors working together.
 \item How do they work {\em together}?
 \end{itemize}
 \end{frame}
@@ -82,7 +82,7 @@ coordinate their actions, and exchange data if necessary.
 \centerline{\pgfimage[width=\textwidth]{multiprocessor-single-memory}}
 \begin{itemize}
 \item We cannot simply connect all processors to a memory.
-\item The memory will be in an {\em inconsistent} state.
+\item The memory will be {\em inconsistent}.
 \end{itemize}
 \end{frame}
 
@@ -95,7 +95,6 @@ coordinate their actions, and exchange data if necessary.
 \item The first processor now stores its new content to memory.
 \item The second processor adds 1 to the old content and stores the new content back to memory.
 \item The counter only increases by 1, which is {\em incorrect}.
-\item More details later.
 \end{itemize}
 \end{frame}
 
@@ -104,7 +103,8 @@ coordinate their actions, and exchange data if necessary.
 \frametitle{Multiple Uniprocessors}
 \begin{itemize}
 \item We put a {\em memory management/arbitration unit} between the
-  processors and the memory so that every processor can access memory.
+  processors and the memory so that every processor can access memory
+  in a consistent manner.
 \item This memory management unit must be very efficient in providing
   {\em point-to-point} data transfer so as to provide fast memory
   access for every processor.
@@ -170,6 +170,7 @@ coordinate their actions, and exchange data if necessary.
 \frametitle{Discussion}
 \begin{itemize}
 \item Describe the difference between NUMA and UMA.
+\item Recall that each A64FX processor has four NUMA nodes.  What does that mean?
 \end{itemize}
 \end{frame}
 
@@ -199,7 +200,7 @@ coordinate their actions, and exchange data if necessary.
 \begin{itemize}
 \item Conceptually multiple processors are connected by a shared
   memory -- that is all we need to know in terms of programming.
-\item I in some programming models, we still need to consider the possibility of race condition and use the construct provided by the programming model to avoid it.
+\item For some programming models, we still need to consider the possibility of race condition and use the construct provided by the programming model to avoid it, e.g., Pthread.
 \end{itemize}
 \end{frame}
 
@@ -216,7 +217,7 @@ coordinate their actions, and exchange data if necessary.
 \frametitle{Synchronization}
 \begin{itemize}
 \item Processor can synchronize with each other by shared memory.
-\item For example, in a barrier synchronization, a processor cannot proceed until all others have reached the same conclusion.
+\item For example, in a barrier synchronization, a processor cannot proceed until all others have reached the same barrier.
 \item We can set a shared variable {\tt count}. 
 Every finished processor adds 1 to {\tt count}. 
 When the value of {\tt count} reaches the number of processors, then every processor knows that it has synchronized with everyone.
@@ -238,31 +239,6 @@ When the value of {\tt count} reaches the number of processors, then every proce
   causing conflicts.
 \item When a computation has different outcome due to different
   execution order, we have a {\em race condition}.
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{An Example}
-\begin{itemize}
-\item Suppose two processors want to add their variable {\tt n}
-  together into a global variable {\tt sum}.  
-\item Processor 1 has {\tt n = 3} and processor 2 has {\tt n = 4}.
-\item The computation consists of the following.
-  \begin{itemize}
-  \item Load {\tt sum} into a register {\tt r1}.
-  \item Add your {\tt n} into {\tt r1}.
-  \item Store register {\tt r1} back to {\tt sum}.
-  \end{itemize}
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Race Condition}
-\begin{itemize}
-\item Now imagine what will happen when P1 and P2 are doing this
-  simultaneously.
-\item How many different outcomes could there be?  Please try to
-  enumerate them.
 \end{itemize}
 \end{frame}
 
@@ -344,8 +320,8 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Describe the difference between ``Write-through'' and
-  ``Write-back'' caching.
+\item Describe the difference between write-through and write-back caching.
+\item Describe the advantages of write-through and write-back caching.
 \end{itemize}
 \end{frame}
 
@@ -353,48 +329,50 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \subsection{Examples}
 
 \begin{frame}
-\frametitle{Intel Gulftown CPU} 
+\frametitle{ARM/Fujitsu A64FX CPU} 
 \begin{itemize}
-\item Core i7-9xx
-\item 6 cores
-\item 32nm
-\item 12MB L3 cache
-\item Introduced January 2011.
+\item The A64FX is the world's first processor to implement Scalable
+  Vector Extension (SVE), an extension of the Armv8.2-A instruction
+  set architecture for supercomputers.
+\item It has 48 calculation cores and two or four assistant cores, and
+  has a theoretical peak performance of 3.3792 teraflops in double
+  precision floating point calculations.
+\item The building block of supercomputer Fugaku. 
 \end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{Gulftown}
-\centerline{\pgfimage[width=0.9\textwidth]{gulftown_block_diagram.jpg}}
-\footnote{\url{http://gizmodo.com/5491045/intels-6+core-gulftown-gets-tested-blows-us-away}}
+\frametitle{A64FX}
+\centerline{\pgfimage[width=0.9\textheight]{fujitsu-a64fx.jpg}}
+\footnote{\url{https://www.nextplatform.com/2021/06/22/u-s-institutions-put-fujitsu-a64fx-through-the-paces/}}
 \end{frame}
 
 \begin{frame}
-\frametitle{Gulftown}
-\centerline{\pgfimage[width=0.6\textheight]{1015564707405292968.jpg}}
-\footnote{\url{http://global.hkepc.com/database/images/2009/08/source/1015564707405292968.jpg}}
+\frametitle{A64FX Specifications}
+\url{https://www.fujitsu.com/downloads/SUPER/a64fx/a64fx_datasheet_en.pdf}
 \end{frame}
 
 \begin{frame}
-\frametitle{Gulftown}
+\frametitle{L2 Cache}
 \begin{itemize}
-\item The memory controller controls and coordinates the access to a
-  shared memory.
+\item The memory controller controls and coordinates the access to a shared memory.
 \item Cores can communicate with the queue.  
-\item Three cores share two L3 caches.  
+\item Three cores share four L2 caches.  
   \begin{itemize}
-    \item Shared L3 cache indicates that if we place wrong processes/threads into the cores that share the L3 cache, the performance will suffer.
+    \item Shared L2 cache indicates that if we place wrong
+      processes/threads into the cores that share the L2 cache, the
+      performance will suffer.
   \end{itemize}
 \end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{Intel CPU's}
+\frametitle{Discusson}
 \begin{itemize}
-\item You can find all the facts of Intel CPU here.
-\item http://www.intel.com/pressroom/kits/quickreffam.htm
+\item Can you tell from the A64FX picture which cores share which L2 cache?
 \end{itemize}
 \end{frame}
+
 
 \begin{frame}
 \frametitle{Nvidia Tesla}
@@ -506,8 +484,8 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \begin{frame}
 \frametitle{Multicomputer}
 \begin{itemize}
-\item Sometimes we use the term ``node'', since these processors are
-  by themselves ``computers''.
+\item Sometimes we use the term {\em node}, since these processors are
+  by themselves {\em computers}.
   \begin{itemize}
     \item Remember the 16,000 nodes in the Tianhe 2 cluster.
   \end{itemize}
@@ -653,11 +631,8 @@ If we need the data/instructions again, we can access them in the fast cache ins
 
 \begin{frame}
 \frametitle{Top 500}
-\centerline{\pgfimage[height=0.6\textheight]{Supercomputers}}
-\begin{itemize}
-\item Exponential growth of supercomputers performance, based on data
-  from top500.org\footnote{\url{http://en.wikipedia.org/wiki/File:Supercomputers.png}}.
-\end{itemize}
+\centerline{\pgfimage[height=0.6\textheight]{800px-Top500_supercomputers_performance_development.svg}}
+\url{https://commons.wikimedia.org/wiki/File:Top500_supercomputers_performance_development.svg}
 \end{frame}
 
 \begin{frame}
@@ -702,7 +677,7 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item What is the difference between K-computer and Tianhe 2?
+\item What is the difference between supercomputer K-computer and Fugaku?
 \end{itemize}
 \end{frame}
 
