@@ -257,7 +257,7 @@ When the value of {\tt count} reaches the number of processors, then every proce
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Describe the concept ``critical section''.
+\item Describe the concept {\em critical section}.
 \end{itemize}
 \end{frame}
 
@@ -375,41 +375,33 @@ If we need the data/instructions again, we can access them in the fast cache ins
 
 
 \begin{frame}
-\frametitle{Nvidia Tesla}
+\frametitle{Nvidia RTX}
 \begin{itemize}
-\item The Tesla graphics processing unit (GPU) is Nvidia's third brand
-  of GPUs. 
-\item Tesla is based on high-end GPUs from the G80 (and on), as well
-  as the Quadro lineup.
-\item Tesla is Nvidia's first dedicated {\em General Purpose GPU}
-  (GPGPU).
-\item \url{http://en.wikipedia.org/wiki/Nvidia_Tesla}
+\item TITAN RTX is designed for researchers, developers and creators.
+\item TITAN RTX is based on Turing architecture bringing 130 Tensor TFLOPs of performance, 576 tensor cores, and 24 GB of ultra-fast GDDR6 memory to your PC.
+\item \url{https://www.nvidia.com/en-us/deep-learning-ai/products/titan-rtx/}
 \end{itemize}
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Nvidia RTX}
+\begin{itemize}
+\item \url{https://developer.nvidia.com/blog/nvidia-turing-architecture-in-depth/}
+\end{itemize}
+\end{frame}
+
+
 
 \begin{frame}
 \frametitle{GPU Architecture}
 \centerline{\pgfimage[height=0.8\textheight]{GPU-hardware}}
 \end{frame}
 
-\begin{frame}
-\frametitle{Nvidia Tesla}
-\centerline{\pgfimage[width=0.8\textwidth]{tesla}}
-\end{frame}
 
 \begin{frame}
-\frametitle{C1060}
-\begin{itemize}
-\item 240 processors at 1.30 GHz.
-\item 4096 MB of GDDR3 memory.
-\item 102.4 GB/s memory bandwidth.
-\item 933.12 GFLOPs single precision, 77.76 GFLOPs double precision.
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Tesla Architecture}
-\centerline{\pgfimage[width=0.8\textwidth]{tesla-architecture}}
+\frametitle{GPU Architecture}
+\centerline{\pgfimage[height=0.8\textheight]{GPU-host-device-memory.png}}
 \end{frame}
 
 \begin{frame}
@@ -419,7 +411,7 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \item A GPU has many cores -- usually much more than a CPU.
 \item CPU cores receive instructions from the host for execution, which means they must run the same set of instructions.
 \item  GPU cores have their local memory and share a device memory.
-\item More details in the ``OpenCL'' lectures.
+\item More details in the OpenCL and CUDA lectures.
 \end{itemize}
 \end{frame}
 
@@ -638,14 +630,15 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \begin{frame}
 \frametitle{K computer}
 \begin{itemize}
-\item The K computer -- named for the Japanese word ``kei'' (京),
+\item The K computer is named for the Japanese word {\em kei},
   meaning ten quadrillions ($10^{16}$).
 \item A supercomputer manufactured by Fujitsu, currently installed at
   the RIKEN Advanced Institute for Computational Science campus in
   Kobe, Japan.
 \item In June 2011, TOP500 ranked K the world's fastest supercomputer,
   with a rating of over eight petaflops, and in November 2011, K became
-  the first computer to top 10 petaflops.\footnote{\url{http://en.wikipedia.org/wiki/K_computer}}
+  the first computer to top 10 petaflops.
+\item {\url{http://en.wikipedia.org/wiki/K_computer}}
 \end{itemize}
 \end{frame}
 
@@ -733,7 +726,7 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \item We (the Parallel and Distributed Processing Laboratory) learn
   many things in building Roystonea for the Trend cluster.
 \item We learned network virtual machine management, virtual machines deployment, network management for the cluster, distributed file system for the cluster, distributed database, and NoSQL database for a cloud system.
-\item We built a cloud OS called ``Roystonea'' to manage the Trend cluster.
+\item We built a cloud OS called {\em Roystonea} to manage the Trend cluster.
 \item These experiences later enable us to take on more ambitious projects, like optimizing the billing system of Chunghwa Telecommunication.
 \end{itemize}
 \end{frame}
@@ -742,7 +735,7 @@ If we need the data/instructions again, we can access them in the fast cache ins
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item What does the name ``Roystonea'' come from?
+\item What does the name Roystonea come from?
 \end{itemize}
 \end{frame}
 
