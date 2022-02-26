@@ -44,11 +44,9 @@ the efficiency of parallel computing.
   first partitioned (divided) into sub-problems.
 \item Unlike a sequential divide-and-conquer algorithm, a parallel
   algorithm solves (conquers) the sub-problem {\em in parallel}.
-\item Some communication may be necessary since the sub-problems may
-  have dependency on each other, or may need to transfer data among
+\item Some communication may be necessary since the sub-problems may depend on other tasks or may need to transfer data among
   themselves.
-\item Finally the answers from individual sub-problems are combined
-  into the final answer.
+\item Finally, we combine the answers from individual sub-problems into the final answer.
 \end{itemize}
 \end{frame}
 
@@ -56,12 +54,9 @@ the efficiency of parallel computing.
 \frametitle{Partition}
 \begin{itemize}
 \item Partition is the first step in a divide-and-conquer algorithm.
-\item One can partition the data, and the process is called ``data
-  partition'';
-\item Or one can partition the main loop of the computation, and it is
-  called ``loop'' partition.
-\item The partition has a significant impact on the overall
-  performance.
+\item One can partition the data and the process {\em data partitioning}.
+\item Or one can partition the main loop of the computation, and it is {\em loop} partitioning.
+\item The partition has a significant impact on the overall performance.
 \end{itemize}
 \end{frame}
 
@@ -86,15 +81,11 @@ There are two important issues in partitioning.
 \begin{frame}
 \frametitle{Even Workload Distribution}
 \begin{itemize}
-\item We want to distribute the workload among processors so that the
-  maximum workload among processors is minimized.
-\item The execution time of a parallel program is the execution time
-  of the {\em slowest} processor involved, which is usually the
-  processor that has the maximum workload.
+\item We want to distribute the workload among processors to minimize the maximum workload among all processors.
+\item The execution time of a parallel program is the execution time of the {\em slowest} processor involved, which is usually the processor that has the maximum workload.
 \begin{itemize}
-\item This is the ``makespan'' of the execution time.  Note that we
-  are interested in the makespan of the execution, not the sum or
-  average of the execution time of processors.
+\item This is the {\em makespan} of the execution time.  
+Note that usually, we are interested in the makespan of the execution, not the sum or the average of the execution time of processors.
 \end{itemize}
 \end{itemize}
 \end{frame}
@@ -102,40 +93,32 @@ There are two important issues in partitioning.
 \begin{frame}
 \frametitle{Idle v.s. Busy}
 \begin{itemize}
-\item Uneven distribution of workload leaves some processor idle while
-  others are busy.
-\item If everyone is busy all the time, then the workload is evenly
-  distributed.
+\item Uneven distribution of workload leaves some processor idle while others are busy.
+\item If everyone is busy all the time, then the workload is evenly distributed.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Workload Estimation}
 \begin{itemize}
-\item In order to evenly distribute the workload, one needs to
-  accurately predict the workload.
-\item For data parallel computation, one can associate the computation
-  with the data.  If we further assume that the computation workload on
-  every data is about {\em the same} then we can estimate the workload
-  by counting the {\em number} of data each processor is assigned.
+\item To distribute the workload evenly, one needs to predict the workload accurately.
+\item For data-parallel computation, one can associate the computation with the data.
+If we further assume that the computation workload on every data is about {\em the same}, then we can estimate the workload by counting the {\em number} of data each processor is assigned.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Workload Estimation}
 \begin{itemize}
-\item For task parallel computation, we must predict the workload of
-  sub-problems.
-\item It is difficult to estimate the workload of tasks, so profiling
-  or programmer intervention is necessary.
+\item For task parallel computation, we must predict the workload of sub-problems.
+\item It is difficult to estimate the workload of tasks, so profiling or programmer intervention is necessary.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Give an example to illustrate the importance of even workload
-  distribution.
+\item Give an example to illustrate the importance of even workload distribution.
 \end{itemize}
 \end{frame}
 
@@ -145,13 +128,10 @@ There are two important issues in partitioning.
 \frametitle{Granularity}
 \begin{itemize}
 \item The granularity is the basic unit in partitioning.
-\item For data parallel computation, it indicates the smallest chunk
-  of data while assigning data chunks to processors.
-\item For task parallel computation, it indicates the smallest chunk
-  of task while assigning tasks to processors.
+\item For data-parallel computation, it indicates the smallest chunk of data while assigning data chunks to processors.
+\item For task-parallel computation, it indicates the smallest chunk of task while assigning tasks to processors.
 \begin{itemize}
-\item Recall that we can always {\em refine} a step of our algorithm
-  into finer steps.
+\item Recall that we can always {\em refine} a step of our algorithm into finer steps.
 \end{itemize}
 \end{itemize}
 \end{frame}
@@ -159,31 +139,22 @@ There are two important issues in partitioning.
 \begin{frame}
 \frametitle{The Size}
 \begin{itemize}
-\item It is always easier to balance the workload if the granularity
-  is {\em small} because it is always easier to distribute a set of
-  objects evenly if we can {\em cut them into small pieces}.
-\item However, there will be much more overhead not only in assigning
-  these chunks to processors because the mapping table will be larger,
-  but also in scheduling and synchronizing the processors because the
-  number these operations will increase.  More details on the
-  communication later.
+\item It is always easier to balance the workload if the granularity is {\em small} because it is always easier to distribute a set of objects evenly if we can {\em cut them into small pieces}.
+\item There will be much more overhead in assigning these chunks to processors because the mapping table will be larger and in scheduling and synchronizing the processors because the number of these operations will increase.  
+\item More details on the communication later.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Fine and Coarse}
 \begin{itemize}
-\item {\em Fine grain} parallelism partitions data/task into very
-  small pieces, then assigns them to processors for processing.
+\item {\em Fine grain} parallelism partitions data/task into very small pieces, then assigns them to processors for processing.
 \begin{itemize}
-\item Suitable for system that can spawn a large number of threads
-  with low cost, e.g., GPU.
+\item Suitable for system that can spawn a large number of threads with low cost, e.g., GPU.
 \end{itemize}
-\item {\em Coarse grain} parallelism partitions data/task into very
-  large pieces, then assigns them to processors for processing.
+\item {\em Coarse grain} parallelism partitions data/task into very large pieces, then assigns them to processors for processing.
 \begin{itemize}
-\item Suitable for system that can only spawn a limited number of
-  threads, and the thread creation is expensive, e.g., CPU.
+\item Suitable for system that can only spawn a limited number of threads, and the thread creation is expensive, e.g., CPU.
 \end{itemize}
 \end{itemize}
 \end{frame}
@@ -281,7 +252,7 @@ There are two important issues in partitioning.
 \begin{frame}
 \frametitle{Synchronization Mechanism}
 \begin{itemize}
-\item Many parallel programming environments provide mechanism for
+\item Many parallel programming environments provide a mechanism for
   program to specify synchronization {\em explicitly}.
 \item The synchronization should be efficient.
 \item The synchronization should be scalable, i.e., it should be
@@ -305,8 +276,7 @@ There are two important issues in partitioning.
   before/after synchronization within the same computer. 
 \item One can use busy waiting or semaphore to implement the critical
   section for accessing shared variables.
-\item If processor of different computers are involved in the
-  synchronization, one needs to use network protocol to implement it.
+\item If processors of different computers need to synchronize, they need to use a network protocol.
 \end{itemize}
 \end{frame}
 
@@ -314,15 +284,12 @@ There are two important issues in partitioning.
 \begin{frame}
 \frametitle{Synchronization Optimization}
 \begin{itemize}
-\item The number of stages should be reduced.
+\item We should reduce the number of stages.
 \item The synchronization should be efficient.
-\item The granularity should be carefully chosen to balance the
-  overhead in synchronization and workload distribution.
+\item We should carefully choose the granularity to balance synchronization and workload distribution overhead.
 \begin{itemize}
-\item A fine-grain parallel computation is hard to synchronize, but
-  easy to have even workload.
-\item A coarse-grain parallel computation is easy to synchronize, but
-  hard to have even workload.
+\item A fine-grain parallel computation is hard to synchronize but easy to have an even workload.
+\item A coarse-grain parallel computation is easy to synchronize but hard to have an even workload.
 \end{itemize}
 \end{itemize}
 \end{frame}
@@ -353,46 +320,32 @@ There are two important issues in partitioning.
 \begin{frame}
 \frametitle{Temporal Locality} 
 \begin{itemize}
-\item When a program access a data/instruction, it is very likely it
-  will access the same data/instruction in the dear future.
-\item If we {\em cache} this data/instruction in a fast storage, then
-  it is very likely we will be able to access the data fast.
-\item Data/instruction are cached in data/instruction cache for
-  performance.
-\item CPU first tries to get the data from cache. If found then use
-  it, otherwise the CPU gets the data from memory.
-\item There could several levels of caches.
+\item When a program access a data/instruction, it is very likely to access the same data/instruction shortly.
+\item If we {\em cache} this data/instruction in fast storage, then it is very likely we will be able to access the data fast.
+\item Data/instruction are cached in data/instruction cache for performance.
+\item CPU first tries to get the data from the cache.
+\item If the CPU finds it in the cache, it uses the data; otherwise, it gets it from memory.
+\item There could be several levels of caches.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Performance}
 \begin{itemize}
-\item The performance comes from the difference in accessing speed to
-  memory and cache, and the probability of being able to find the
-  data/cache in cache.
-\item If we can find the data/instruction in cache with high
-  probability, i.e., with a high cache hit rate, then the performance
-  will be improved.
-\item If the temporal locality is good, which means the same
-  data/instruction is likely to be used again in the near future, then
-  we have good performance.
+\item The performance comes from the difference in accessing speed to memory and cache and the probability of finding the data/cache in the cache.
+\item If we can find the data/instruction in cache with high probability, i.e., with a high cache hit rate; then the performance will improve.
+\item If the temporal locality is good, which means the CPU will use the same data/instruction again shortly, then we have good performance.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
-\frametitle{In the Near Future?}  What do we mean ``in the near
-future''?
+\frametitle{Shortly?}  
+What do we mean {\em shortly}?
 \begin{itemize}
-\item The capacity of cache is extremely limited.
-\item When we access a data/cache, we have to place it into the cache
-  for possible later references.
-\item If the cache is {\em full}, then some data/instructions have to
-  removed to make space for the incoming ones.
-\item ``In the near future'' means when we want to access the
-  data/instruction we placed into cache {\em again}, it is still
-  there, i.e., before it was removed for making room for other
-  data/instruction.
+\item The capacity of cache is minimal.
+\item When we access a data/cache, we have to place it into the cache for possible later references.
+\item If the cache is {\em full}, then we have to remove some data/instructions to make space for the incoming ones.
+\item {\em Shortly} means when we want to access the data/instruction we placed into cache {\em again}, it will still be there, i.e., before we remove it to make room for other data.
 \end{itemize}
 \end{frame}
 
@@ -400,10 +353,10 @@ future''?
 \frametitle{Other Applications}
 \begin{itemize}
 \item Hard disks maintain a small cache for data stored in the disk.
-\item Operating system maintain disk cache for frequently accessed
+\item Operating system maintains disk cache for frequently accessed
   data on disk.
 \item A translation lookaside buffer (TLB) is a cache for frequently
-  accesses item in the page table.
+  accesses items in the page table.
 \end{itemize}
 \end{frame}
 
@@ -429,13 +382,10 @@ future''?
 \begin{frame}
 \frametitle{Cache Line}
 \begin{itemize}
-\item Modern computer architecture does not cache data individually,
-  instead it cache data/instruction in the unit of cache line.
+\item Modern computer architecture does not cache data individually; instead, it caches data/instruction in the unit of a cache line.
 \item A cache line consists of consecutive data/instruction in memory.
-\item Nearby data/instructions are automatically cached for spacial
-  locality.
-\item Parallel programmers preserve data locality in a much higher
-  ``data level'' when partitioning the data into chunks for processing.
+\item A cache line automatically caches nearby data/instructions and improves spatial locality.
+\item Parallel programmers preserve data locality in a much higher {\em data level} when partitioning the data into chunks for processing.
 \end{itemize}
 \end{frame}
 
@@ -468,42 +418,30 @@ future''?
 \begin{frame}
 \frametitle{Owner}
 \begin{itemize}
-\item We usually follow a ``owner computes'' rule.
-\item If a processor is the owner of a data, i.e., data is assigned to
-  this processor, then it is responsible for the computation of this
-  data.
-\item The rule is simple and straightforward.
-\item On rare occasion we will not follow the ``owner computes''
-  rule.
+\item We usually follow a {\em owner computes} rule.
+\item If a processor is the owner of data, then it is responsible for the computation of this data.
+\item The rule is simple.
+\item On rare occasion we will not follow the {\em owner computes} rule.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Placement}
 \begin{itemize}
-\item If the length of the vector is 32, and we have two processors,
-  how do we assign data to processors?
-\item Intuitively we can place the first 16 elements of $A$, $B$, and
-  $C$ to one processor, and the rest to the other processor.
-\item The workload of computing $C$ is evenly distributed because each
-  processor will compute 16 elements for $C$.
-\item When a processor compute a $A_i$, it can get all the required
-  data within its memory.
+\item If the length of the vector is 32, and we have two processors, how do we assign data to processors?
+\item Intuitively, we can place the first 16 elements of $A$, $B$, and $C$ to one processor and the rest to the other.
+\item The workload of computing $C$ is even because each processor computes 16 elements for $C$.
+\item When a processor computes a $A_i$, it can get all the required data within its memory.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Wrong Placement}
 \begin{itemize}
-\item Again if the length of the vector is 32, and we have two
-  processors.
-\item We place the first 16 elements of $A$, $B$, and the last 16
-  elements of $C$ to one processor, and the rest to the other
-  processor.
-\item The workload of computing $C$ is evenly distributed because each
-  processor will compute 16 elements for $C$.
-\item When a processor compute a $A_i$, it {\em cannot} get any
-  required data within its memory.
+\item If the length of the vector is 32, and we have two processors.
+\item We place the first 16 elements of $A$, $B$, and the last 16 elements of $C$ to one processor and the rest to the other.
+\item The workload of computing $C$ is even because each processor will compute 16 elements for $C$.
+\item When a processor computes a $A_i$, it {\em cannot} get any required data within its memory.
 \item Is this good?
 \end{itemize}
 \end{frame}
@@ -511,11 +449,10 @@ future''?
 \begin{frame}
 \frametitle{Nearby}
 \begin{itemize}
-\item ``Nearby'' means in the same processor.
+\item {\em Nearby} means in the same processor.
 \item We can access the required data within the processor of the same
   processor by {\em memory bandwidth}.
-\item We can only access the required data within the processor of
-  other processor by {\em network bandwidth}.
+\item We can only access the required data within the processor of other processors by {\em network bandwidth}.
 \item Memory bandwidth is {\em much much larger} than network
   bandwidth.
 \end{itemize}
@@ -524,26 +461,18 @@ future''?
 \begin{frame}
 \frametitle{Local v.s. Remote}
 \begin{itemize}
-\item We use {\em Local memory} to indicate the memory of the same
-  processor, and {\em remote memory} as the memory of other
-  processors.
-\item We conclude that {\em Local memory} is much much faster than
-  {\em remote memory}.
-\item This distinction applies only to distributed memory
-  multicomputer.
+\item We use {\em Local memory} to indicate the memory of the same processor, and {\em remote memory} as the memory of other processors.
+\item We conclude that {\em Local memory} is much much faster than {\em remote memory}.
+\item This distinction applies only to distributed memory multicomputer.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Goal}
 \begin{itemize}
-\item If {\em most} of the required data is ``nearby'', then we have
-  good performance.
-\item That is, we want to make sure that most of the required data are
-  nearby, i.e., in local memory, when we partition data to processor
-  for computation.
-\item Note that we say ``most'' because sometimes it is impossible to
-  partition data so that all data access is local.
+\item If {\em most} of the required data is nearby; then we have good performance.
+\item That is, we want to ensure that most of the required data are nearby, i.e., in local memory, when we assign data to processors for computation.
+\item Note that we say {\em most} because sometimes it is impossible to partition data so that all data access is local.
 \end{itemize}
 \end{frame}
 
@@ -558,10 +487,8 @@ future''?
 \frametitle{Matrix Multiplication}
 \begin{itemize}
 \item We multiple matrix $A$ and $B$ and get $C$.
-\item The required data of $C_{ij}$ is the $i$'th row of $A$ and
-  $j$'th column of $B$.  
-\item If we insist that the required data must be in local memory,
-  then everything will be in one processor!
+\item The required data of $C_{ij}$ is the $i$'th row of $A$ and $j$'th column of $B$.  
+\item If we insist that the required data must be in local memory, then everything will be in one processor!
 \item This is against the principle of {\em even workload distribution}.
 \end{itemize}
 \end{frame}
@@ -569,26 +496,18 @@ future''?
 \begin{frame}
 \frametitle{Proof}
 \begin{itemize}
-\item $C_{ij}$ has to be in the same processor as the $i$'th row of
-  $A$ and $j$'th column of $B$.
-\item $C_{kl}$ has to be in the same processor as the $k$'th row of
-  $A$ and $l$'th column of $B$.
-\item Then $C_{kj}$ has to be in the same processor as the $k$'th row of
-  $A$ and $j$'th column of $B$.
+\item $C_{ij}$ has to be in the same processor as the $i$'th row of $A$ and $j$'th column of $B$.
+\item $C_{kl}$ has to be in the same processor as the $k$'th row of $A$ and $l$'th column of $B$.
+\item Then $C_{kj}$ has to be in the same processor as the $k$'th row of $A$ and $j$'th column of $B$.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Proof}
 \begin{itemize}
-\item This implies $C_{ij}$ and $C_{kj}$ have to be in the same
-  processor, because they are in the same processor as the $j$'th column
-  of $B$.
-\item Similarly $C_{kj}$ and $C_{kl}$ have to be in the same
-  processor, because they are in the same processor as the $k$'th row
-  of $A$.
-\item We conclude that $C_{ij}$ must be in the same processor as
-  $C_{kl}$, for any $i$, $j$, $k$, and $l$.
+\item This implies $C_{ij}$ and $C_{kj}$ have to be in the same processor because they are in the same processor as the $j$'th column of $B$.
+\item Similarly $C_{kj}$ and $C_{kl}$ have to be in the same processor because they are in the same processor as the $k$'th row of $A$.
+\item We conclude that $C_{ij}$ must be in the same processor as $C_{kl}$, for any $i$, $j$, $k$, and $l$.
 \item Finally, all data will be in the same processor, which is bad.
 \end{itemize}
 \end{frame}
@@ -596,34 +515,26 @@ future''?
 \begin{frame}
 \frametitle{Best Effort}
 \begin{itemize}
-\item If {\em most} of the required data is in local memory, then we
-  have good performance.
-\item We would like to increase the percentage of access local memory,
-  which is a best effort.
-\item The data has to be carefully partitioned to preserve locality.
+\item If {\em most} of the required data is in local memory; then we have good performance.
+\item We would like to increase the percentage of access to local memory, which is the best effort.
+\item We need to carefully partition data to preserve locality.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Communication-to-Computation Ratio}
 \begin{itemize}
-\item Another way to understand the data locality is through the
-  computation-to-communication ratio.
-\item The amount of computation is roughly the same throughout
-  different data partitioning.
-\item The amount of communication is proportional to the amount of
-  remote data, because local data do not incur communication.
-\item If the communication-to-computation ratio is small then we have
-  small communication overheads, which means we have good data
-  locality.
+\item Another metric to understand the data locality is the computation-to-communication ratio.
+\item The amount of computation is roughly the same throughout different data partitioning.
+\item The amount of communication is proportional to remote data because local data do not incur communication.
+\item If the communication-to-computation ratio is small, we have small communication overheads, which means we have good data locality.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Give an example of good locality and another example of bad
-  locality for the same problem, due to different partitioning methods.
+\item Give an example of good locality and another example of bad locality for the same problem, due to different partitioning methods.
 \end{itemize}
 \end{frame}
 
@@ -631,10 +542,8 @@ future''?
 \begin{frame}
 \frametitle{Surface to Volume Ratio}
 \begin{itemize}
-\item Sometimes we use a {\em surface-to-volume} ratio to explain
-  communication-to-computation ratio.
-\item We now consider the entire data as an object, and data
-  partitioning is a way to cut the object into pieces.
+\item Sometimes we use a {\em surface-to-volume} ratio to explain communication-to-computation ratio.
+\item We now consider the entire data as an object, and data partitioning is a way to cut the object into pieces.
 \end{itemize}
 \end{frame}
 
@@ -642,15 +551,11 @@ future''?
 \begin{frame}
 \frametitle{Neighbors}
 \begin{itemize}
-\item In many computations the required data are those {\em
-  neighboring} data.
+\item In many computations, the required data are those {\em neighboring} data.
 \begin{itemize}
-\item In an array the neighboring data for an array element are those
-  that have indices differing from the element by 1.
-\item In a graph the neighboring data are those node that are
-  adjacent to the node.
-\item In a graphic computation the neighboring data for a pixel are
-  those that have adjacent to that pixel.
+\item In an array, the neighboring data for an array element have indices differing from the element by 1.
+\item In a graph, the neighboring data are those nodes that are adjacent to the node.
+\item In a graphic computation, the neighboring data for a pixel are those that are adjacent to it.
 \end{itemize}
 \end{itemize}
 \end{frame}
@@ -659,13 +564,9 @@ future''?
 \begin{frame}
 \frametitle{Neighbors}
 \begin{itemize}
-\item In a table for dynamic programming the value of an element is
-  usually determined by those elements that have indices differing
-  from the element by 1.
-\item In a page ranking algorithm the value of a node is determined by
-  the neighboring nodes.
-\item In a graphic relaxing problem the new value of a pixel is
-  determined by the eight neighbors.
+\item In a table for dynamic programming, the value of an element is usually determined by those elements that have indices differing from the element by 1.
+\item In a page ranking algorithm, the value of a node is a function of the neighboring nodes.
+\item In a graphic relaxing problem, the new value of a pixel is a function of the eight neighbors.
 \end{itemize}
 \end{frame}
 
@@ -680,16 +581,11 @@ future''?
 \begin{frame}
 \frametitle{Pieces}
 \begin{itemize}
-\item We can use the ``volume'' of a piece to represent the number of
-  data in a piece, which in turn represents the amount of {\em
-    computation}.
+\item We can use the {\em volume} of a piece to represent the number of data in a piece, which in turn represents the amount of {\em computation}.
 \begin{itemize}
-\item We assume that amount of workload is about the same for all
-  data.
+\item We assume that amount of workload is about the same for all data.
 \end{itemize}
-\item We can also use the ``surface area'' of a piece to represent the
-  number of {\em required data} in a piece, which in turn represents
-  the amount of {\em communication}.
+\item We can also use the {\em surface area} of a piece to represent the number of {\em required data} in a piece, which in turn represents the amount of {\em communication}.
 \begin{itemize}
 \item We assume that the required data are on the surface of the
   pieces.
@@ -762,12 +658,9 @@ future''?
 \begin{frame}
 \frametitle{Lessons}
 \begin{itemize}
-\item Surface-to-volume ration is a reasonable estimate on the
-  communication-to-computation ratio.
-\item It is intuitive to partition the data into chunks so that the
-  surface, i.e., communication, is minimized.  for example, if we
-  partition the data into checker board pattern, the surface-to-volume
-  ratio will be very large, and data locality will be poor.
+\item The surface-to-volume ratio is a reasonable estimate of the communication-to-computation ratio.
+\item It is intuitive to partition the data into chunks to minimize the surface, i.e., communication.  
+\item For example, if we partition the data into a checkerboard pattern, the surface-to-volume ratio will be huge, and data locality will be poor.
 \end{itemize}
 \end{frame}
 
@@ -840,12 +733,9 @@ future''?
 \begin{frame}
 \frametitle{Two Party Synchronization}
 \begin{itemize}
-\item In multiprocessor environment the critical section or semaphore
-  may not be the best synchronization solution.
-\item Unlike uni-processor environment, the overheads of critical
-  section or semaphore is very high in multiprocessor environment.
-\item Therefore we sometimes prefer spin-locks in multiprocessor
-  environment, e.g., in Linux kernel data structure.
+\item In a multiprocessor environment, the critical section or semaphore may not be the best synchronization solution.
+\item Unlike in a uni-processor environment, the critical section or semaphore overheads are very high in a multiprocessor environment.
+\item We sometimes prefer spin-locks in a multiprocessor environment, e.g., Linux kernel data structure.
 \end{itemize}
 \end{frame}
 
@@ -854,11 +744,8 @@ future''?
 \begin{frame}
 \frametitle{Transfer Efficiency}
 \begin{itemize}
-\item In many low level parallel programming environment,
-  (e.g. OpenCL, CUDA, or MPI) the programmers can explicit control
-  how data is transferred among professors.
-\item In these environments the programmer can apply the following
-  techniques to improve data transfer efficiency.
+\item In many low level parallel programming environment, (e.g. OpenCL, CUDA, or MPI) the programmers can explicit control how data is transferred among professors.
+\item In these environments the programmer can apply the following techniques to improve data transfer efficiency.
 \begin{itemize}
 \item Batch mode message sending
 \item Overlap computation with communication
@@ -870,28 +757,19 @@ future''?
 \begin{frame}
 \frametitle{Batch Mode}
 \begin{itemize}
-\item Many message passing system is built on top of network protocol
-  like TCP/IP.
-\item These protocol has a fixed start-up overhead, e.g., to establish
-  a connection in TCP/IP.
-\item If we send a large number of data through a connection, then the
-  start-up overhead is amortized among the data begin transferred, which
-  means we should transfer data in large quantity.
+\item Many message passing system is on top of network protocol like TCP/IP.
+\item These protocol has a fixed start-up overhead, e.g., to establish a connection in TCP/IP.
+\item If we send a large number of data through a connection, then the start-up overhead is amortized among the data begin transferred, which means we should transfer data in large quantity.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Overlap Communication with Computation}
 \begin{itemize}
-\item It is beneficial to have a large number of threads so that when
-  a thread is waiting for data, other threads can use CPU resource for
-  computation.
-\item For example, in GPU the large number of running threads can hide
-  memory latency, i.e., when a thread is waiting for memory other
-  threads can use ALU for computations.
-\item This requires a large number of threads, and a flexible
-  scheduler to schedule them.  
-\item This relieve the burden of cache.
+\item It is beneficial to have many threads so that when a thread is waiting for data, other threads can use CPU resources for computation.
+\item For example, in GPU, many running threads can hide memory latency, i.e., when a thread is waiting for memory, other threads can use ALU for computations.
+\item This requires many threads and a flexible scheduler to schedule them.  
+\item This relieves the burden of cache.
 \item More details in later lectures.
 \end{itemize}
 \end{frame}
@@ -899,13 +777,10 @@ future''?
 \begin{frame}
 \frametitle{Explore Memory Hierarchy}
 \begin{itemize}
-\item In some parallel programming environment (e.g. CUDA and OpenCL),
-  the programmer is free to move data with the memory hierarchy.
-\item The processing units of GPU have fast and small local memory,
-  and share a slow and large global memory.
-\item CUDA and OpenCL programmers must {\em explicitly} move the data
-  between the global and local memory to achieve performance.  This is
-  tedious and error-prone process.
+\item In some parallel programming environments (e.g., CUDA and OpenCL), the programmer can move data with the memory hierarchy.
+\item The processing units of GPU have fast and small local memory and share a slow and large global memory.
+\item CUDA and OpenCL programmers must {\em explicitly} move the data between the global and local memory to achieve performance.  
+\item This is a tedious and error-prone process.
 \item More details on later lectures.
 \end{itemize}
 \end{frame}
