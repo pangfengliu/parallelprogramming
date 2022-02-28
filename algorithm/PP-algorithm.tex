@@ -47,22 +47,18 @@
 \begin{itemize}
 \item The Monte Carlo method repeats a {\em random process} to compute
   the answer.
-\item We generate random numbers as input to the computation, so that
-  the answer can be deduced from the random process.  Note that all
-  computations are {\em independent}.
-\item It is important to use different ``random seed'' with these
-  tasks, so that the results from them are {\em statistically
-    independent}.
+\item We generate random numbers as input to the computation to derive the answer from the random process.  
+Note that all computations are {\em independent}.
+\item It is important to use different {\em random seed} with these tasks so that the results from them are {\em statistically independent}.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Compute $\pi$}
 \begin{itemize}
-\item Randomly throw darts into a square with a inscribed circle.
-\item Compute the number of darts that fall into and outside the
-  circle.
-\item Compute the probability that a darts falls into the circle.
+\item Randomly throw darts into a square with an inscribed circle.
+\item Compute the number of darts that fall into and outside the circle.
+\item Compute the probability that a dart falls into the circle.
 \item Multiple the probability by 4 to approximate $\pi$.
 \end{itemize}
 \end{frame}
@@ -70,10 +66,8 @@
 \begin{frame}
 \frametitle{Notes}
 \begin{itemize}
-\item This is not a good example because people will not compute $\pi$
-  this way.
-\item Nevertheless this is an easy-to-understand example to illustrate
-  the independence of tasks.
+\item This is not a good example because people will not compute $\pi$ this way.
+\item Nevertheless this is an easy-to-understand example to illustrate the independence of tasks.
 \end{itemize}
 \end{frame}
 
@@ -82,16 +76,9 @@
 \begin{frame}
 \frametitle{Parameter Search}
 \begin{itemize}
-\item Suppose we want to fins the a set of ``best'' parameters $x =
-  (x_1, \ldots, x_n)$, which maximize an objective function $y =
-  f(x)$.
-\item We also assume that the $f$ function is very complex so that we
-  cannot deduce the values of $f(x)$'s for $x$'s that we have not yet
-  computed the function values, from those function values that we
-  have already computed.
-\item It is easy to dispatch the computation of $f(x)$ to processors to
-  speed up the parameter search, since there is no dependency between
-  these computations.
+\item Suppose we want to fins the a set of ``best'' parameters $x = (x_1, \ldots, x_n)$, which maximize an objective function $y = f(x)$.
+\item We also assume that the $f$ function is very complex so that we cannot deduce the values of $f(x)$'s for $x$'s that we have not yet computed the function values, from those function values that we have already computed.
+\item It is easy to dispatch the computation of $f(x)$ to processors to speed up the parameter search, since there is no dependency between these computations.
 \end{itemize}
 \end{frame}
 
@@ -99,24 +86,18 @@
 \frametitle{File Serving}
 \begin{itemize}
 \item A web server serves static HTML files to clients.
-\item The requests of clients are independent, so the web server
-  simply serves the files in parallel, maybe using multiple threads.
-\item If there are multiple web servers, they can also serve the files
-  in parallel.
+\item The clients' requests are independent, so the web server serves the files in parallel, maybe using multiple threads.
+\item If there are multiple web servers, they can also serve the files in parallel.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Summary}
 \begin{itemize}
-\item Embarrassingly parallel computation has good speedup and
-  efficiency, because the tasks are independent and do not require
-  significant communication.
-\item It is trivial to dispatch tasks to processors if the tasks
-  require roughly the same amount of time.
-\item It is non-trivial to dispatch tasks to processors if the tasks
-  require very different amount of time.  In this case ``load
-  balancing'' is required.
+\item Embarrassingly parallel computation has good speedup and efficiency because the tasks are independent and do not require much communication.
+\item It is trivial to dispatch tasks to processors if they require roughly the same amount of time.
+\item It is non-trivial to dispatch tasks to processors if they require a different amount of time.  
+In this case, we need {\em load balancing}.
 \end{itemize}
 \end{frame}
 
@@ -133,16 +114,11 @@
 \begin{frame}
 \frametitle{Divide and Conquer}
 \begin{itemize}
-\item Divide-and-conquer is a common parallel algorithm design
-  technique.
-\item As in a sequential divide-and-conquer algorithm, the problem is
-  first divided into sub-problems.
-\item Unlike a sequential divide-and-conquer algorithm, a parallel
-  algorithm solves (conquer) the sub-problem {\em in parallel}.
-\item Some communication may be necessary since the sub-problems may
-  have dependency on each other.
-\item Finally the answers from individual sub-problems are combined
-  into the final answer.
+\item Divide-and-conquer is a common parallel algorithm design technique.
+\item As in a sequential divide-and-conquer algorithm, the problem is first divided into sub-problems.
+\item Unlike a sequential divide-and-conquer algorithm, a parallel algorithm solves (conquer) the sub-problem {\em in parallel}.
+\item Some communication may be necessary since the sub-problems may depend on each other.
+\item Finally, we combine the answers from individual sub-problems into the final answer.
 \end{itemize}
 \end{frame}
 
@@ -153,28 +129,24 @@
 \frametitle{Summation}
 \begin{itemize}
 \item We want to sum $n$ numbers, and $n$ is very large.
-\item It is easy to see that we can apply divide-and-conquer technique
-  to solve the problem in parallel with $p$ processors.
+\item It is easy to see that we can apply divide-and-conquer technique  to solve the problem in parallel with $p$ processors.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Parallel Summation Algorithm}
 \begin{enumerate}
-\item Partition the numbers so that each processor has roughly $n/p$
-  numbers.
+\item Partition the numbers so that each processor has roughly $n/p$ numbers.
 \item Each processor computes the sum of assigned numbers.
-\item A processor collects all the partial sums from other processors
-  and compute the final sum.
+\item A processor collects all the partial sums from other processors and computes the final sum.
 \end{enumerate}
 \end{frame}
 
 \begin{frame}
 \frametitle{Analysis}
 \begin{itemize}
-\item We assume that first step takes very little time.\footnote{This
-  is a the case for shared memory model, but not necessarily true for
-  distributed memory model.}
+\item We assume that first step takes very little time.
+This is the case for shared memory model, but not necessarily true for distributed memory model.
 \item The second steps takes $O({n \over p})$ times.
 \item The third steps takes $O(p)$ times.
 \end{itemize}
@@ -187,20 +159,17 @@ O({n \over p} + p)
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item How do we minimize the $O({n \over p} + p)$ by choosing the
-  right $p$?
+\item How do we minimize the $O({n \over p} + p)$ by choosing the right $p$?
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{Communication}
 \begin{itemize}
-\item Having one processor collect all the answer is not efficient.
-\item We partition the processor into two groups.  Every processor in
-  the first group sends its answer to the corresponding processors in
-  the second group.
-\item We repeatedly do this until we have only one processor left,
-  who should have the final answer.
+\item Having one processor collects all the answers is not efficient.
+\item We partition the processor into two groups.  
+Every processor in the first group sends its answer to the corresponding processors in the second group.
+\item We repeatedly do this until we have only one processor left, who should have the final answer.
 \end{itemize}
 \end{frame}
 
@@ -210,7 +179,7 @@ O({n \over p} + p)
 \item Partition the numbers so each processor has $n/p$ numbers.
 \item Each processor computes the sum of its numbers.
 \item Use the recursive algorithm to compute the final sum.
-\item This is similar to the ``tree optimization'' in synchronization.
+\item This is similar to the {\em tree optimization} in synchronization.
 \end{enumerate}
 \end{frame}
 
@@ -219,8 +188,7 @@ O({n \over p} + p)
 \begin{itemize}
 \item We assume that first step takes very little time.
 \item The second steps takes $O({n \over p})$ time.
-\item The third steps takes $O(\log p)$ time because the depth of a
-  complete binary tree of $n$ nodes is about $O(\log n)$.
+\item The third steps takes $O(\log p)$ time because the depth of a complete binary tree of $n$ nodes is about $O(\log n)$.
 \end{itemize}
 The final time complexity is as follows.
 \begin{equation}
@@ -238,27 +206,22 @@ O({n \over p} + \log p)
 \begin{frame}
 \frametitle{Observation}
 \begin{itemize}
-\item The first term $({n \over p})$ is {\em computation}.  We can
-  {\em never} reduce this part.
-\item The second term $(\log p)$ is about {\em communication}.  We try
-  our best to reduce this part.
-\item If we increase $p$, the computation time decreases and the
-  communication time increases.  That means we have more workers to
-  share the workload, but we need to communicate more among more
-  workers.
+\item The first term $({n \over p})$ is {\em computation}.  
+We can {\em never} reduce this part.
+\item The second term $(\log p)$ is about {\em communication}.  
+We try our best to reduce this part.
+\item If we increase $p$, the computation time decreases and the communication time increases.  
+That means we have more workers to share the workload, but we need to communicate more among more workers.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{More Observations}
 \begin{itemize}
-\item It is important to balance the load among processors, i.e. we
-  want to send $({n \over p})$ data to each processor for processing.
-\item A shared memory implementation is significantly easier than a
-  distributed memory implementation.
-\item The recursive (or tree like) communication pattern is much more
-  complicated than a naive one, and requires much more complicated
-  synchronization.
+\item It is important to balance the load among processors.
+We want to send $({n \over p})$ data to each processor for processing.
+\item A shared memory implementation is significantly easier than a distributed memory implementation.
+\item The recursive (or tree-like) communication pattern is much more complicated than a naive one, and it requires complicated synchronization.
 \end{itemize}
 \end{frame}
 
@@ -279,10 +242,8 @@ e = {n \over {{n + p \log p}}}
 \begin{itemize}
 \item What is the best $p$ in terms of speedup?
 \item Set ${n \over p} = \log p$ and solve $p = {n \over {\log n}}$.
-\item The minimum parallel execution time $\Theta(\log n)$ is achieved
-  when $p = \Theta({n \over {\log n}})$.
-\item If we set $p = \sqrt n$, then the time will be $\Theta(\sqrt
-  n)$, which is much larger than the optimal $\Theta(\log n)$.
+\item The minimum parallel execution time $\Theta(\log n)$ is achieved when $p = \Theta({n \over {\log n}})$.
+\item If we set $p = \sqrt n$, then the time will be $\Theta(\sqrt n)$, which is much larger than the optimal $\Theta(\log n)$.
 \end{itemize}
 \end{frame}
 
@@ -291,7 +252,7 @@ e = {n \over {{n + p \log p}}}
 \begin{itemize}
 \item Use calculus to compute the optimal $P$ value.
 \item What will happen if we set $p$ to $n$?
-\item Is this ``theoretical'' optimal $p$ useful in practice?
+\item Is this {\em theoretical} optimal $p$ useful in practice?
 \end{itemize}
 \end{frame}
 
@@ -309,10 +270,7 @@ s_k = \sum_{i = 1}^k x_i
 \frametitle{Compact An Array}
 \begin{itemize}
 \item The prefix sum has various applications.
-\item If there are zeros and non-zeros in an array $A$ and we only
-  wish to keep the non-zeros in a new array $B$, then we can do a
-  prefix sum on another array $P$ with 0 and 1 to determine the
-  positions of non-zeros in $B$.
+\item If there are zeros and non-zeros in an array $A$ and we only wish to keep the non-zeros in a new array $B$, then we can do a prefix sum on another array $P$ with 0 and 1 to determine the positions of non-zeros in $B$.
 \end{itemize}
 \end{frame}
 
@@ -324,8 +282,7 @@ s_k = \sum_{i = 1}^k x_i
 \begin{frame}
 \begin{itemize}
 \frametitle{Fibonacci's Numbers}
-\item The prefix sum has various applications, and it is not limited
-  to summation.
+\item The prefix sum has various applications, and it is not limited to summation.
 \item We all know Fibonacci's numbers. 
 \begin{equation}   
 f_i = \left\{
@@ -441,8 +398,7 @@ s_k = \Pi_{i = 1}^k x_i
 \item A sequential algorithm can do this easily in $O(n)$ time.
 \item We assume that we use one processor per data, so $p = n$.
 \item The $k$-th processor requires $O(k)$ time.
-\item The parallel time is the maximum of all processor time, hence
-  $O(n)$.
+\item The parallel time is the maximum of all processor time, hence $O(n)$.
 \item The speedup is $O(1)$, and the efficiency is $({1 \over p})$. 
 \item Not very efficient.
 \end{itemize}
@@ -458,8 +414,7 @@ s_k = \Pi_{i = 1}^k x_i
 \begin{frame}
 \frametitle{Parallel Prefix Sum Algorithm}
 \begin{itemize}
-\item To avoid doing duplicated work, we again use the $k$-th processor
-  to compute $s_k$, but we get the result from the $k-1$-th processor.
+\item To avoid doing duplicated work, we again use the $k$-th processor to compute $s_k$, but we get the result from the $k-1$-th processor.
 \begin{equation}
 s_k = s_{k-1} + x_k
 \end{equation}
@@ -469,13 +424,10 @@ s_k = s_{k-1} + x_k
 \begin{frame}
 \frametitle{Analysis}
 \begin{itemize}
-\item Now we do not duplicate work, but we need to {\em wait}.
-\item The $k$-th processor cannot compute its sum before receiving
- $s_{k-1}$.
-\item The result will go ripple-like from the first to the last
-  processor like a wave-front.
-\item The parallel time is the maximum of all processor time, hence
-  $O(n)$.
+\item Now, we do not duplicate work, but we need to wait.
+\item The $k$-th processor cannot compute its sum before receiving $s_{k-1}$.
+\item The result will go ripple-like from the first to the last processor like a wave-front.
+\item The parallel time is the maximum of all processor time, hence $O(n)$.
 \item The speedup is $O(1)$, and the efficiency is $({1 \over n})$. 
 \item Again not very efficient.
 \end{itemize}
@@ -492,13 +444,10 @@ s_k = s_{k-1} + x_k
 \frametitle{A Better Algorithm}
 \begin{itemize}
 \item There are $\log n$ stages.
-\item In the $i$-stage every element adds the element $2^i$ to the
-  left to itself.
+\item In the $i$-stage every element adds the element $2^i$ to the left to itself.
 \begin{itemize}
-  \item In the first stage every element adds the element to its
-    left to itself.
-  \item In the second stage every element adds the element two
-    elements to its left to itself.
+  \item In the first stage every element adds the element to its left to itself.
+  \item In the second stage every element adds the element two elements to its left to itself.
 \end{itemize}
 \end{itemize}
 \end{frame}
@@ -524,12 +473,9 @@ s_k = s_{k-1} + x_k
 \frametitle{Analysis}
 \begin{itemize}
 \item There are $\log n$ steps, since $p = n$ now.
-\item A processor does a sum and receives a message, so the time is
- $O(1)$.
-\item The total parallel time is $O(log n)$, which is much better than
-  $O(n)$ in previous approaches.
-\item The speedup is $O({n \over log n})$, and the efficiency is $({1
-  \over {\log n}})$.
+\item A processor does a sum and receives a message, so the time is $O(1)$.
+\item The total parallel time is $O(log n)$, which is much better than $O(n)$ in previous approaches.
+\item The speedup is $O({n \over log n})$, and the efficiency is $({1 \over {\log n}})$.
 \end{itemize}
 \end{frame}
 
@@ -545,13 +491,9 @@ s_k = s_{k-1} + x_k
 \begin{frame}
 \frametitle{Improvement}
 \begin{itemize}
-\item It is not practical to use one processor per data, since in
-  practice the number of data is much more than the number of
-  processors.
-\item We will assume that $n$ is much larger than $p$, hence we need
-  to partition the data among processors.
-\item Now each processor will compute the prefix sum of its data
-  first, then use the previous algorithm to ``patch'' things up.
+\item It is not practical to use one processor per data since the number of data is much more than the number of processors in practice.
+\item We will assume that $n$ is much larger than $p$; hence we need to partition the data among processors.
+\item Now, each processor will compute the prefix sum of its data first, then use the previous algorithm to ``patch'' things up.
 \end{itemize}
 \end{frame}
 
@@ -714,9 +656,8 @@ How do we read the keys out in the second step?
   bucket.
 \item Each processor computes the number of keys that should be in its
   bucket.
-\item Use the parallel prefix sum algorithm to know the starting
-  position each bucket should start.
-\item Actually read from the bucket.
+\item Use the parallel prefix sum algorithm to know each bucket's starting position.
+\item Read from the bucket.
 \end{enumerate}
 \end{frame}
 
@@ -760,8 +701,7 @@ How do we read the keys out in the second step?
 \item The bucket sort uses (and wastes) a lot of memory.
 \item We will try a ``quicker'' sort that also uses the
   divide-and-conquer techniques.
-\item Again we assume that the keys are evenly distributed and we know
-  the range.
+\item Again, we assume that the keys have an even distribution, and we know the range.
 \end{itemize}
 \end{frame}
 
@@ -799,8 +739,7 @@ T(n) = g T({n \over g}) + n
 \frametitle{Parallel Quicker Sort}
 Every processor manages a group, which will store a range of keys.
 \begin{enumerate}
-\item Every processor reads only $n \over p$ keys, and puts them into
-  the corresponding bucket.
+\item Every processor reads only $n \over p$ keys and puts them into the corresponding bucket.
 \item Each processor sorts the keys in its bucket.
 \item Read all keys from processors.
 \end{enumerate}
@@ -840,11 +779,9 @@ Every processor manages a group, which will store a range of keys.
 \frametitle{Exchange Sort}
 
 \begin{itemize}
-\item We consider a recursive ``exchange'' sort that is much more
-  suitable for distributed memory multicomputers.
-\item This algorithm is very suitable for hypercube.
-\item We do not require that the keys are distributed uniformly, since
-  we can argue that the performance is {\em statistically} acceptable.
+\item We consider a recursive ``exchange'' sort that is more suitable for distributed memory multicomputers.
+\item This algorithm is very suitable for the hypercube.
+\item We do not require that the keys have a uniform distribution since we can argue that the performance is {\em statistically} acceptable.
 \end{itemize}
 \end{frame}
 
@@ -852,10 +789,8 @@ Every processor manages a group, which will store a range of keys.
 \frametitle{Exchange Sort}
 \begin{itemize}
 \item Divide the processors into two groups of equal size.
-\item Each processor ``exchanges'' keys with its corresponding
-  processor in the other group according to a pivot -- smaller keys go
-  to a group of processors and bigger keys go to the other group.
-\item Recursively do the same for both groups.
+\item Each processor {\em exchanges} keys with its corresponding processor in the other group according to a pivot -- smaller keys go to a group of processors, and bigger keys go to the other group.
+\item We recursively do the same for both groups.
 \end{itemize}
 \end{frame}
 
@@ -866,8 +801,8 @@ Every processor manages a group, which will store a range of keys.
 \item Divide the processors into two groups of equal size.
 \item Each processor ``exchanges'' keys with its corresponding
   processor in the other group.
-\item Recursively do the same for both groups.  
-\item Finally each processor sorts its keys.
+\item We recursively do the same for both groups.  
+\item Finally, each processor sorts its keys.
 \end{enumerate}
 \end{frame}
 
@@ -875,8 +810,7 @@ Every processor manages a group, which will store a range of keys.
 \frametitle{Pivot}
 \begin{itemize}
 \item How to find a pivot?
-\item This is like the argument sequential quick sort, we just
-  randomly pick one, which is good enough.
+\item This is like the argument sequential quicksort; we randomly pick one, which is good enough.
 \item Use a binomial trial to argue that the tree depth of a quick
   sort is bounded by $O(\log p)$ with high probability.
 \end{itemize}
