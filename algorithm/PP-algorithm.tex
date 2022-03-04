@@ -126,6 +126,37 @@ In this case, we need {\em load balancing}.
 \subsection{Summation}
 
 \begin{frame}
+\frametitle{Sequential Summation}
+\begin{itemize}
+\item We want to sum $n$ numbers, and $n$ is very large.
+\item We just add all numbers to the first one, and at the end it has the sum.
+\item How many additions does this algorithm use?
+\item Is it possible to improve this algorithm?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Lower and Upper Bounds}
+\begin{itemize}
+\item The lower bound is the minimum amount of operations we need to solve this problem.
+\item For every algorothm $A$, there exists an input so that the cost is at least $L(n)$ (as a function of the input size $n$).
+\item The upper bound is the minimum amount of operations we need to solve this problem for all possible inputs.
+\item There exists an algorothm $A*$, and for all inputs the cost is at most $U(n)$ (as a function of the input size $n$).
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item How do you find a lower bound?
+\item How do you find a upper bound?
+\item Is it possible that $L(n)$ is asumptotically larger than $U(n)$?. 
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
 \frametitle{Summation}
 \begin{itemize}
 \item We want to sum $n$ numbers, and $n$ is very large.
@@ -250,9 +281,18 @@ e = {n \over {{n + p \log p}}}
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Use calculus to compute the optimal $P$ value.
-\item What will happen if we set $p$ to $n$?
+\item Use calculus to compute the optimal $p$ value.
 \item Is this {\em theoretical} optimal $p$ useful in practice?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item What will happen if we set $p$ to $n$?
+\item What is the commuication time of this algorithm?
+  \item What is the upper and lower bounds of the number of stages this algorithm requires?
+\item Can you improve the algorithm?
 \end{itemize}
 \end{frame}
 
