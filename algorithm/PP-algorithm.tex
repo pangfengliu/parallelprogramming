@@ -1039,6 +1039,58 @@ A \times B = C
 \end{itemize}
 \end{frame}
 
+\subsection{Graph Algorithms}
+
+\begin{frame}
+\frametitle{Graph}
+\begin{itemize}
+\item A graph $G$ consists of a node set $V$ and an edge set $E$.
+\item For simplicaity we assume that the edges are {\em undirected}.
+\item For simplicity the edge set $E$ is an adcacency matrix.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Degree}
+\begin{itemize}
+\item The degree of a node is the sum of the {\em ones} in every row (or column).
+\item This is easily done in parallel using the parallel summation technique described earlier.
+\item One can verify whether there is a Euler cycle (path) in this graph by knowing the degrees.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Breadth-First Search}
+\begin{itemize}
+\item How to do BFS in parallel?
+\item Define $T(v, k)$ to be the tree with $v$ as the root and all nodes reachable from $v$ by a path of lenght no more than $2^k$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Breadth-First Search}
+\begin{itemize}
+\item $T(v, 0)$ is simply a node set $v$ and its neighbors.
+\item For every node $u$ in $T(v, 0)$, we merge $T(u, 0)$ with $T(v,0)$ to get $T(v, 1)$.
+\item In general, for every node $u$ in the frontier of $T(v, i)$, we merge $T(u, i)$ with $T(v, i)$ to get $T(v, i + 1)$.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item When can we stop?
+  That is, what is the maximum value of $k$ in $v(v, k)$?
+\item How many processors do we need?
+\end{itemize}
+\end{frame}
+
+
+
+
+
+
 \end{CJK}
 \end{document}
 
