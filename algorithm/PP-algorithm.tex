@@ -11,6 +11,9 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 
+\usepackage{tikz-qtree}
+\usepackage{forest}
+
 \input{../slide-macro}
 
 \begin{document}
@@ -936,6 +939,105 @@ A \times B = C
 \end{itemize}
 \end{frame}
 
+\subsection{Ranged Maxima}
+
+\begin{frame}
+\frametitle{Ranged Maxima}
+\begin{itemize}
+\item Conisder a sequence of $n$ numbers.
+\item We want to preprocess these numbers with multiple processors, then answer a ranged maxima query in $O(1)$ time.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{A Tree}
+\begin{itemize}
+\item We build a tree from bottom to the top.
+\item Each leaf has a number.
+  \begin{itemize}
+  \item Each internal node has two lists.
+  \item A $P$ list has the prefix maxima for all the leaves in the subtree.
+  \item A $S$ list has the suffix maxima for all the leaves in the subtree.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{forest}
+  for tree={rectangle,draw,minimum size=0.8cm}
+  [{P=8,3,3,3,2,2,2,2 S=17,15,11,2,2,2,2,2}
+    [
+      {P=8,3,3,3 S=5,4,3,3}
+      [{P=8,3 S=3,3}
+	[8]
+        [3]
+      ]
+      [{P=4,4 S=5,4}
+	[4]
+        [5]
+      ]
+    ]
+    [
+      {P=2,2,2,2 S=17,15,11,2}
+      [{P=2,2 S=11,2}
+	[2]
+        [11]
+      ]
+      [{P=15,15 S=17,15}
+	[15]
+        [17]
+      ]
+    ]
+  ]
+\end{forest}
+\end{frame}
+
+\begin{frame}
+\frametitle{Tree Construction}
+\begin{itemize}
+\item How do we combine $P$ and $S$ from subtrees?
+  \begin{itemize}
+  \item The first half of the $P$ remains the same.
+  \item The first half of the $S$ remains the same.
+  \item Compute the smaller value ($x$) between the last elements of $P$ and $S$.
+  \item Replace every value $v$ in the second halves of $P$ and $S$ with $\min(v, x)$.
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Ranged Minima}
+\begin{itemize}
+\item How do we find the ranged minimum $(a, b)$?
+\item Find the least common ancesstor $r$ of $a$ and $b$.
+\item Compute the minimum of the $S$ element from the left subtree and the $P$ elelment from the right subtree.
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item Which elements from the left and the right subtree are we looking for?
+\item Why can we do it in $O(1)$ time?
+
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item How many processors do we need in the preprocessing?
+\item How much time do we need in the preprocessing?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Discussion}
+\begin{itemize}
+\item How to do this sequentially?
+\item What is the tradeoff between the preprocessing time and the query time?
+\end{itemize}
+\end{frame}
 
 \end{CJK}
 \end{document}
