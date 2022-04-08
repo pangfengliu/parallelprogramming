@@ -55,8 +55,7 @@
 \begin{frame}
 \frametitle{Hello, world}
 \begin{itemize}
-\item Just like the case in Pthread, we start with a sequential
-  program that prints hello world.
+\item Just like the case in Pthread, we start with a sequential program that prints hello world.
 \item Unlike the case in Pthread, we will only print it once.
 \end{itemize}
 \end{frame}
@@ -219,13 +218,11 @@
 \begin{frame}
 \frametitle{Problem}
 \begin{itemize}
-\item Now we would like to get the correct number of threads.
-\item The problem with the previous program is that the effect of the
-  directive applies only to the next statement, i.e., the printf for
-  ``hello, world''.
-\item As a result when we call {\tt omp\_get\_num\_threads}, there is
+\item We would like to get the correct number of threads.
+\item The problem with the previous program is that the effect of the directive applies only to the next statement, i.e., the printf for  ``hello, world''.
+\item As a result, when we call {\tt omp\_get\_num\_threads}, there is
   only one thread left.
-\item To solve this problem we use a {\em compound} statement to
+\item To solve this problem, we use a {\em compound} statement to
   enclose {\em everything} that we would like to run in parallel.
 \end{itemize}
 \end{frame}
@@ -268,7 +265,7 @@
 \begin{frame}
 \frametitle{In Control}
 \begin{itemize}
-\item Sometimes it is quite useful to set the number of threads,
+\item Sometimes, it is quite useful to set the number of threads,
   especially after we know the number of cores.
 \item The default number of threads is the number of cores, which is
   not necessarily suitable.
@@ -445,8 +442,8 @@
 \item Note that all threads, except the main thread, will only be
   active during the loop.  
 \item All threads partitioning the loop will synchronize with each
-  other, i.e., do a barrier synchronization, before leaving the loop.
-\item This {\em join} is automatic and we do not need to program
+  other, i.e., do a barrier synchronization before leaving the loop.
+\item This {\em join} is automatic, and we do not need to program
   anything.
 \end{itemize}
 \end{frame}
@@ -593,8 +590,7 @@
 \begin{frame}
 \frametitle{Private Variable}
 \begin{itemize}
-\item We use the following example to emphasize that a private
-  variable has nothing to do with the global variable.
+\item We use the following example to emphasize that a private variable has nothing to do with the global variable.
 \item One can think of the private variable as a new variable declared
   with the thread with the same name.
 \end{itemize}
@@ -645,10 +641,9 @@
 \begin{itemize}
 \item We now want to compute the total number of solutions.
 \item We use a variable {\tt num} to store the number of solutions
-  from one iteration, and a variable {\tt numSolution} to store the
-  total number of solutions.
+  from one iteration and a variable {\tt numSolution} to store the total number of solutions.
 \item The parallel for directive applies only to the for loop, so the
-  printf after the loop will only be executed by the main thread.
+  printf after the loop will only run in the main thread.
 \end{itemize}
 \end{frame}
 
@@ -865,8 +860,8 @@
 \begin{frame}
 \frametitle{Discussion}
 \begin{itemize}
-\item Does the sequential program produce correct answer?
-\item Does the parallel program produce correct answer?
+\item Does the sequential program produce the correct answer?
+\item Does the parallel program produce the correct answer?
 \item Can you derive the characteristic of the operations supported by
   reduction?  What do they have in common?
 \end{itemize}
@@ -906,8 +901,8 @@
 \begin{frame}
 \frametitle{\tt firstprivate}
 \begin{itemize}
-\item The first command line argument specifies the number of iterations.
-\item The second command line argument specifies the number of threads.
+\item The first command-line argument specifies the number of iterations.
+\item The second command-line argument specifies the number of threads.
 \item The value of global {\tt v} is used to initialize the private
   {\tt v} when the threads starts.
 \item Note that the initialization only happens when a thread starts,
@@ -935,9 +930,7 @@
   into threads.
 \item We can also do this by placing the information into a global
   variable.  
-\item However, if the information will be manipulated and modified by
-  each thread individually, then we can use {\tt firstprivate} to make
-  a private copy within each thread.  This is very convenient.
+\item If the information will be manipulated and modified by each thread individually, then we can use {\tt firstprivate} to make a private copy within each thread, which is very convenient.
 \end{itemize}
 \end{frame}
 
@@ -961,10 +954,9 @@
 \begin{frame}
 \frametitle{Sudoku}
 \begin{itemize}
-\item There is a 9 by 9 board with some numbers from 1 to 9 already in
-  it (in black).
-\item Place numbers from 1 to 9 (in red) into empty squares, so that
-  the every row, every column, and all nine 3 by 3 squares will have
+\item There is a nine by nine board with numbers from 1 to 9 already on it (in black).
+\item Place numbers from 1 to 9 (in red) into empty squares so that
+  every row, every column, and all nine three by three squares will have
   numbers 1 to 9.
 \item We would like to compute the total number of solutions.
 \end{itemize}
@@ -980,10 +972,9 @@
 \begin{frame}
 \frametitle{Solution}
 \begin{itemize}
-\item We represent the board by a 9 by 9 array of integers {\tt
+\item We represent the board by a nine by nine array of integers {\tt
   sudoku}.
-\item The input has all the initial numbers in the board, where an 0
-  is an empty cell.
+\item The input has all the initial numbers on the board, where an 0 is an empty cell.
 \item We need to remember the index of the first zero (\tt firstZero)
   so that we can start the recursion from there.
 \end{itemize}
@@ -1068,11 +1059,10 @@
 \frametitle{\tt placeNumber}
 \begin{itemize}
 \item If there is no number in the cell, then we check if we can place
-  a number {\tt try} into this cell by calling {\tt conflict}.  If we
-  can then we go to the next level of recursion.
-\item Since no conflict was found we place the number into the cell
+  a number {\tt try} into this cell by calling {\tt conflict}.  If we can, then we go to the next level of recursion.
+\item Since we found no conflict, we place the number into the cell
   and call {\tt placeNumber} to go for the next cell.
-\item After we tried all numbers from 1 to 9, we report the number of
+\item After we tried all numbers from 1 to 9, we reported the number of
   solutions we found.
 \item Note that we need to reset the cell back to 0 so later recursion
   will not mistake it for being an input.
