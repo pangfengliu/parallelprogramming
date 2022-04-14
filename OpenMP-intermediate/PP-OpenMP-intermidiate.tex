@@ -131,11 +131,10 @@
 \begin{frame}
   \frametitle{Static Policy Example}
   \begin{itemize}
-  \item In the previous example the threads with higher indices do
-    more work, and the workload is not balanced among threads.
-  \item One simple way to reduce work imbalance is to reduce the chunk
-    size, so that the heavy iterations are more evenly distributed.
-  \item We try chunk size 1 and observe the results.
+  \item In the previous example, the threads with higher indices do
+    more work, and the workload is unbalanced among threads.
+  \item One simple way to reduce work imbalance is to reduce the chunk size and evenly distribute the heavy iterations among threads.
+  \item We try chunk size one and observe the results.
   \end{itemize}
 \end{frame}
 
@@ -166,8 +165,8 @@
 \begin{frame}
   \frametitle{Workload Imbalance}
   \begin{itemize}
-  \item In the previous example the threads with higher indices do
-    more work, and the workload is not balanced among threads.
+  \item In the previous example, the threads with higher indices do
+    more work, and the workload is imbalanced among threads.
   \item Even though we reduce the chunk size to 1, the last thread still
     has a much heavier workload than the first one.
   \end{itemize}
@@ -209,11 +208,8 @@
 \begin{frame}
   \frametitle{Workload Imbalance}
   \begin{itemize}
-  \item In the previous example we run the iterations in ascending
-    workload order, that is, we run the heaviest workload {\em last}.
-  \item That means even if the workload is very balanced all the way to
-    the end, the last work may cause all threads to wait for the last
-    thread to finish.
+  \item In the previous example, we run the iterations in ascending workload order; that is, we run the heaviest workload {\em last}.
+  \item That means the last work may cause all threads to wait for the last thread to finish.
   \end{itemize}
 \end{frame}
 
@@ -265,10 +261,8 @@
   \frametitle{Rationals}
   \begin{itemize}
   \item Initial large chunk size can reduce the overheads in scheduling.
-  \item Later smaller chunk size can reduce the workload imbalance.
-  \item In a sense this is similar to the descending workload order --
-    the larger work is given out first because of large chunk size, and
-    smaller work is given out later.
+  \item Later, a smaller chunk size can reduce the workload imbalance.
+  \item In a sense, this is similar to the descending workload order -- the larger tasks run first because of the large chunk size, and the smaller tasks run later.
   \end{itemize}
 \end{frame}
 
