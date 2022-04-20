@@ -204,8 +204,7 @@
 \frametitle{Efficiency}
 \begin{itemize}
 \item The previous program parallelized the inner for loop only.
-\item The previous program will go through multi-threading every time a
-  prime number is found.
+\item The previous program will go through multi-threading whenever it finds a prime number.
 \item This incurs overheads of creating and destroying the threads.
 \end{itemize}
 \end{frame}
@@ -222,11 +221,9 @@
 \begin{frame}
 \frametitle{{\tt parallel} Once}
 \begin{itemize}
-\item We would like to avoid the overheads in creating and destroying
-  threads, so we put a {\tt parallel} in front of the first for loop.
-\item The {\em entire} two level loop is run by all threads.
-\item Then we share the workload of the second for loop to improve
-  performance,  since  most work is done in the second loop.
+\item We would like to avoid the overheads in creating and destroying threads, so we put a {\tt parallel} in front of the first for loop.
+\item All threads run the {\em entire} two-level nested loop.
+\item Then, we share the workload of the second for loop to improve performance since most work is in the second loop.
 \end{itemize}
 \end{frame}
 
@@ -282,23 +279,20 @@
 \begin{itemize}
 \item A for pragma will synchronize all threads before leaving the
   for statement.
-\item If the for statement is still within the same {\tt parallel}
-  directive, then a barrier synchronization will do.
-\item If the for statement is at the end of the {\tt parallel}
-  directive, threads will be joined by the master thread and
-  destroyed.
+\item If the for statement is still within the same {\tt parallel} directive; then a barrier synchronization will do.
+\item If the for statement is at the end of the {\tt parallel} directive, threads will be joined by the master thread and destroyed.
 \end{itemize}
 \end{frame}
 
 \begin{frame}
 \frametitle{\tt nowait}
 \begin{itemize}
-\item Sometimes we do not wish the the threads to wait for each other.
+\item Sometimes, we do not wish the threads to wait for each other.
 \item Those finished earlier can go on to the next statement to improve
   performance.
 \item We can only do this if the following statement does {\em not}
   depend on the previous statement.
-\item In this case we can use {\tt nowait} clause.
+\item In this case, we can use a {\tt nowait} clause.
 \end{itemize}
 \end{frame}
 
@@ -337,15 +331,9 @@ a descending workload.
 \begin{frame}
 \frametitle{Wait}
 \begin{itemize}
-\item In the previous program If the work of the second loop does not
-  depend on the first loop, then we can let the threads go to the
-  second directly.
-\item Since the first for has an {\em ascending} workload, and the
-  second loop has a {\em descending} workload, if we let the threads
-  to go to the second loop then the workload imbalance will be
-  reduced.
-\item We only need to add a {\tt nowait clause} at the first {\tt for}
-  directive.
+\item In the previous program, if the work of the second loop does not depend on the first loop, then we can let the threads go to the second loop instantly.
+\item Since the first loop has an {\em ascending} workload and the second loop has a {\em descending} workload, if we let the threads go to the second loop instantly, then the workload imbalance will reduce.
+\item We only need to add a {\tt nowait clause} into the directive of the first loop.
 \end{itemize}
 \end{frame}
 
@@ -373,12 +361,9 @@ a descending workload.
 \frametitle{\tt nowait}
 \begin{itemize}
 \item We consider our previous prime number counting program.
-\item Previously the second marking {\tt for} will synchronize before
-  going back to the outside {\tt for}.
-\item We would like to remove this synchronization, and let each
-  thread start the ``prime'' finding as soon as possible.
-\item This will not cause a race condition since the threads will
-  still synchronize at the beginning of the next inner loop.
+\item Previously, the second marking {\tt for} will synchronize before going back to the outside {\tt for}.
+\item We would like to remove this synchronization and let each thread start the prime finding as soon as possible.
+\item This will not cause a race condition since the threads will still synchronize at the beginning of the next inner loop.
 \end{itemize}
 \end{frame}
 
@@ -623,13 +608,10 @@ a descending workload.
 \begin{frame}
   \frametitle{Double Buffer}
   \begin{itemize}
-    \item It is intuitive that we keep the status of cells in a two
-      dimensional array.
-    \item Since the status of cell depends on the status of others, if
-      we modify a cell directly it will affect the computation on
-      other cells.  This causes ``race'' condition during the update.
-    \item Instead we use {\em two} arrays $A$ and $B$ to store the
-      status of cells.  In initially the status is in $A$.
+    \item It is intuitive that we keep the status of cells in a two-dimensional array.
+    \item Since the status of a cell depends on the status of others, if we modify a cell directly, it will affect the computation of other cells and cause race conditions during the update.
+    \item Instead, we use {\em two} arrays $A$ and $B$ to store the
+      status of cells.  Initially, the status is in $A$. 
   \end{itemize}
 \end{frame}
 
@@ -652,7 +634,7 @@ a descending workload.
 \item We use two buffers {\tt A} and {\tt B} to avoid data
   inconsistency in updating the status of cells.
 \item We use a macro to compute the number of live neighboring cells
-  -- a live cell has 1 and a dead cell has 0.
+  -- alive cells have 1, and dead cells have 0.
 \item We pad the broad boundary so that we can use a single macro to
   compute the number of live neighboring cells
 \end{itemize}
@@ -691,12 +673,9 @@ a descending workload.
 \begin{frame}
 \frametitle{Dead or Alive}
 \begin{itemize}
-\item Depending on the generation the program will set the cell status
-  of {\tt B} with {\tt A}, or in the other direction.
-\item A cell will be alive only if it is dead now and has three live
-  neighbors, or it is live and it has two or three live neighbors now.
-\item We simply use a {\tt parallel for} directive to distribute the
-  workload.
+\item Depending on the generation, the program will set the cell status of {\tt B} with {\tt A} or in the other direction.
+\item A cell will be alive if it is dead now and has three live neighbors, or it is alive now and has two or three live neighbors.
+\item We use a {\tt parallel for} directive to distribute the workload.
 \end{itemize}
 \end{frame}
 
