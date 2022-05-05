@@ -88,11 +88,11 @@
   \frametitle{Need not to Retrieve}
   \begin{itemize}
     \item We would like to implement the vector addition program
-      without getting the  results back from the device.
-    \item The idea is that we copy the vector A and B into device with
+      without getting the results back from the device.
+    \item The idea is that we copy the vectors A and B into the device with
       {\tt CL\_MEM\_COPY\_HOST\_PTR} buffer, and put the results in a
       {\tt CL\_MEM\_USE\_HOST\_PTR} buffer.
-    \item When the computation is over then we can get the results in
+    \item When the computation is over then, we can get the results in
       the host buffer directly.
   \end{itemize}
 \end{frame}
@@ -551,7 +551,7 @@
   \frametitle{Time Measurement}
   \begin{itemize}
     \item We would like to measure the kernel execution time.
-    \item The kernel is sent to a device through a {\em command
+    \item We send the kernel to a device through a {\em command
       queue}, so we need to enable the command queue for profiling.
     \item We associate an event with the end of a kernel execution,
       then wait for the event.
@@ -667,10 +667,10 @@
   \frametitle{Three Stages}
   A kernel execution will go through three stages.
   \begin{itemize}
-    \item First the kernel joined the command queue for execution.
-    \item When it is the turn of the kernel, it is submitted to the
-      device for execution.
-    \item When the kernel finished execution, it will trigger the
+    \item First, the kernel joins the command queue for execution.
+    \item When it is the turn of this kernel, it starts running on the
+      device.
+    \item When the kernel finishes execution, it will trigger the
       event you associated with it.
   \end{itemize}
 \end{frame}
@@ -680,7 +680,7 @@
   The event can provide the following four times.
   \begin{itemize}
     \item The time when the kernel joined the command queue.
-    \item The time when the kernel was sent to the device for execution.
+    \item The time when the kernel went to the device for execution.
     \item The time when the kernel started execution.
     \item The time when the kernel finished execution.
   \end{itemize}
@@ -966,9 +966,8 @@
       and $B$.
     \item However, we need to make sure that when we start the inner
       product, {\em all} the data are there.
-    \item Remember a thread only moves two data, other data are moved
-      by other threads -- we do not know if they have finished or not.
-    \item We need to synchronize with all other threads in the work group.
+    \item Remember that a thread only moves two data, and other threads move other data -- we do not know if they have finished.
+    \item We need to synchronize with all other threads in the workgroup.
   \end{itemize}
 \end{frame}
 
