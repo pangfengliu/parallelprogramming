@@ -131,11 +131,11 @@
 \begin{frame}
   \frametitle{One Context, Multiple Devices}
   \begin{itemize}
-    \item Up to this point, we can image there is only one context,
+    \item Up to this point, we can imagine there is only one context,
       which has multiple devices.
-    \item Within this context we will have one command queue to connect
+    \item Within this context, we will have one command queue to connect
       to each device.
-    \item Later we will send commands to these devices.  The command
+    \item Later, we will send commands to these devices.  The command
       sent into a command queue will run on the device this command
       queue connects to.
   \end{itemize}
@@ -394,7 +394,7 @@
   \begin{itemize}
   \item The reason for this ``no need to change'' is that a kernel
     function is acting from a local view, i.e., it is a work item
-    within a work group, so all the operations are still the same.
+    within a workgroup, so all the operations are still the same.
   \item The kernel still thinks from the point of view of blocks, and
     the related operations are done in local indices.
   \item We only need the global index while accessing $A$, $B$, and
@@ -426,7 +426,7 @@
   \begin{itemize}
     \item The time returned by the event is difficult to interpret.
     \item We would like to establish a relative time for inspection.
-      \item We choose the time the first kernel entering the queue as
+      \item We choose the time the first kernel enters the queue as
         the base time, and report the relative time to it for ease
         understanding.
   \end{itemize}
@@ -768,12 +768,12 @@
 \begin{frame}
   \frametitle{Compute Units}
   \begin{itemize}
-    \item A device has only a limited number of compute units.
-    \item The work items of a work group will occupy a compute unit.
-    \item For a given number of work items, if the work group size is
-      small, then the number of work groups becomes large, and some
-      work groups will wait for compute unit.
-    \item In other words, a small work group size limits the the
+    \item A device has only a limited number of computing units.
+    \item The work items of a workgroup will occupy a compute unit.
+    \item For a given number of work items, if the workgroup size is
+      small, the number of workgroups becomes large, and some
+      workgroups will wait for compute unit.
+    \item In other words, a small workgroup size limits the 
       number of work items that we can process in parallel.
   \end{itemize}
 \end{frame}
@@ -782,13 +782,13 @@
   \frametitle{Classroom}
   \begin{itemize}
     \item A school has only a limited number of classrooms.
-    \item The students are divided into group, and one group will
+    \item The students are divided into groups, and one group will
       occupy a classroom.
     \item For a given number of students, if the group size is small,
-      then the number of groups becomes large, and some groups will
-      wait for classroom.
-    \item In other words, a small group size limits the the number of
-      students that can study in parallel.
+      the number of groups becomes large, and some groups will
+      wait for a classroom.
+    \item In other words, small group size limits the number of
+      students studying in parallel.
   \end{itemize}
 \end{frame}
 
@@ -804,10 +804,8 @@
   \begin{itemize}
     \item We need only one GPU device.
     \item We call {\tt clGetDeviceInfo} with {\tt
-      CL\_DEVICE\_MAX\_COMPUTE\_UNITS} to get the number of compute
-      units on GPU.
-    \item We need the number of compute units to determine the work
-      group size.
+      CL\_DEVICE\_MAX\_COMPUTE\_UNITS} to get the number of computing units on GPU.
+    \item We need the number of computing units to determine the workgroup size.
   \end{itemize}
 \end{frame}
 
